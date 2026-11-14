@@ -34,7 +34,7 @@ internal static class NativeAudio
         [PreserveSig] int EnumAudioEndpoints(int dataFlow, uint states, out IMMDeviceCollection devices);
     }
 
-    [ComImport, Guid("0BD7A1BE-7A1A-44DB-8397-C0A3D96B3CE4"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [ComImport, Guid("0BD7A1BE-7A1A-44DB-8397-CC5392387B5E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     interface IMMDeviceCollection
     {
         [PreserveSig] int GetCount(out uint count);
