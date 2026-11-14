@@ -1,14 +1,30 @@
 # Luma Player
 
-**A free native media player for macOS.** Luma combines a saved media queue, playback controls, bookmarks and subtitles in a simple Mac interface.
+**A free native media player for macOS, with a Windows desktop preview.** Luma combines a saved media queue, playback controls, bookmarks and subtitles in a focused desktop interface.
 
-**Initial public alpha: 0.6.1 · macOS 14 or later · Apple Silicon**
+**macOS public alpha: 0.6.1 · macOS 14 or later · Apple Silicon**
 
-[Download releases](https://github.com/PopoD-alt/luma-player/releases) · [Installation guide](INSTALL.md) · [Roadmap](ROADMAP.md) · [Release notes](RELEASE_NOTES.md)
+**Windows preview available · Windows 11 x64 · unsigned review build**
 
-> Experimental alpha. Downloadable DMGs are attached to published releases; source archives alone do not contain an installed app.
+[Download macOS DMG](https://github.com/PopoD-alt/luma-player/releases) · [Get the Windows preview](#windows-preview) · [Installation guide](INSTALL.md) · [Roadmap](ROADMAP.md) · [Release notes](RELEASE_NOTES.md)
 
-## Install and start watching
+> Experimental software. macOS DMGs are attached to published releases. The Windows preview is available as a temporary GitHub Actions artifact. Source archives contain code; use the platform downloads below to get an app.
+
+## Windows preview
+
+**[Download the Windows review artifact](https://github.com/PopoD-alt/luma-player/actions/runs/43618783272/artifacts/14123236991)** · [Successful Windows build and screenshots](https://github.com/PopoD-alt/luma-player/actions/runs/43618783272) · [Windows source and build instructions](https://github.com/PopoD-alt/luma-player/tree/windows-port/Windows)
+
+1. Download the artifact above. GitHub sign-in may be required. You can also open the successful build, scroll to **Artifacts**, and choose **Luma-windows-x64-review-8d3f3686d1425fbdb6e6ed34d70612fac553e2f6**.
+2. Extract GitHub's outer ZIP, then extract **Luma-Player-windows-x64-review.zip** inside it into a normal folder.
+3. On a **Windows 11 x64 PC**, open **Luma Player.exe**. Keep the complete extracted folder together. The runtime is included; a separate .NET installation is unnecessary.
+
+This preview runs directly from its folder. A setup wizard, shortcuts and an uninstaller are not included yet. It is unsigned, so Windows may display an unknown-publisher warning. The artifact is retained until **November 28, 2026**; after it expires, use the [Windows build instructions](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/README.md) to build from source.
+
+The Windows preview includes a saved queue, bookmarks/resume, SRT/WebVTT captions, original bounded WAVE/FLAC decoders, and video-only AVI decoding for supported RGB, RLE8, Microsoft Video 1 and baseline MJPEG streams. Other compressed playback uses installed Windows media facilities and varies by machine. [Windows format support and limits](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/FORMAT_SUPPORT.md) are separate from the macOS catalog below.
+
+Native Windows CI passed codec goldens, video output, fullscreen, MP4 seeking, captions and saved-queue checks. **Audible output still needs real-device testing:** the hosted runner had zero active audio render endpoints. The macOS Matroska remuxer and embedded ASS/PGS subtitle paths are not ported, full VLC compatibility is unfinished, and the live Windows update feed is not configured. Review builds are replaced manually. Windows source is on the [windows-port branch](https://github.com/PopoD-alt/luma-player/tree/windows-port); the macOS 0.6.1 release remains separate.
+
+## Install on macOS
 
 1. Download the macOS DMG from the release page.
 2. Open the DMG and drag **Luma Player** into **Applications**.
@@ -18,7 +34,7 @@ This alpha is not Apple-notarized. If macOS blocks the first launch and you trus
 
 Your queue, playback position and bookmarks are saved locally outside the app. Replacing the app preserves that data; media files are referenced rather than copied into the library.
 
-## Everyday controls
+## macOS controls
 
 - **Space:** play/pause. **← / →:** jump back/forward 10 seconds.
 - **Double-click video** or **⌃⌘F:** video fullscreen. **Escape:** exit fullscreen.
@@ -27,7 +43,7 @@ Your queue, playback position and bookmarks are saved locally outside the app. R
 - Speed, volume, subtitle timing and repeat controls are available below the video.
 - **Help → Format Support…** shows the current searchable compatibility catalog. The playback footer identifies the decoder route being used.
 
-## Current format support
+## macOS format support
 
 Luma is an alpha with bounded format support. The file’s container, codec, profile and encoding details determine whether it plays; a recognized filename extension is not a compatibility guarantee.
 
@@ -49,7 +65,7 @@ The [catalog](CodecSupport.json) tracks **46 format groups: 9 original implement
 
 Codec compatibility development is continuing. See [ROADMAP.md](ROADMAP.md) for priorities and platform plans.
 
-## Updates
+## macOS updates
 
 The initial alpha and its [signed update feed](Updates/manifest.json) are published. Release builds are configured with that stable HTTPS feed and the publisher’s public verification key. A Git push alone does not release an update: upload the matching DMG first, then publish its signed manifest. [RELEASING.md](RELEASING.md) describes the owner’s release steps.
 
@@ -59,11 +75,11 @@ Before revealing a downloaded DMG or legacy ZIP, Luma verifies the publisher’s
 
 ## Platforms and licensing
 
-The available app targets **Apple Silicon Macs running macOS 14+**. Windows, iOS and Android are planned targets in the [cross-platform roadmap](ROADMAP.md#platforms); no builds or implementation progress for those platforms are verified in this release.
+The public 0.6.1 release targets **Apple Silicon Macs running macOS 14+**. A separate **Windows 11 x64 preview** is available above, with source and platform-specific documentation on [windows-port](https://github.com/PopoD-alt/luma-player/tree/windows-port). iOS and Android remain planned targets in the [cross-platform roadmap](ROADMAP.md#platforms); no builds for those platforms are available.
 
 Luma is made by **sdas** and is free for end users. Published source is available for inspection under the proprietary [LICENSE](LICENSE); making the source visible does not grant broad reuse, modification or redistribution rights. Apple frameworks retain their own terms. Luma does not bundle or require VLC, FFmpeg or Sparkle implementations.
 
-## Build and test
+## Build and test on macOS
 
 Developers need macOS 14+, Apple Silicon and Apple’s Swift command-line tools. No third-party package download is required.
 
