@@ -6,6 +6,11 @@ This first release supports Apple Silicon Macs (M1 or later), running macOS 14
 or later. It is an experimental, free preview. There are no Windows, Intel Mac,
 iOS or Android builds in this release.
 
+A separate **Windows 11 x64 review preview** is now available on the
+[windows-port branch](https://github.com/PopoD-alt/luma-player/tree/windows-port).
+See the [Windows download and EXE instructions](README.md#windows-preview).
+The macOS instructions below apply to the published 0.6.1 DMG.
+
 ## Install
 
 1. Download the unnotarized-preview DMG from the repository's Releases page.
