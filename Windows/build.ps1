@@ -74,10 +74,29 @@ function Copy-RuntimeNotices {
     if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve runtime inputs for the notice inventory.' }
     $details = ($resolution -join [Environment]::NewLine) | ConvertFrom-Json -AsHashtable
     $items = @($details.Items.ResolvedRuntimePack) + @($details.Items.ResolvedAppHostPack) + @($details.Items.ResolvedSingleFileHostPack)
+    # SDK-installed host items have Identity=AppHost/SingleFileHost and a resolved
+    # PackageDirectory/Path, but omit NuGetPackageId/NuGetPackageVersion. Retain
+    # a path-free diagnostic inventory so CI can show that distinction safely.
+    $diagnostics = @()
+    foreach ($kind in @('ResolvedRuntimePack', 'ResolvedAppHostPack', 'ResolvedSingleFileHostPack')) {
+        foreach ($item in $details.Items[$kind]) {
+            $diagnostics += @{
+                itemKind = $kind; identity = $item['Identity']; nuGetPackageId = $item['NuGetPackageId']
+                nuGetPackageVersion = $item['NuGetPackageVersion']; runtimeIdentifier = $item['RuntimeIdentifier']
+                hasPackageDirectory = -not [string]::IsNullOrEmpty($item['PackageDirectory'])
+                hasResolvedPath = -not [string]::IsNullOrEmpty($item['Path']); pathInPackage = $item['PathInPackage']
+            }
+        }
+    }
+    $diagnostics | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $reportsRoot 'runtime-pack-resolution.json') -Encoding utf8
     $packages = @('Microsoft.NETCore.App.Runtime.win-x64', 'Microsoft.NETCore.App.Host.win-x64', 'Microsoft.WindowsDesktop.App.Runtime.win-x64')
     $resolved = @()
     foreach ($name in $packages) {
-        $pack = @($items | Where-Object { $_['NuGetPackageId'] -eq $name -or $_['Identity'] -eq $name }) | Select-Object -First 1
+        $directoryIdentity = '(?i)[/\\]' + [regex]::Escape($name) + '[/\\][0-9.]+(?:[/\\]|$)'
+        $pack = @($items | Where-Object {
+            $_['NuGetPackageId'] -eq $name -or $_['Identity'] -eq $name -or
+            $_['PackageDirectory'] -match $directoryIdentity -or $_['Path'] -match $directoryIdentity
+        }) | Select-Object -First 1
         if ($null -eq $pack) { throw "Cannot identify the resolved runtime pack: $name." }
         $source = $pack['PackageDirectory']
         if ([string]::IsNullOrEmpty($source)) { $source = $pack['Path'] }
