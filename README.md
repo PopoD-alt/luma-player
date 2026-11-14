@@ -1,4 +1,4 @@
-# Luma Player — by sdas
+# Luma Player
 
 **A free native media player for macOS.** Luma combines a saved media queue, playback controls, bookmarks and subtitles in a simple Mac interface.
 
