@@ -26,7 +26,7 @@ CHECKS = {
     'matroska': 'test-matroska.sh', 'audio': 'test.sh', 'video': 'test-video.sh',
     'fullscreen': 'test-fullscreen.sh', 'opus': 'test-opus.sh',
     'hevc': 'test-hevc.sh', 'aac': 'test-aac.sh', 'updates': 'test-updates.sh',
-    'release-plan': 'test-release-plan.sh', 'windows-core': 'test-windows-core.sh'
+    'release-plan': 'test-release-plan.sh', 'windows-core': 'test-windows-core.sh', 'windows-remux': 'test-windows-remux.sh'
 }
 
 def now():
@@ -47,7 +47,7 @@ def digest(scope='macos'):
     files = sorted((ROOT / 'Sources').glob('*.swift'))
     if scope == 'windows':
         files = sorted(path for path in (ROOT / 'Windows').rglob('*')
-                       if path.is_file() and path.suffix in {'.cs', '.csproj', '.props', '.json', '.manifest', '.ps1'}
+                       if path.is_file() and path.suffix in {'.cs', '.csproj', '.props', '.json', '.manifest', '.ps1', '.swift'}
                        and not {'bin', 'obj', 'artifacts'}.intersection(path.relative_to(ROOT / 'Windows').parts))
     for path in files:
         name = str(path.relative_to(ROOT)) if scope == 'windows' else path.name
@@ -67,6 +67,7 @@ def update_check(identifier, value):
 
 def snapshot():
     catalog = read(ROOT / 'CodecSupport.json', {'entries': []})
+    windows_catalog = read(ROOT / 'Windows/CodecSupport.json', {'entries': []})
     plan = read(PROGRESS / 'work-items.json', {'items': []})
     records = read(PROGRESS / 'checks.json', {})
     history = []
@@ -92,6 +93,7 @@ def snapshot():
             if passed: baseline.append({'name': name, 'build': plan.get('baseline_build'), 'log': str(log), 'checks': passed})
     data = {'generated_at': now(), 'source_digest': source_digest, 'built_version': version,
             'scope': catalog.get('scope'), 'root': str(ROOT), 'entries': catalog['entries'],
+            'windows_entries': windows_catalog['entries'], 'windows_scope': windows_catalog.get('scope'),
             'work': plan['items'], 'checks': list(records.values()), 'baseline': baseline,
             'history': history[-20:][::-1], 'baseline_count': plan.get('baseline_inventory_count', len(catalog['entries'])),
             'native_evidence': evidence.get('verified_formats', []),
@@ -141,9 +143,9 @@ CANVAS = r'''import { Stack, Row, Grid, H1, H2, Text, Pill, Stat, Card, CardHead
 type Entry = { id:string; name:string; status:string; category:string; coverage:string; reference:string };
 type Work = { id:string; name:string; implementation:string; stage:string; detail:string; next:string; source:string; source_exists:boolean };
 type Check = { id:string; status:string; started_at:string; duration_seconds?:number; log:string; matches_current_source:boolean; source_scope?:string; source_changed_during_check?:boolean };
-type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null };
+type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; windows_entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null };
 const snapshot = __SNAPSHOT__ as unknown as Snapshot;
-const names: Record<string,string> = { independent: "Luma decoder", system: "macOS route", experimental: "Partial", unimplemented: "Missing / unverified", unverified: "Unverified" };
+const names: Record<string,string> = { independent: "Luma decoder", system: "Verified system route", experimental: "Partial", unimplemented: "Missing", unverified: "Unverified" };
 const stages: Record<string,string> = { planned: "Queued", implementation: "Implementing", verification: "Verifying", integrated: "Integrated" };
 function date(value: string) { return new Date(value).toLocaleString("en-US", { timeZone:"America/New_York", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZoneName:"short" }); }
 function tone(status: string): "success"|"warning"|"info"|"neutral" { return status==="passed"?"success":status==="failed"?"warning":status==="running"?"info":"neutral"; }
@@ -155,29 +157,32 @@ export default function LumaCodecProgress() {
   const [filter,setFilter] = useCanvasState("luma-codecs-filter", "pending");
   const [category,setCategory] = useCanvasState("luma-codecs-category", "all");
   const [detail,setDetail] = useCanvasState<string|null>("luma-codecs-detail", null);
-  const entries = snapshot.entries;
+  const [platform,setPlatform] = useCanvasState("luma-codecs-platform", "windows");
+  const windows = platform === "windows";
+  const entries = windows ? snapshot.windows_entries : snapshot.entries;
+  const work = snapshot.work.filter(w => windows ? w.id.startsWith("windows-") : !w.id.startsWith("windows-"));
   const count = (status:string) => entries.filter(e=>e.status===status).length;
   const pending = entries.filter(e=>!["independent","system"].includes(e.status)).length;
-  const checks = snapshot.checks;
+  const checks = snapshot.checks.filter(c => windows ? c.source_scope === "windows" : c.source_scope !== "windows");
   const rows = entries.filter(e=>(category==="all"||e.category===category) && (filter==="all" || (filter==="pending" ? !["independent","system"].includes(e.status) : e.status===filter)) && `${e.name} ${e.coverage}`.toLowerCase().includes(query.toLowerCase()));
   const selected = entries.find(e=>e.id===detail);
   const open = (path:string) => dispatch({type:"openFile",path:path.startsWith("/")?path:`${snapshot.root}/${path}`});
   const native = snapshot.native_evidence;
   return <Stack gap={22} style={{padding:24,maxWidth:1400,margin:"0 auto",color:theme.text.primary,background:theme.bg.editor}}>
     <Row justify="space-between" wrap><div><Text size="small" tone="tertiary">SDAS / LUMA PLAYER</Text><H1>Codec development progress</H1></div><Pill>Local work only</Pill></Row>
-    <Row wrap><Pill>{snapshot.work.filter(w=>w.implementation==="Original decoder"&&w.stage==="integrated").length} original decoder milestones integrated this batch</Pill><Pill>{native.length} native fixture routes verified</Pill></Row>
+    <Row justify="space-between" wrap><Select value={platform} onChange={setPlatform} options={[{value:"windows",label:"Windows preview"},{value:"macos",label:"macOS alpha"}]}/><Pill>{work.filter(w=>w.implementation==="Original decoder"&&w.stage==="integrated").length} original decoder milestones integrated</Pill>{!windows && <Pill>{native.length} native fixture routes verified</Pill>}</Row>
     <Text tone="secondary">{pending} tracked groups still need work. Full VLC compatibility is not complete. Counts represent grouped formats, not an exact codec count or a parity percentage.</Text>
     <Grid columns="repeat(auto-fit, minmax(140px, 1fr))" gap={20}>
       <Stat value={count("independent")} label="Original implementations"/>
-      <Stat value={count("system")} label="macOS playback routes"/>
+      <Stat value={count("system")} label={windows ? "Verified Windows routes" : "macOS playback routes"}/>
       <Stat value={count("experimental")} label="Partial support" tone="warning"/>
       <Stat value={count("unimplemented")+count("unverified")} label="Missing or unverified"/>
     </Grid>
-    <Text size="small" tone="tertiary">macOS working-tree format catalog · {entries.length} groups · snapshot {date(snapshot.generated_at)} · Mac review app {snapshot.built_version ?? "not built"}. Windows work and checks are listed separately below. Refreshed when local progress is recorded; this is not a background worker.</Text>
-    {entries.length!==snapshot.baseline_count && <Text size="small" tone="secondary">Inventory expanded from {snapshot.baseline_count} to {entries.length} groups as broad families were separated and additional formats were tracked. Pending totals are not directly comparable to the earlier grouping.</Text>}
+    <Text size="small" tone="tertiary">{windows ? "Windows preview" : "macOS alpha"} working-tree format catalog · {entries.length} non-exhaustive groups · snapshot {date(snapshot.generated_at)}. Software decoding, container handling and audible hardware output are verified separately. Refreshed when local progress is recorded; this is not a background worker.</Text>
+    {!windows && entries.length!==snapshot.baseline_count && <Text size="small" tone="secondary">Inventory expanded from {snapshot.baseline_count} to {entries.length} groups as broad families were separated and additional formats were tracked. Pending totals are not directly comparable to the earlier grouping.</Text>}
     <Divider/>
     <H2>Current development</H2>
-    <Table headers={["Work item","Implementation","Stage","Next verification"]} framed={false} rows={snapshot.work.map(w=>[
+    <Table headers={["Work item","Implementation","Stage","Next verification"]} framed={false} rows={work.map(w=>[
       <Button variant="ghost" disabled={!w.source_exists} onClick={()=>open(w.source)}>{w.name}</Button>,w.implementation,<Pill size="sm">{stages[w.stage]??w.stage}</Pill>,<div><Text size="small">{w.detail}</Text><Text size="small" tone="secondary">{w.next}</Text></div>
     ])}/>
     <Grid columns="repeat(auto-fit, minmax(280px, 1fr))" gap={22}>
@@ -188,20 +193,20 @@ export default function LumaCodecProgress() {
           <div><Text size="small" tone="secondary">{date(c.started_at)}{typeof c.duration_seconds==="number"?` · ${c.duration_seconds}s`:""}</Text><Button variant="ghost" onClick={()=>open(c.log)}>Open log</Button></div>
         ])}/>}
         {snapshot.history.length>0 && <Card collapsible defaultOpen={false}><CardHeader>Recent completed attempts</CardHeader><CardBody><Table framed={false} headers={["Check","Result","Time / log"]} rows={snapshot.history.map(c=>[c.id,c.status,<Button variant="ghost" onClick={()=>open(c.log)}>{date(c.started_at)}</Button>])}/></CardBody></Card>}
-        {snapshot.baseline.length>0 && <Card collapsible defaultOpen={false}><CardHeader>Previously verified baseline 0.5.0</CardHeader><CardBody><Stack gap={10}>{snapshot.baseline.map(b=><div key={b.name}><Row justify="space-between"><Text size="small" weight="medium">{b.name}</Text><Button variant="ghost" onClick={()=>open(b.log)}>Log</Button></Row><Text size="small" tone="secondary">{b.checks.length} recorded assertions · historical evidence, not a fresh check of current changes</Text></div>)}</Stack></CardBody></Card>}
+        {!windows && snapshot.baseline.length>0 && <Card collapsible defaultOpen={false}><CardHeader>Previously verified baseline 0.5.0</CardHeader><CardBody><Stack gap={10}>{snapshot.baseline.map(b=><div key={b.name}><Row justify="space-between"><Text size="small" weight="medium">{b.name}</Text><Button variant="ghost" onClick={()=>open(b.log)}>Log</Button></Row><Text size="small" tone="secondary">{b.checks.length} recorded assertions · historical evidence, not a fresh check of current changes</Text></div>)}</Stack></CardBody></Card>}
       </Stack>
       <Stack gap={10}><H2>Verification rules</H2><Text size="small">An implementation stays partial until valid bitstreams, malformed input, timing, seeking and player integration are checked. Native decoding is shown separately from an original Luma decoder.</Text><Text size="small" tone="secondary">The catalog is not exhaustive. Broad groups can contain both an implemented subset and missing related codecs. Hardware flags and plugin names are not playback proof.</Text>
-        {native.length>0 && <Card collapsible defaultOpen={false}><CardHeader>{`${native.length} native fixture routes verified`}</CardHeader><CardBody><Stack gap={10}>{native.map(n=><div key={n.name}><Text size="small" weight="medium">{n.name}</Text><Text size="small" tone="secondary">{n.container} · {n.frames} decoded frames · native seek comparison passed. Not an original decoder.</Text></div>)}<Text size="small" tone="tertiary">Source: native-format-evidence.json · {snapshot.native_as_of?date(snapshot.native_as_of):"recorded fixture run"}. Generated 8-bit sources do not establish high-bit-depth or alpha conformance.</Text></Stack></CardBody></Card>}
-        <Row wrap><Button variant="secondary" onClick={()=>open("CodecSupport.json")}>Support catalog</Button><Button variant="ghost" onClick={()=>open("Progress/work-items.json")}>Work record</Button></Row>
+        {!windows && native.length>0 && <Card collapsible defaultOpen={false}><CardHeader>{`${native.length} native fixture routes verified`}</CardHeader><CardBody><Stack gap={10}>{native.map(n=><div key={n.name}><Text size="small" weight="medium">{n.name}</Text><Text size="small" tone="secondary">{n.container} · {n.frames} decoded frames · native seek comparison passed. Not an original decoder.</Text></div>)}<Text size="small" tone="tertiary">Source: native-format-evidence.json · {snapshot.native_as_of?date(snapshot.native_as_of):"recorded fixture run"}. Generated 8-bit sources do not establish high-bit-depth or alpha conformance.</Text></Stack></CardBody></Card>}
+        <Row wrap><Button variant="secondary" onClick={()=>open(windows ? "Windows/CodecSupport.json" : "CodecSupport.json")}>Support catalog</Button><Button variant="ghost" onClick={()=>open("Progress/work-items.json")}>Work record</Button></Row>
       </Stack>
     </Grid>
     <Divider/>
-    <Row justify="space-between" wrap><H2>Format inventory</H2><Text size="small" tone="tertiary">Source: CodecSupport.json · working tree</Text></Row>
+    <Row justify="space-between" wrap><H2>Format inventory</H2><Text size="small" tone="tertiary">Source: {windows ? "Windows/CodecSupport.json" : "CodecSupport.json"} · working tree</Text></Row>
     <Row wrap><TextInput value={query} onChange={setQuery} placeholder="Search formats or limitations" style={{minWidth:240,flex:1}}/><Select value={filter} onChange={setFilter} options={[{value:"pending",label:"Needs work"},{value:"all",label:"All support states"},...Object.entries(names).map(([value,label])=>({value,label}))]}/><Select value={category} onChange={setCategory} options={[{value:"all",label:"All categories"},...["Video","Audio","Subtitles","Container"].map(value=>({value,label:value}))]}/></Row>
     {rows.length>0 && <Table headers={["Format group","Status","Actual coverage"]} rows={rows.map(e=>[
       <Button variant="ghost" onClick={()=>setDetail(detail===e.id?null:e.id)}>{e.name}</Button>,<Pill size="sm">{names[e.status]??e.status}</Pill>,<Text size="small">{e.coverage}</Text>
     ])}/>}
-    {selected && <Card><CardHeader>{selected.name}</CardHeader><CardBody><Stack gap={10}><Text>{selected.coverage}</Text><Text size="small" tone="secondary">{selected.category} · {names[selected.status]??selected.status}</Text><Row><Button variant="ghost" onClick={()=>setDetail(null)}>Close details</Button>{selected.reference.startsWith("Sources/") && <Button variant="secondary" onClick={()=>open(selected.reference)}>Open implementation</Button>}</Row></Stack></CardBody></Card>}
+    {selected && <Card><CardHeader>{selected.name}</CardHeader><CardBody><Stack gap={10}><Text>{selected.coverage}</Text><Text size="small" tone="secondary">{selected.category} · {names[selected.status]??selected.status}</Text><Row><Button variant="ghost" onClick={()=>setDetail(null)}>Close details</Button>{(selected.reference.startsWith("Sources/") || selected.reference.startsWith("Windows/")) && <Button variant="secondary" onClick={()=>open(selected.reference)}>Open implementation</Button>}</Row></Stack></CardBody></Card>}
   </Stack>;
 }
 '''

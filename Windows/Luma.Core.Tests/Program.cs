@@ -10,6 +10,12 @@ internal static class Program
             FoundationTests.Run(root);
             AudioTests.Run(root);
             VideoTests.Run(root);
+            PcmContainerTests.Run(root);
+            MatroskaTests.Run(root);
+            TimelineTests.Run(root);
+            IsoMediaTests.Run(root);
+            NativePacketFixtures.Run(root);
+            RemuxIntegrationTests.Run(root);
             Console.WriteLine("PASS: portable Windows core suites completed");
             return 0;
         }

@@ -12,6 +12,7 @@
     <ProjectReference Include="../Luma.Core/Luma.Core.csproj" />
     <Content Include="../appsettings.windows.json" Link="appsettings.windows.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../FORMAT_SUPPORT.md" Link="FORMAT_SUPPORT.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../CodecSupport.json" Link="CodecSupport.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../THIRD_PARTY_NOTICES.md" Link="THIRD_PARTY_NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../Tests/Fixtures/Luma-MSVideo1-16.avi" Link="Demos/Luma-MSVideo1-16.avi" CopyToOutputDirectory="PreserveNewest" />

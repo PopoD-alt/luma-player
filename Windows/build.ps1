@@ -159,6 +159,11 @@ function Invoke-VisualSmoke([string]$Executable) {
             $results['originalAudio'] -cnotin @('passed', 'unverified-no-active-render-endpoint')) {
             throw 'Native smoke results contain an unsuccessful or unknown playback status.'
         }
+        foreach ($required in @('matroskaAvc', 'matroskaBframes', 'embeddedCaptions', 'lifecycleRecovery')) {
+            if (-not $results.Contains($required) -or $results[$required] -cne 'passed') {
+                throw "Native Windows smoke is missing required passed verification: $required."
+            }
+        }
         $endpoints = $results['activeAudioRenderEndpoints']
         if ($null -ne $endpoints -and
             (($endpoints -isnot [int] -and $endpoints -isnot [long] -and $endpoints -isnot [uint32] -and $endpoints -isnot [uint64]) -or
@@ -191,6 +196,7 @@ try {
     if ($LASTEXITCODE -ne 0 -or $actualSdk -ne $requiredSdk) { throw "Install the pinned .NET SDK $requiredSdk; selected SDK: $actualSdk." }
     if (-not (Test-Path -LiteralPath (Join-Path $fixturesRoot 'flac/manifest.json'))) { throw 'Run from a complete source checkout containing Tests/Fixtures.' }
     Invoke-Dotnet @('restore', $testsProject)
+    $env:LUMA_WINDOWS_MEDIA_EXPORT = Join-Path $reportsRoot 'generated'
     Invoke-Dotnet @('run', '--project', $testsProject, '--configuration', $Configuration, '--no-restore', '--', $fixturesRoot)
     Invoke-Dotnet @('restore', $appProject, '--runtime', 'win-x64', '-p:SelfContained=true', '-p:PublishSingleFile=true')
     Invoke-Dotnet @('publish', $appProject, '--configuration', $Configuration, '--runtime', 'win-x64', '--self-contained', 'true', '--no-restore',

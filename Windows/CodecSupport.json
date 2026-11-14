@@ -1,0 +1,391 @@
+{
+  "scope": "Windows-specific non-exhaustive grouped format inventory. Status describes the original implemented subset or verified Windows route; it is not an exact codec count or VLC parity percentage. Profiles, containers and audible output need separate evidence.",
+  "vlcReference": "VideoLAN feature documentation; broad families are used only as a non-exhaustive comparison inventory.",
+  "verification": "Original sample/frame tests and independent remux validation do not prove Windows device output. Inspect per-path results in the exact Windows review artifact for Matroska, HEVC and lifecycle checks. The system status describes only the verified synthetic native AVC route.",
+  "entries": [
+    {
+      "id": "pcm",
+      "name": "PCM WAVE",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original integer PCM8/16/24/32, up to eight channels, with source-depth preserving WAVE export. Float WAVE and RF64 are not implemented.",
+      "reference": "Windows/Luma.Core/Audio/WaveDecoder.cs"
+    },
+    {
+      "id": "g711",
+      "name": "G.711 A-law / μ-law",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original exact sample reconstruction in supported WAVE, AIFC and AU carriers. Decoded output is16-bit PCM; audible Windows device output remains a separate check.",
+      "reference": "Windows/Luma.Core/Audio/PcmContainerDecoder.cs"
+    },
+    {
+      "id": "ima",
+      "name": "IMA ADPCM WAVE",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original bounded mono/stereo IMA WAVE blocks, aligned complete blocks and fact trimming. Other ADPCM variants/carriers are not inferred.",
+      "reference": "Windows/Luma.Core/Audio/WaveDecoder.cs"
+    },
+    {
+      "id": "flac",
+      "name": "Native FLAC",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original native fLaC reconstruction,4–32-bit samples and up to eight channels;42 exact goldens including CRC/MD5. Bounded whole-file decoding. Ogg/MP4/Matroska FLAC is not implemented.",
+      "reference": "Windows/Luma.Core/Audio/FlacDecoder.cs"
+    },
+    {
+      "id": "rgb",
+      "name": "RGB AVI",
+      "category": "Video",
+      "status": "independent",
+      "coverage": "Original RGB24/RGB32 DIB frames, padding and orientation. Video only; no AVI audio demux/A/V synchronization.",
+      "reference": "Windows/Luma.Core/Video/AviVideo.cs"
+    },
+    {
+      "id": "rle8",
+      "name": "RLE8 AVI",
+      "category": "Video",
+      "status": "independent",
+      "coverage": "Original complete palette keyframes only; delta/partial frames rejected. Video only.",
+      "reference": "Windows/Luma.Core/Video/AviVideo.cs"
+    },
+    {
+      "id": "mjpeg",
+      "name": "Baseline MJPEG AVI",
+      "category": "Video",
+      "status": "experimental",
+      "coverage": "Original bounded baseline JPEG reconstruction and production AVI output. Sequential8-bit Huffman with required tables only; no progressive/missing-table/interlaced-field variants. Video only.",
+      "reference": "Windows/Luma.Core/Video/BaselineJpegDecoder.cs"
+    },
+    {
+      "id": "avc",
+      "name": "H.264 / AVC Windows playback",
+      "category": "Video",
+      "status": "system",
+      "coverage": "Windows MP4 video load, dimensions, seeking and resumed clock passed native CI for the synthetic AVC fixture. Not an original AVC decoder or a general profile/container guarantee. The new original Matroska remux route still needs native Windows validation.",
+      "reference": "Windows/Luma.Windows/PlayerWindow.cs"
+    },
+    {
+      "id": "mkv",
+      "name": "Matroska AVC / HEVC + AAC-LC remux",
+      "category": "Container",
+      "status": "experimental",
+      "coverage": "Original EBML demux and MP4 remux, one AVC/HEVC video, selectable mono/stereo AAC-LC or audio off, and embedded plain text.512MiB/500,000 packets, known-size Clusters, bounded CFR reordering only. Independent macOS decode matched360 AVC frames,360 reordered AVC frames and60 frames each for HEVC8/10; AAC relative start was within25ms. Check the exact Windows artifact for native playback results.",
+      "reference": "Windows/Luma.Core/Containers/MatroskaRemuxer.cs"
+    },
+    {
+      "id": "hevc",
+      "name": "HEVC / H.265 container path",
+      "category": "Video",
+      "status": "experimental",
+      "coverage": "Original bounded HEVC configuration/packet handling and Matroska-to-MP4 muxing; compressed decoding uses installed Windows facilities. Native Windows HEVC playback is unverified, including Main10/HDR; this is not an original HEVC decoder.",
+      "reference": "Windows/Luma.Core/Containers/IsoMediaMuxer.cs"
+    },
+    {
+      "id": "av1",
+      "name": "AV1",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows decoder or verified Windows playback. Optional/installed Windows codec availability is machine-dependent and is not counted as supported.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "vp9",
+      "name": "VP9",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows decoder or verified Windows playback. Optional/installed Windows codec availability is machine-dependent and is not counted as supported.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "vp8",
+      "name": "VP8",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows decoder or verified Windows playback. Optional/installed Windows codec availability is machine-dependent and is not counted as supported.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "mpeg12",
+      "name": "MPEG-1 / MPEG-2 video",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows decoder or verified Windows playback. Optional/installed Windows codec availability is machine-dependent and is not counted as supported.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "mpeg4part2",
+      "name": "MPEG-4 Part2 / DivX / Xvid",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows decoder or verified Windows playback. Optional/installed Windows codec availability is machine-dependent and is not counted as supported.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "wmv",
+      "name": "WMV / VC-1",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows decoder or verified Windows playback. Optional/installed Windows codec availability is machine-dependent and is not counted as supported.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "realvideo",
+      "name": "RealVideo",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "theora",
+      "name": "Theora",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "dirac",
+      "name": "Dirac",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "dv",
+      "name": "DV",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "prores",
+      "name": "ProRes",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows ProRes decoder or verified Windows playback. macOS ProRes evidence does not establish Windows support.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "jpeg2000",
+      "name": "JPEG2000",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "cinepak",
+      "name": "Cinepak / Indeo",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "mp3",
+      "name": "MP3",
+      "category": "Audio",
+      "status": "unverified",
+      "coverage": "No original Windows MP3 decoder or verified native MP3 playback in this preview. Installed Windows playback varies. MP3-in-Matroska is not implemented.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "aac",
+      "name": "AAC-LC container path",
+      "category": "Audio",
+      "status": "experimental",
+      "coverage": "Original AAC-LC configuration/timing and Matroska-to-MP4 remux, mono/stereo7350–64000Hz and1024-sample frames. HE-AAC/SBR/PS and other layouts rejected. Independent container/audio-offset verification is not Windows audible-output proof; no original AAC compressed decoder.",
+      "reference": "Windows/Luma.Core/Containers/MatroskaTimeline.cs"
+    },
+    {
+      "id": "alac",
+      "name": "ALAC",
+      "category": "Audio",
+      "status": "unverified",
+      "coverage": "No original Windows ALAC decoder or verified Windows playback. Installed Windows capabilities and the macOS catalog are not playback evidence.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "aiff",
+      "name": "AIFF / AIFC",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original signed PCM8/16/24/32 with NONE/twos/sowt and AIFC A-law/μ-law. Exact byte/endian/sample tests, SSND offsets/block tail, strict integer80-bit Hz and valid AIFC FVER. CAF is tracked separately.",
+      "reference": "Windows/Luma.Core/Audio/PcmContainerDecoder.cs"
+    },
+    {
+      "id": "ac3",
+      "name": "AC-3 / E-AC-3",
+      "category": "Audio",
+      "status": "unverified",
+      "coverage": "No original Windows payload decoder or verified native playback. The macOS original framing is not ported; AC-3/E-AC-3-in-Matroska is unsupported here.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "dts",
+      "name": "DTS / DTS-HD",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "truehd",
+      "name": "Dolby TrueHD / MLP",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "vorbis",
+      "name": "Vorbis",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "opus",
+      "name": "Opus",
+      "category": "Audio",
+      "status": "unverified",
+      "coverage": "No original Windows Opus decoder or verified native playback. Matroska Opus mapping, preroll/pre-skip/trim and WebM demux are not ported.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "speex",
+      "name": "Speex",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "wma",
+      "name": "WMA",
+      "category": "Audio",
+      "status": "unverified",
+      "coverage": "No original Windows WMA decoder or verified native playback in this preview. Installed Windows media facilities are not counted as proof.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "ape",
+      "name": "Monkey’s Audio / APE",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "wavpack",
+      "name": "WavPack",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "musepack",
+      "name": "Musepack",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "amr",
+      "name": "AMR / GSM",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "midi",
+      "name": "MIDI / tracker / game audio",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "text",
+      "name": "SRT / WebVTT and embedded UTF-8",
+      "category": "Subtitles",
+      "status": "independent",
+      "coverage": "Original external UTF-8 SRT/VTT plus Matroska UTF8/WEBVTT packet-to-plain-text decoding, selection and timing. Known-tag handling preserves literal angle text. Inspect the exact Windows smoke result for embedded caption presentation.",
+      "reference": "Windows/Luma.Core/Subtitles/EmbeddedTextDecoder.cs"
+    },
+    {
+      "id": "ass",
+      "name": "Embedded ASS / SSA plain text",
+      "category": "Subtitles",
+      "status": "experimental",
+      "coverage": "Original bounded Matroska ASS/SSA plain-text extraction, drawing suppression, selection and timing. Fonts, layout, animation, advanced styling, karaoke and vector rendering remain unsupported. Inspect the exact Windows smoke result for embedded caption presentation.",
+      "reference": "Windows/Luma.Core/Subtitles/EmbeddedTextDecoder.cs"
+    },
+    {
+      "id": "legacy-bitmap-subtitles",
+      "name": "VobSub / DVB subtitles",
+      "category": "Subtitles",
+      "status": "unimplemented",
+      "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "h263",
+      "name": "H.263",
+      "category": "Video",
+      "status": "unverified",
+      "coverage": "No original Windows H.263 decoder or verified Windows playback; the macOS MOV fixture evidence does not apply.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    },
+    {
+      "id": "msvideo1",
+      "name": "Microsoft Video1 AVI",
+      "category": "Video",
+      "status": "independent",
+      "coverage": "Original indexed8-bit/RGB55516-bit solid/two/eight-color and delta blocks, immutable checkpoints and exact seeks. Video only; multiples-of-four bottom-up dimensions, fixed palettes.",
+      "reference": "Windows/Luma.Core/Video/MSVideo1Decoder.cs"
+    },
+    {
+      "id": "msadpcm",
+      "name": "Microsoft ADPCM WAVE",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original WAVE tag2 mono/stereo predictor/coefficient reconstruction, fact trimming, clipping and complete-header partial final blocks; ten exact goldens.",
+      "reference": "Windows/Luma.Core/Audio/MSAdpcmDecoder.cs"
+    },
+    {
+      "id": "pgs",
+      "name": "PGS bitmap subtitle rendering",
+      "category": "Subtitles",
+      "status": "unimplemented",
+      "coverage": "Matroska PGS packet carriage/track metadata exists, but Windows bitmap decoding and rendering are not implemented. The UI does not label preserved packets as visible subtitles.",
+      "reference": "Windows/Luma.Core/Containers/MatroskaDemuxer.cs"
+    },
+    {
+      "id": "au",
+      "name": "AU / SND",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original Sun AU signed PCM8/16/24/32 and G.711 A-law/μ-law. Exact samples, big-endian channels, annotations and unknown-size payloads tested; float/other compressed encodings rejected.",
+      "reference": "Windows/Luma.Core/Audio/PcmContainerDecoder.cs"
+    },
+    {
+      "id": "caf",
+      "name": "CAF",
+      "category": "Audio",
+      "status": "unverified",
+      "coverage": "No original Windows CAF parser or verified native playback. Kept separate from the implemented AIFF/AIFC/AU paths.",
+      "reference": "Windows/FORMAT_SUPPORT.md"
+    }
+  ]
+}

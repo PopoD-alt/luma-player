@@ -56,9 +56,42 @@
       "category": "Platform",
       "implementation": "Original ports + Windows output",
       "stage": "verification",
-      "detail": "Windows codec/core goldens, exact original AVI output, MJPEG, fullscreen, MP4 seek, captions and restored queue tests passed in CI at 8d3f368. Review ZIP checksum and dark/light renders verified. Audio hardware output remains unverified: the runner has zero active render endpoints. This does not establish full macOS codec parity.",
-      "next": "Owner review and audible playback on Windows 11 x64. Windows update feed is unconfigured; Mac Matroska remux, ASS/PGS and other platform gaps remain.",
+      "detail": "Expanded Windows source now includes original AIFF/AIFC/AU, MKV AVC/HEVC+AAC-LC remux, audio selection and embedded plain text. Portable and independent decode checks pass; new native Windows review validation is in progress. Full VLC compatibility is not complete.",
+      "next": "Review the next Windows x64 artifact and real-device audio. Unimplemented and unverified families are tracked in Windows/CodecSupport.json.",
       "source": "Windows/README.md",
+      "check": "windows-native"
+    },
+    {
+      "id": "windows-aiff-au",
+      "name": "Windows AIFF/AIFC and AU audio",
+      "category": "Audio",
+      "implementation": "Original decoder",
+      "stage": "integrated",
+      "detail": "60 exact original sample vectors, chunk/order/endian/depth/rate limits, source-depth WAV round-trips, malformed inputs and cancellation pass. Physical Windows audio output remains a separate unverified check.",
+      "next": "Broaden real encoders and physical audio hardware coverage.",
+      "source": "Windows/Luma.Core/Audio/PcmContainerDecoder.cs",
+      "check": "windows-core"
+    },
+    {
+      "id": "windows-matroska",
+      "name": "Windows Matroska and MP4 remux",
+      "category": "Container",
+      "implementation": "Original container code + system decoding",
+      "stage": "verification",
+      "detail": "Own bounded EBML demux, ISO mux, rational B-frame timeline, selectable AAC-LC/audio-off and embedded readable captions. Independent native decoding matched AVC360, reorderedAVC360, HEVC8/10×60 frames exactly; AAC offset within25ms.",
+      "next": "New native Windows MKV/B-frame/caption tests, HEVC availability probes and real-device A/V checks. Missing profiles and containers remain explicit.",
+      "source": "Windows/Luma.Core/Containers/MatroskaRemuxer.cs",
+      "check": "windows-remux"
+    },
+    {
+      "id": "windows-lifecycle",
+      "name": "Windows playback recovery",
+      "category": "Platform",
+      "implementation": "Native playback lifecycle",
+      "stage": "verification",
+      "detail": "Media request instance/generation guards, caption request revisions, 30-second native-open timeout, retry from Play, Escape cancellation, worker cleanup and audio-switch origin adjustment implemented.",
+      "next": "Run Windows production UI regression suite for failed/repaired input, captions, fullscreen and seek.",
+      "source": "Windows/Luma.Windows/PlayerWindow.cs",
       "check": "windows-native"
     }
   ],
