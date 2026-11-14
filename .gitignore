@@ -11,3 +11,6 @@ Progress/checks.json
 Progress/check-history.jsonl
 Progress/snapshot.json
 Progress/native-format-evidence.json
+**/bin/
+**/obj/
+Windows/artifacts/

@@ -1,0 +1,15 @@
+# Windows runtime notices
+
+Luma's own source code is proprietary. Official Luma binaries are intended to be free of charge; free pricing does not grant source-code rights. See the repository's [LICENSE](../LICENSE) for Luma's terms.
+
+The original Luma WAVE, FLAC and AVI parsers and sample/frame reconstruction do not depend on VLC, FFmpeg or libFLAC. Public format specifications referenced by the code are documentation sources, not bundled codec implementations.
+
+A self-contained Windows build also distributes Microsoft's .NET runtime and Windows Desktop/WPF components. Their MIT licenses and applicable third-party notices remain separate from Luma's license. Microsoft maintains the primary [.NET runtime license](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT), [.NET runtime third-party notices](https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT), [WPF license](https://github.com/dotnet/wpf/blob/main/LICENSE.TXT) and [WPF third-party notices](https://github.com/dotnet/wpf/blob/main/THIRD-PARTY-NOTICES.TXT). Those links track upstream development; the exact files retained with the build identify its bundled versions and terms.
+
+When preparing a self-contained distribution, preserve these files verbatim in separate, versioned folders under `Licenses/Microsoft/`, alongside this notice and Luma's license:
+
+- From the resolved `Microsoft.NETCore.App.Runtime.win-x64` and app-host packages: `LICENSE.TXT`, `THIRD-PARTY-NOTICES.TXT` and each package's `.nuspec` metadata.
+- From `Microsoft.WindowsDesktop.App.Runtime.win-x64`: `LICENSE`, its `.nuspec` and `Microsoft.WindowsDesktop.App.versions.txt`. Preserve any additional license/notice files and any `_licenses` directory recursively when present. Do not assume all package versions use the same filenames or layout.
+- Preserve the matching SDK's `Sdks/Microsoft.NET.Sdk.WindowsDesktop/LICENSE.TXT` and `THIRD-PARTY-NOTICES.TXT` as well. The inspected Windows Desktop runtime package version `10.0.15` contains its MIT `LICENSE` but no separate third-party-notices file or `_licenses` directory; the SDK's desktop notice covers additional WPF notices. Keep its SDK version in the destination folder.
+
+Resolve package versions and locations from that build's MSBuild runtime-pack resolution, rather than a developer-specific absolute path. Packs already installed by the SDK can be absent from NuGet's download list and may omit package-local notices. The script also retains the matching SDK distribution's `LICENSE.txt` and `ThirdPartyNotices.txt` under `Licenses/Microsoft/SDK-distribution/` for those inputs. Single-file builds embed dependency/runtime metadata; the script keeps reference copies under `BuildInfo/` when the SDK produces separate intermediate files, and records the SDK version, package identities/versions and runtime identifier with the build. Do not replace version-matched notices with links alone or with files fetched from an upstream `main` branch. A framework-dependent build relies on the separately installed Microsoft runtime; it should identify that requirement instead of claiming to bundle it.

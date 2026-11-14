@@ -59,7 +59,7 @@ Before revealing a downloaded DMG or legacy ZIP, Luma verifies the publisher’s
 
 ## Platforms and licensing
 
-The available app targets **Apple Silicon Macs running macOS 14+**. Windows, iOS and Android are planned targets in the [cross-platform roadmap](ROADMAP.md#platforms); no builds or implementation progress for those platforms are verified in this release.
+The public 0.6.1 release targets **Apple Silicon Macs running macOS 14+**. A native Windows desktop port is being developed under [Windows/](Windows/README.md), with original audio/video decoders, library controls and a Windows review-build workflow. It is separate from the released macOS DMG and has its own support limits. iOS and Android remain planned targets in the [cross-platform roadmap](ROADMAP.md#platforms).
 
 Luma is made by **sdas** and is free for end users. Published source is available for inspection under the proprietary [LICENSE](LICENSE); making the source visible does not grant broad reuse, modification or redistribution rights. Apple frameworks retain their own terms. Luma does not bundle or require VLC, FFmpeg or Sparkle implementations.
 

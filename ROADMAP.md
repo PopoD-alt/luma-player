@@ -20,7 +20,9 @@ Apple Developer ID signing/notarization and broader testing on target Macs remai
 
 ## Platforms
 
-**Windows, iOS and Android are planned targets.** Cross-platform expansion is part of the project roadmap, but this repository currently provides the macOS app. No Windows, iOS or Android builds or implementation progress have been verified for this release.
+**A Windows desktop preview is in development under [Windows/](Windows/README.md).** It uses native WPF/Windows window handling, ports of the original audio/video decoders, a persistent queue and bookmarks, SRT/WebVTT, and a separate Windows update protocol. Portable golden tests are available; the Windows review workflow validates the executable and captures its real interface. This does not establish full macOS feature or codec parity, and the public macOS 0.6.1 release remains unchanged.
+
+**iOS and Android remain planned targets.** No builds or implementation progress for those platforms have been verified.
 
 Platform work requires adapting the interface, media output, storage and distribution to each operating system. Availability dates are not announced. The current macOS SwiftUI/AppKit/AVFoundation implementation should not be read as a finished portable player core.
 

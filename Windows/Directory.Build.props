@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <Company>sdas</Company>
+    <Copyright>Copyright © 2026 sdas</Copyright>
+  </PropertyGroup>
+</Project>

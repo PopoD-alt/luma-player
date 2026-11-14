@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>Luma Player</AssemblyName><RootNamespace>Luma.WindowsApp</RootNamespace>
+    <Version>0.6.1</Version><AssemblyVersion>0.6.1.0</AssemblyVersion>
+    <Product>Luma Player</Product><ApplicationManifest>app.manifest</ApplicationManifest>
+    <PublishTrimmed>false</PublishTrimmed><PublishReadyToRun>false</PublishReadyToRun>
+    <ApplicationIcon Condition="Exists('../Assets/Luma.ico')">../Assets/Luma.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Luma.Core/Luma.Core.csproj" />
+    <Content Include="../appsettings.windows.json" Link="appsettings.windows.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../FORMAT_SUPPORT.md" Link="FORMAT_SUPPORT.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../THIRD_PARTY_NOTICES.md" Link="THIRD_PARTY_NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../Tests/Fixtures/Luma-MSVideo1-16.avi" Link="Demos/Luma-MSVideo1-16.avi" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,55 @@
+name: Windows review build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [windows-port]
+    paths:
+      - 'Windows/**'
+      - 'Tests/Fixtures/**'
+      - '.github/workflows/windows-review.yml'
+      - 'LICENSE'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: Windows
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      # Official action versions verified against their upstream READMEs.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.404'
+      - name: Test, publish and exercise native Windows window
+        run: ./build.ps1 -Configuration Release -SmokeTimeoutSeconds 180
+      - name: Upload review ZIP and smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-windows-x64-review-${{ github.sha }}
+          path: |
+            Windows/artifacts/Luma-Player-windows-x64-review.zip
+            Windows/artifacts/Luma-Player-windows-x64-review.zip.sha256
+            Windows/artifacts/review/
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 0
+
+# Review artifacts only: no release/tag creation, feed update or publishing.
