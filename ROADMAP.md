@@ -14,7 +14,7 @@ The current catalog has 46 grouped entries: 9 original implementation groups, 8 
 
 ## Distribution and updates
 
-The updater now supports quiet daily checks, idle-only new-release prompts, a persistent automatic-check preference, reminder deferral and verified DMG/ZIP downloads. Public release hosting and the stable signed feed are being prepared. A Git push alone does not notify installed apps: a published signed manifest must point to the exact downloadable release artifact.
+The updater now supports quiet daily checks, idle-only new-release prompts, a persistent automatic-check preference, reminder deferral and verified DMG/ZIP downloads. The initial GitHub alpha and stable signed feed are published. A Git push alone does not notify installed apps: a published signed manifest must point to the exact downloadable release artifact. Real update installation on additional target Macs remains part of release testing.
 
 Apple Developer ID signing/notarization and broader testing on target Macs remain distribution work. The initial alpha uses manual installation; the updater does not replace or execute the app automatically.
 

@@ -2,7 +2,7 @@
 
 **Initial public release · by sdas · free for end users**
 
-Requires **macOS 14 or later on Apple Silicon**. Download availability will be announced on the [GitHub releases page](https://github.com/PopoD-alt/luma-player/releases) when initial publication is complete. See [INSTALL.md](INSTALL.md) for DMG installation and the per-app macOS opening steps for this unnotarized alpha.
+Requires **macOS 14 or later on Apple Silicon**. Download the DMG from the [initial GitHub alpha release](https://github.com/PopoD-alt/luma-player/releases/tag/v0.6.1). See [INSTALL.md](INSTALL.md) for DMG installation and the per-app macOS opening steps for this unnotarized alpha.
 
 ## Included
 
@@ -20,7 +20,7 @@ This is incomplete format coverage. The catalog currently tracks 46 groups: 9 or
 
 AVI audio, advanced ASS styling/fonts/positioning, VobSub/DVB, many modern/legacy codecs and several container/profile variants remain unsupported or unverified. Matroska remuxing completes before playback and requires temporary disk space. PGS is a bounded bitmap subtitle route, not Blu-ray disc/PES or 3D/HDR support. Open **Help → Format Support…** for the detailed current catalog.
 
-The initial alpha is not Apple-notarized. Live update notifications require the configured public feed and signed release artifacts; publication/feed activation is being prepared. The updater does not open or install downloads automatically.
+The initial alpha is not Apple-notarized. Its signed public update feed points to the released DMG; future higher-numbered signed builds can trigger update prompts. The updater does not open or install downloads automatically.
 
 Codec compatibility updates are ongoing. Windows, iOS and Android are planned in the [roadmap](ROADMAP.md#platforms); no builds or implementation progress for those platforms are verified in this release.
 

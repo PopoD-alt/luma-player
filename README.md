@@ -51,7 +51,7 @@ Codec compatibility development is continuing. See [ROADMAP.md](ROADMAP.md) for 
 
 ## Updates
 
-Release builds are configured with the publisher’s signed release feed and public verification key. The feed becomes available when its signed manifest is published to this repository. A Git push alone does not release an update: the matching DMG must be uploaded and the signed manifest published.
+The initial alpha and its [signed update feed](Updates/manifest.json) are published. Release builds are configured with that stable HTTPS feed and the publisher’s public verification key. A Git push alone does not release an update: upload the matching DMG first, then publish its signed manifest. [RELEASING.md](RELEASING.md) describes the owner’s release steps.
 
 Configured installations check on launch when due and at most once per 24 hours while active. New-release prompts wait until playback/fullscreen are idle and no app modal dialog or sheet is open. Automatic failures and up-to-date results stay quiet. **Luma Player → Automatically Check for Updates** controls the preference; **Check for Updates…** remains available manually. **Not Now** defers automatic reminders for a day.
 
