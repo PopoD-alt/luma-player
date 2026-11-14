@@ -142,7 +142,7 @@ CANVAS = r'''import { Stack, Row, Grid, H1, H2, Text, Pill, Stat, Card, CardHead
 
 type Entry = { id:string; name:string; status:string; category:string; coverage:string; reference:string };
 type Work = { id:string; name:string; implementation:string; stage:string; detail:string; next:string; source:string; source_exists:boolean };
-type Check = { id:string; status:string; started_at:string; duration_seconds?:number; log:string; matches_current_source:boolean; source_scope?:string; source_changed_during_check?:boolean };
+type Check = { id:string; status:string; started_at:string; duration_seconds?:number; log:string; summary?:string[]; matches_current_source:boolean; source_scope?:string; source_changed_during_check?:boolean };
 type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; windows_entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null };
 const snapshot = __SNAPSHOT__ as unknown as Snapshot;
 const names: Record<string,string> = { independent: "Luma decoder", system: "Verified system route", experimental: "Partial", unimplemented: "Missing", unverified: "Unverified" };
@@ -164,6 +164,7 @@ export default function LumaCodecProgress() {
   const count = (status:string) => entries.filter(e=>e.status===status).length;
   const pending = entries.filter(e=>!["independent","system"].includes(e.status)).length;
   const checks = snapshot.checks.filter(c => windows ? c.source_scope === "windows" : c.source_scope !== "windows");
+  const history = snapshot.history.filter(c => windows ? c.source_scope === "windows" : c.source_scope !== "windows");
   const rows = entries.filter(e=>(category==="all"||e.category===category) && (filter==="all" || (filter==="pending" ? !["independent","system"].includes(e.status) : e.status===filter)) && `${e.name} ${e.coverage}`.toLowerCase().includes(query.toLowerCase()));
   const selected = entries.find(e=>e.id===detail);
   const open = (path:string) => dispatch({type:"openFile",path:path.startsWith("/")?path:`${snapshot.root}/${path}`});
@@ -189,10 +190,10 @@ export default function LumaCodecProgress() {
       <Stack gap={10}>
         <H2>Recorded checks</H2>
         {checks.length>0 && <Table headers={["Check","Result","Evidence"]} rowTone={checks.map(c=>tone(c.status))} rows={checks.map(c=>[
-          c.id,<div><Pill size="sm">{c.status}</Pill><Text size="small" tone="secondary">{c.source_scope === "windows" ? "Windows" : "macOS"} · {c.matches_current_source?"current source set":"earlier source set"}{c.source_changed_during_check?" · source changed during run":""}</Text></div>,
+          c.id,<div><Pill size="sm">{c.status}</Pill><Text size="small" tone="secondary">{c.source_scope === "windows" ? "Windows" : "macOS"} · {c.matches_current_source?"current source set":"earlier source set"}{c.source_changed_during_check?" · source changed during run":""}</Text>{c.summary?.filter(s=>s.startsWith("UNVERIFIED:")).slice(0,2).map(s=><Text key={s} size="small" tone="secondary">{s}</Text>)}</div>,
           <div><Text size="small" tone="secondary">{date(c.started_at)}{typeof c.duration_seconds==="number"?` · ${c.duration_seconds}s`:""}</Text><Button variant="ghost" onClick={()=>open(c.log)}>Open log</Button></div>
         ])}/>}
-        {snapshot.history.length>0 && <Card collapsible defaultOpen={false}><CardHeader>Recent completed attempts</CardHeader><CardBody><Table framed={false} headers={["Check","Result","Time / log"]} rows={snapshot.history.map(c=>[c.id,c.status,<Button variant="ghost" onClick={()=>open(c.log)}>{date(c.started_at)}</Button>])}/></CardBody></Card>}
+        {history.length>0 && <Card collapsible defaultOpen={false}><CardHeader>Recent completed attempts</CardHeader><CardBody><Table framed={false} headers={["Check","Result","Time / log"]} rows={history.map(c=>[c.id,c.status,<Button variant="ghost" onClick={()=>open(c.log)}>{date(c.started_at)}</Button>])}/></CardBody></Card>}
         {!windows && snapshot.baseline.length>0 && <Card collapsible defaultOpen={false}><CardHeader>Previously verified baseline 0.5.0</CardHeader><CardBody><Stack gap={10}>{snapshot.baseline.map(b=><div key={b.name}><Row justify="space-between"><Text size="small" weight="medium">{b.name}</Text><Button variant="ghost" onClick={()=>open(b.log)}>Log</Button></Row><Text size="small" tone="secondary">{b.checks.length} recorded assertions · historical evidence, not a fresh check of current changes</Text></div>)}</Stack></CardBody></Card>}
       </Stack>
       <Stack gap={10}><H2>Verification rules</H2><Text size="small">An implementation stays partial until valid bitstreams, malformed input, timing, seeking and player integration are checked. Native decoding is shown separately from an original Luma decoder.</Text><Text size="small" tone="secondary">The catalog is not exhaustive. Broad groups can contain both an implemented subset and missing related codecs. Hardware flags and plugin names are not playback proof.</Text>

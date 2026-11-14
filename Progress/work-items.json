@@ -56,7 +56,7 @@
       "category": "Platform",
       "implementation": "Original ports + Windows output",
       "stage": "verification",
-      "detail": "Expanded Windows source now includes original AIFF/AIFC/AU, MKV AVC/HEVC+AAC-LC remux, audio selection and embedded plain text. Portable and independent decode checks pass; new native Windows review validation is in progress. Full VLC compatibility is not complete.",
+      "detail": "Review build2 at a222ae9 passed native Windows required codec, AVC MKV, B-frame seek, embedded ASS/UTF8, fullscreen, resume and failure recovery checks. ZIP SHA256/CRC and bundled provenance verified. HEVC8/10 native decode and physical audio remain unverified; full VLC compatibility is incomplete.",
       "next": "Review the next Windows x64 artifact and real-device audio. Unimplemented and unverified families are tracked in Windows/CodecSupport.json.",
       "source": "Windows/README.md",
       "check": "windows-native"
@@ -78,8 +78,8 @@
       "category": "Container",
       "implementation": "Original container code + system decoding",
       "stage": "verification",
-      "detail": "Own bounded EBML demux, ISO mux, rational B-frame timeline, selectable AAC-LC/audio-off and embedded readable captions. Independent native decoding matched AVC360, reorderedAVC360, HEVC8/10×60 frames exactly; AAC offset within25ms.",
-      "next": "New native Windows MKV/B-frame/caption tests, HEVC availability probes and real-device A/V checks. Missing profiles and containers remain explicit.",
+      "detail": "Own bounded EBML demux/ISO mux, rational B-frame timeline, AAC-LC selection/audio-off and embedded readable captions implemented. Windows AVC MKV/B-frames/captions pass. Independent decode exactly matched AVC360, B-frameAVC360 and HEVC8/10×60 frames; AAC relative start within25ms.",
+      "next": "Resolve Windows HEVC native playback; real-device AAC/A/V, more audio mappings, large/streaming MKV, advanced ASS and PGS remain.",
       "source": "Windows/Luma.Core/Containers/MatroskaRemuxer.cs",
       "check": "windows-remux"
     },
@@ -88,10 +88,21 @@
       "name": "Windows playback recovery",
       "category": "Platform",
       "implementation": "Native playback lifecycle",
-      "stage": "verification",
+      "stage": "integrated",
       "detail": "Media request instance/generation guards, caption request revisions, 30-second native-open timeout, retry from Play, Escape cancellation, worker cleanup and audio-switch origin adjustment implemented.",
-      "next": "Run Windows production UI regression suite for failed/repaired input, captions, fullscreen and seek.",
+      "next": "Broaden target PCs, GPUs, simultaneous opens and fault/device scenarios; keep hardware audio verification separate.",
       "source": "Windows/Luma.Windows/PlayerWindow.cs",
+      "check": "windows-native"
+    },
+    {
+      "id": "windows-vlc-parity",
+      "name": "VLC compatibility target",
+      "category": "Platform",
+      "implementation": "Original decoders + Windows facilities",
+      "stage": "implementation",
+      "detail": "48 non-exhaustive Windows format groups:11 original implemented subsets,1 verified native route,5 partial,14 unverified and17 unimplemented. Full VLC parity is NOT achieved. Counts are grouped labels, not exact codecs or a parity percentage.",
+      "next": "Implement and verify missing codec families and carriers; native HEVC and audio hardware need positive evidence. This dashboard does not run work in the background.",
+      "source": "Windows/CodecSupport.json",
       "check": "windows-native"
     }
   ],
