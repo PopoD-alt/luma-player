@@ -56,8 +56,8 @@
       "category": "Platform",
       "implementation": "Original ports + Windows output",
       "stage": "verification",
-      "detail": "Review build2 at a222ae9 passed native Windows required codec, AVC MKV, B-frame seek, embedded ASS/UTF8, fullscreen, resume and failure recovery checks. ZIP SHA256/CRC and bundled provenance verified. HEVC8/10 native decode and physical audio remain unverified; full VLC compatibility is incomplete.",
-      "next": "Review the next Windows x64 artifact and real-device audio. Unimplemented and unverified families are tracked in Windows/CodecSupport.json.",
+      "detail": "Build3 required native Windows codec, modern H264 rendered-frame, AAC6ch PCM, AVC MKV, B-frame seek, captions, fullscreen, resume and recovery checks passed. HEVC missing-decoder errors and zero audio render endpoints retain unverified video/audio hardware results; full VLC compatibility incomplete.",
+      "next": "Review the latest Windows x64 artifact; validate real-device HEVC and audible output. Windows/CodecSupport.json tracks remaining families.",
       "source": "Windows/README.md",
       "check": "windows-native"
     },
@@ -100,8 +100,8 @@
       "category": "Container",
       "implementation": "Original container code + Windows facilities",
       "stage": "verification",
-      "detail": "Modern Media Foundation HWND playback, per-stream decoder diagnostics, effective AAC channel inspection, MP4 text captions and conservative hev1-to-hvc1 compatibility copies implemented. Original Main10/1920x804/25fps/AAC48k6ch fixture added; compressed HEVC/AAC decoding remains system-provided.",
-      "next": "Require actual native AVC rendered frames and AAC six-channel PCM in Windows CI; retain explicit unverified HEVC and physical speaker results until positive evidence.",
+      "detail": "Build3 Windows-hosted checks proved actual modern H264 rendering, Source Reader pixels and silent AAC-LC48kHz6chPCM from original hev1 and normalized hvc1. Own bounded inspection, text captions and safe compatibility copy pass. Direct HEVC and HEVC8/10 rendering return MF_E_TOPO_CODEC_NOT_FOUND (C00D5212); no original HEVC decoder.",
+      "next": "Review build3 on the target Windows PC with an installed HEVC decoder. HEVC playback, non-silent5.1, A/V sync and physical speaker output remain unverified.",
       "source": "Windows/Luma.Windows/MediaFoundationPlayer.cs",
       "check": "windows-native"
     },

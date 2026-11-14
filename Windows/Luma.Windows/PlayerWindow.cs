@@ -454,7 +454,9 @@ internal sealed class PlayerWindow : Window
             if (!Active()) return;
             lastNativeError = e.NativeHResult; lastNativeSourceExisted = File.Exists(source);
             string codec = currentMp4?.VideoCodec ?? "this media";
-            Fail("Windows Media Foundation could not play " + codec + ". " + e.Message + " Open More → Media diagnostics for decoder details.");
+            Fail(e.NativeHResult == 0xC00D5212
+                ? "Windows found no compatible decoder for " + codec + " (0xC00D5212). " + (codec == "HEVC" ? "An installed Windows HEVC decoder is required. " : "") + "Open More → Media diagnostics for details."
+                : "Windows Media Foundation could not play " + codec + ". " + e.Message + " Open More → Media diagnostics for decoder details.");
         };
         viewport.Children.Insert(0, player.View);
         backend.Text = "Windows Media Foundation · " + (currentMp4?.VideoCodec ?? "media") + (currentMp4?.BitDepth is int depth ? " " + depth + "-bit" : "") + (currentMp4?.AacChannels is int channels ? " · AAC " + channels + "ch" : "");

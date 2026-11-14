@@ -64,7 +64,7 @@
       "name": "H.264 / AVC Windows playback",
       "category": "Video",
       "status": "system",
-      "coverage": "Windows MP4 video load, dimensions, seeking and resumed clock passed native CI for the synthetic AVC fixture. Not an original AVC decoder or a general profile/container guarantee. The new original Matroska remux route still needs native Windows validation.",
+      "coverage": "Native Windows CI verified synthetic AVC MP4/MKV video, B-frame seek/resume, modern Media Foundation HWND actual rendered frames, native Source Reader pixels, fullscreen and caption overlay. This is a system decoder route, not an original AVC decoder or general profile/container guarantee.",
       "reference": "Windows/Luma.Windows/PlayerWindow.cs"
     },
     {
@@ -80,7 +80,7 @@
       "name": "HEVC / H.265 container path",
       "category": "Video",
       "status": "experimental",
-      "coverage": "Original bounded HEVC configuration/packet handling, Matroska-to-MP4 muxing and validated hev1-to-hvc1 compatibility copies. Modern Media Foundation performs compressed decoding; installed Windows HEVC support is required. Native HEVC playback remains unverified, including Main10/HDR; this is not an original HEVC decoder.",
+      "coverage": "Original bounded HEVC config/packet handling, MKV-to-MP4 mux and validated hev1-to-hvc1 compatibility copies. The modern engine and direct Source Reader both returned MF_E_TOPO_CODEC_NOT_FOUND (C00D5212) for HEVC8/10 on Windows CI. Installed Windows HEVC support is required; playback remains unverified. No original HEVC decoder or HDR guarantee.",
       "reference": "Windows/Luma.Core/Containers/IsoMediaMuxer.cs"
     },
     {
@@ -200,7 +200,7 @@
       "name": "AAC-LC container path",
       "category": "Audio",
       "status": "experimental",
-      "coverage": "Original AAC-LC configuration/timing and Matroska-to-MP4 remux, mono/stereo/5.1 at7350\u201364000Hz with1024-sample frames. Effective MP4 channels read from ASC. HE-AAC/SBR/PS and other layouts rejected. Authored silent6ch48k fixture decoded independently on macOS; native Windows PCM results and physical output are separate evidence. No original general AAC decoder.",
+      "coverage": "Original AAC-LC config/timing and MP4 remux, mono/stereo/5.1 at7350\u201364000Hz with1024-sample frames; ASC effective MP4 channels. Windows Source Reader decoded actual48kHz6chPCM from the authored silence fixture, with original hev1 and normalized hvc1. HE/SBR/PS/other layouts rejected. Audible output/non-silent5.1/A-V sync remain unverified; no original general AAC decoder.",
       "reference": "Windows/Luma.Core/Containers/MatroskaTimeline.cs"
     },
     {

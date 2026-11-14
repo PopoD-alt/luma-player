@@ -367,7 +367,7 @@ public static class MediaFoundationProbe
             0x80004002 => "E_NOINTERFACE", 0x800705b4 => "HRESULT_FROM_WIN32(ERROR_TIMEOUT)", _ => null
         };
         return new(name, hr, "0x" + unchecked((uint)hr).ToString("X8"), symbol,
-            message ?? (hr >= 0 ? "Succeeded" : Marshal.GetExceptionForHR(hr)?.Message ?? "Native operation failed"));
+            message ?? (hr >= 0 ? "Succeeded" : Marshal.GetExceptionForHR(hr, new IntPtr(-1))?.Message ?? "Native operation failed"));
     }
     private static T Fn<T>(IntPtr obj, int slot) where T : Delegate
     {
