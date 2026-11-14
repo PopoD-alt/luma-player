@@ -4,7 +4,7 @@
 
 **macOS public alpha: 0.6.1 · macOS 14 or later · Apple Silicon**
 
-**Windows preview available · Windows 11 x64 · unsigned review build**
+**Windows compatibility preview · build 2 · Windows 11 x64 · unsigned review build**
 
 [Download macOS DMG](https://github.com/PopoD-alt/luma-player/releases) · [Get the Windows preview](#windows-preview) · [Installation guide](INSTALL.md) · [Roadmap](ROADMAP.md) · [Release notes](RELEASE_NOTES.md)
 
@@ -12,17 +12,17 @@
 
 ## Windows preview
 
-**[Download the Windows review artifact](https://github.com/PopoD-alt/luma-player/actions/runs/43618783272/artifacts/14123236991)** · [Successful Windows build and screenshots](https://github.com/PopoD-alt/luma-player/actions/runs/43618783272) · [Windows source and build instructions](https://github.com/PopoD-alt/luma-player/tree/windows-port/Windows)
+**[Download the Windows review artifact](https://github.com/PopoD-alt/luma-player/actions/runs/43624324741/artifacts/14125142839)** · [Successful Windows build and screenshots](https://github.com/PopoD-alt/luma-player/actions/runs/43624324741) · [Windows source and build instructions](https://github.com/PopoD-alt/luma-player/tree/windows-port/Windows)
 
-1. Download the artifact above. GitHub sign-in may be required. You can also open the successful build, scroll to **Artifacts**, and choose **Luma-windows-x64-review-8d3f3686d1425fbdb6e6ed34d70612fac553e2f6**.
+1. Download the artifact above. GitHub sign-in may be required. You can also open the successful build, scroll to **Artifacts**, and choose **Luma-windows-x64-review-a222ae9eb1b3c54cb1b729d14c18b1f27651a0ec**.
 2. Extract GitHub's outer ZIP, then extract **Luma-Player-windows-x64-review.zip** inside it into a normal folder.
 3. On a **Windows 11 x64 PC**, open **Luma Player.exe**. Keep the complete extracted folder together. The runtime is included; a separate .NET installation is unnecessary.
 
 This preview runs directly from its folder. A setup wizard, shortcuts and an uninstaller are not included yet. It is unsigned, so Windows may display an unknown-publisher warning. The artifact is retained until **November 28, 2026**; after it expires, use the [Windows build instructions](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/README.md) to build from source.
 
-The Windows preview includes a saved queue, bookmarks/resume, SRT/WebVTT captions, original bounded WAVE/FLAC decoders, and video-only AVI decoding for supported RGB, RLE8, Microsoft Video 1 and baseline MJPEG streams. Other compressed playback uses installed Windows media facilities and varies by machine. [Windows format support and limits](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/FORMAT_SUPPORT.md) are separate from the macOS catalog below.
+The Windows preview includes a saved queue, bookmarks/resume, external SRT/WebVTT and selectable embedded UTF-8/ASS/SSA readable captions, original bounded WAVE/FLAC/AIFF/AIFC/AU audio decoders, and supported video-only AVI paths. New original Matroska demux and MP4 remux code handles bounded AVC/HEVC video with selectable AAC-LC or audio off. Compressed AVC/HEVC/AAC decoding uses installed Windows media facilities. See the separate [Windows format limits](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/FORMAT_SUPPORT.md) and [48-group Windows development inventory](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/CodecSupport.json); these groups are not an exact codec count or a VLC parity percentage.
 
-Native Windows CI passed codec goldens, video output, fullscreen, MP4 seeking, captions and saved-queue checks. **Audible output still needs real-device testing:** the hosted runner had zero active audio render endpoints. The macOS Matroska remuxer and embedded ASS/PGS subtitle paths are not ported, full VLC compatibility is unfinished, and the live Windows update feed is not configured. Review builds are replaced manually. Windows source is on the [windows-port branch](https://github.com/PopoD-alt/luma-player/tree/windows-port); the macOS 0.6.1 release remains separate.
+Native Windows CI passed original codec goldens, AVC MKV video playback with audio off, B-frame seeking, embedded ASS/UTF-8 presentation, fullscreen, saved-queue resume and failed-file recovery. **HEVC 8/10-bit Windows playback remains unverified:** the current Windows components rejected both probes, although independent native decoding verified the remuxed packets and pixels. **Audible output also needs real-device testing:** the runner had zero active audio endpoints. The original remux path is limited to 512 MiB, known-size Clusters and supported AVC/HEVC + AAC-LC timelines; WebM, other Matroska audio mappings, PGS rendering and advanced ASS styling remain unfinished. Full VLC compatibility is not complete. The live Windows update feed is unconfigured, so review builds are replaced manually. Windows source is on [windows-port](https://github.com/PopoD-alt/luma-player/tree/windows-port); the macOS 0.6.1 release remains separate.
 
 ## Install on macOS
 
