@@ -65,6 +65,7 @@ internal sealed class PlayerWindow : Window
     List<SubtitleCue> cues = [];
     string? lastError;
     uint? lastNativeError;
+    bool? lastNativeSourceExisted;
     WindowsUpdateConfig? updateConfig;
     WindowsRelease? pendingUpdate;
     int currentBuild = 1, generation, visualRevision, subtitleRevision, lastFrame = -1, repeatMode;
@@ -232,7 +233,7 @@ internal sealed class PlayerWindow : Window
         if (closing) return;
         var lifetimeToken = lifetimeCancellation.Token;
         SaveProgress(); loadCancellation.Cancel(); loadCancellation.Dispose(); loadCancellation = new(); var token = loadCancellation.Token; var version = ++generation;
-        ReplaceNativeMovie(version); activeTemporaryMedia = null; CleanupTemporaryMedia(); nativeLoadClock.Reset(); nativeFailureContext = null; ResetTrackMenus(); original = null; playing = false; opening = true; clock.Reset(); position = duration = 0; lastFrame = -1; visualRevision++; cues.Clear(); subtitleDelay = 0; captions.Text = ""; image.Source = null; lastError = null; lastNativeError = null;
+        ReplaceNativeMovie(version); activeTemporaryMedia = null; CleanupTemporaryMedia(); nativeLoadClock.Reset(); nativeFailureContext = null; ResetTrackMenus(); original = null; playing = false; opening = true; clock.Reset(); position = duration = 0; lastFrame = -1; visualRevision++; cues.Clear(); subtitleDelay = 0; captions.Text = ""; image.Source = null; lastError = null; lastNativeError = null; lastNativeSourceExisted = null;
         current = entry; library.Data.SelectedId = entry.Id; pendingResume = resume ?? (entry.ResumeTime > 3 ? entry.ResumeTime : 0); RefreshQueue(); nowTitle.Text = entry.Title; empty.Visibility = Visibility.Visible; image.Visibility = Visibility.Collapsed; movie.Visibility = Visibility.Collapsed; backend.Text = "Opening…"; Notice("Opening " + entry.Title);
         try
         {
@@ -309,7 +310,7 @@ internal sealed class PlayerWindow : Window
                 catch (NotSupportedException) { backend.Text = "Windows media services · installed codecs"; }
             }
             else backend.Text = "Windows media services · installed codecs";
-            if (version != generation) return; token.ThrowIfCancellationRequested(); activeTemporaryMedia = temporaryMedia.Contains(source) ? source : null; CleanupTemporaryMedia(); activeNativeRequest = true; movie.Source = new Uri(source); movie.Volume = volume.Value; movie.SpeedRatio = rate; nativeLoadClock.Restart(); movie.Play(); playing = true;
+            if (version != generation) return; token.ThrowIfCancellationRequested(); activeTemporaryMedia = temporaryMedia.Contains(source) ? source : null; CleanupTemporaryMedia(); if (!File.Exists(source)) throw new FileNotFoundException("The prepared media file is unavailable."); activeNativeRequest = true; movie.Source = new Uri(source); movie.Volume = volume.Value; movie.SpeedRatio = rate; nativeLoadClock.Restart(); movie.Play(); playing = true;
         }
         catch (OperationCanceledException) { }
         catch (Exception e) { if (version == generation) Fail(e.Message); }
@@ -345,9 +346,12 @@ internal sealed class PlayerWindow : Window
         {
             if (!Active()) return;
             lastNativeError = unchecked((uint)e.ErrorException.GetBaseException().HResult);
+            lastNativeSourceExisted = element.Source is { IsFile: true } uri ? File.Exists(uri.LocalPath) : null;
             Fail(lastNativeError == NativeAudio.HardwareProblem
                 ? "Windows could not open an audio output device. Connect or enable speakers or headphones, then reopen the file."
-                : "Windows could not play this file. Its codec may be unavailable. " + e.ErrorException.Message + (nativeFailureContext is null ? "" : " · " + nativeFailureContext));
+                : lastNativeError == 0xC00D1197 && lastNativeSourceExisted == true
+                    ? "Windows found the file but could not open its media stream. The installed playback components may not support its codec or profile. (C00D1197)"
+                    : "Windows could not play this file. Its codec may be unavailable. " + e.ErrorException.Message + (nativeFailureContext is null ? "" : " · " + nativeFailureContext));
         };
     }
     void CleanupTemporaryMedia()
@@ -651,7 +655,7 @@ internal sealed class PlayerWindow : Window
             if(lastError is null&&movie.NaturalVideoWidth>0&&duration>0)
             { Pause();Seek(duration/2);Play();await Task.Delay(250);Check(CurrentTime>duration/2,"HEVC seek did not resume");Pause();hevcRoutes[depth]="passed";Console.WriteLine("PASS: HEVC"+depth+" MKV native Windows playback and seek"); }
             else
-            { hevcRoutes[depth]="unverified-native-playback-error";Console.WriteLine("UNVERIFIED: HEVC"+depth+" native Windows decode failed; original packet/config/remux checks are separate. HRESULT="+(lastNativeError?.ToString("X8")??"unknown")+" "+lastError); }
+            { Check(lastNativeSourceExisted==true,"HEVC temporary source disappeared before the native error");hevcRoutes[depth]="unverified-native-playback-error";Console.WriteLine("UNVERIFIED: HEVC"+depth+" native Windows decode failed while the prepared file still existed; original packet/config/remux checks are separate. HRESULT="+(lastNativeError?.ToString("X8")??"unknown")+" "+lastError); }
         }
         var originalAudio = "passed";
         foreach (var audioFile in new[] { Path.Combine(fixtures,"Luma-Silence.flac"), Path.Combine(fixtures,"Luma-MSADPCM.wav"), Path.Combine(generated,"Luma-Windows-Tone.aiff"), Path.Combine(generated,"Luma-Windows-Tone.au") })
