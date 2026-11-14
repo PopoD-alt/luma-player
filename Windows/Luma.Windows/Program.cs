@@ -1,5 +1,6 @@
 using System.Windows;
 using System.IO;
+using System.Text.Json;
 
 namespace Luma.WindowsApp;
 internal static class Program
@@ -7,6 +8,11 @@ internal static class Program
     [STAThread]
     static int Main(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--media-probe")
+        {
+            try { var result = MediaFoundationProbe.ProbeAsync(Path.GetFullPath(args[1])).GetAwaiter().GetResult(); Console.WriteLine(JsonSerializer.Serialize(result,new JsonSerializerOptions{WriteIndented=true}));return 0; }
+            catch(Exception e) { Console.Error.WriteLine(e.Message);return 1; }
+        }
         var smoke = args.Length == 3 && args[0] == "--smoke-test";
         var temporary = smoke ? Path.Combine(Path.GetTempPath(), "Luma-review-" + Guid.NewGuid().ToString("N")) : null;
         try

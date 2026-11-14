@@ -159,7 +159,7 @@ function Invoke-VisualSmoke([string]$Executable) {
             $results['originalAudio'] -cnotin @('passed', 'unverified-no-active-render-endpoint')) {
             throw 'Native smoke results contain an unsuccessful or unknown playback status.'
         }
-        foreach ($required in @('matroskaAvc', 'matroskaBframes', 'embeddedCaptions', 'lifecycleRecovery')) {
+        foreach ($required in @('modernRenderer', 'sourceReaderAvc', 'aac51Decode', 'matroskaAvc', 'matroskaBframes', 'embeddedCaptions', 'lifecycleRecovery')) {
             if (-not $results.Contains($required) -or $results[$required] -cne 'passed') {
                 throw "Native Windows smoke is missing required passed verification: $required."
             }

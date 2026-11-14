@@ -38,7 +38,7 @@ jobs:
         with:
           dotnet-version: '10.0.404'
       - name: Test, publish and exercise native Windows window
-        run: ./build.ps1 -Configuration Release -SmokeTimeoutSeconds 180
+        run: ./build.ps1 -Configuration Release -SmokeTimeoutSeconds 300
       - name: Upload review ZIP and smoke evidence
         if: always()
         uses: actions/upload-artifact@v7

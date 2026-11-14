@@ -16,6 +16,9 @@ internal static class Program
             IsoMediaTests.Run(root);
             NativePacketFixtures.Run(root);
             RemuxIntegrationTests.Run(root);
+            Mp4InspectionTests.Run(root);
+            HevcIssueFixtures.Run(root);
+            HevcNormalizationTests.Run(root);
             Console.WriteLine("PASS: portable Windows core suites completed");
             return 0;
         }

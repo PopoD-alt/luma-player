@@ -36,7 +36,7 @@ public static class IsoMediaMuxer
     /// coded order; CTS offsets fit signed32-bit nanoseconds. The earliest PTS
     /// becomes movie time0. Per-track edit lists retain relative starts and map
     /// composition media time to that common origin. minPTS must be >= firstDTS.
-    /// Currently accepts AVC/HEVC plus mono/stereo AAC-LC at7350–64000Hz; HE/SBR,
+    /// Currently accepts AVC/HEVC plus mono/stereo/5.1 AAC-LC at7350–64000Hz; HE/SBR,
     /// PS, PCE/core-coder extensions and encrypted samples are not implemented.
     /// Every input is validated before the first output byte is written.
     /// </summary>
@@ -301,10 +301,10 @@ public static class IsoMediaMuxer
         if(aot!=2)throw new NotSupportedException("MP4 AAC passthrough currently supports AAC-LC only; HE-AAC/SBR/PS are not implemented.");
         int index=bits.Read(4);int[] rates=[96000,88200,64000,48000,44100,32000,24000,22050,16000,12000,11025,8000,7350];
         int rate=index==15?bits.Read(24):index<rates.Length?rates[index]:throw new InvalidDataException("Reserved AAC frequency index.");
-        int channels=bits.Read(4);_ = bits.Read(1);
+        int channels=bits.Read(4);if(bits.Read(1)!=0)throw new NotSupportedException("AAC960-sample frames are not implemented.");
         if(bits.Read(1)!=0 || bits.Read(1)!=0)throw new NotSupportedException("AAC core-coder/GA extensions are not implemented.");
         while(bits.Remaining>0)if(bits.Read(1)!=0)throw new NotSupportedException("AAC sync SBR/PS or unknown extension is not implemented.");
-        if(channels is not(1 or 2) || rate is <7350 or >64000)throw new NotSupportedException("AAC passthrough requires mono/stereo7350–64000Hz.");
+        if(channels is not(1 or 2 or 6) || rate is <7350 or >64000)throw new NotSupportedException("AAC passthrough requires mono/stereo/5.1 at7350–64000Hz.");
         if(track.Channels!=channels || track.SampleRate!=rate)throw new InvalidDataException("AAC track metadata differs from AudioSpecificConfig.");
     }
     private ref struct ConfigBits(ReadOnlySpan<byte> data)

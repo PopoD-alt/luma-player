@@ -1,0 +1,24 @@
+{
+  "source": "Original procedural test media; no third-party movie content",
+  "video": {
+    "codec": "HEVC",
+    "sampleEntry": "hev1",
+    "profile": "Main10",
+    "bits": 10,
+    "width": 1920,
+    "height": 804,
+    "framesPerSecond": 25,
+    "frames": 50,
+    "color": "BT.709",
+    "encoder": "Apple VideoToolbox via AVAssetWriter"
+  },
+  "audio": {
+    "codec": "AAC-LC",
+    "rate": 48000,
+    "channels": 6,
+    "content": "Original zero-spectral-band silence; SCE+CPE+CPE+LFE raw_data_blocks",
+    "scope": "One silent conformance fixture, not general non-silent AAC or audible speaker proof"
+  },
+  "generator": "Windows/Validation/GenerateHevcCase.swift + Windows/Luma.Core.Tests/HevcIssueFixtures.cs; hvc1 sample entry changed to legal hev1 alias without changing compressed data",
+  "sha256": "520adacc7d8460bb6f27571afea27ee413c46c99914d9dffeea16a93c1990612"
+}

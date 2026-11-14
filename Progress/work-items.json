@@ -78,7 +78,7 @@
       "category": "Container",
       "implementation": "Original container code + system decoding",
       "stage": "verification",
-      "detail": "Own bounded EBML demux/ISO mux, rational B-frame timeline, AAC-LC selection/audio-off and embedded readable captions implemented. Windows AVC MKV/B-frames/captions pass. Independent decode exactly matched AVC360, B-frameAVC360 and HEVC8/10×60 frames; AAC relative start within25ms.",
+      "detail": "Own bounded EBML demux/ISO mux, rational B-frame timeline, AAC-LC selection/audio-off and embedded readable captions implemented. Windows AVC MKV/B-frames/captions pass. Independent decode exactly matched AVC360, B-frameAVC360 and HEVC8/10\u00d760 frames; AAC relative start within25ms.",
       "next": "Resolve Windows HEVC native playback; real-device AAC/A/V, more audio mappings, large/streaming MKV, advanced ASS and PGS remain.",
       "source": "Windows/Luma.Core/Containers/MatroskaRemuxer.cs",
       "check": "windows-remux"
@@ -92,6 +92,17 @@
       "detail": "Media request instance/generation guards, caption request revisions, 30-second native-open timeout, retry from Play, Escape cancellation, worker cleanup and audio-switch origin adjustment implemented.",
       "next": "Broaden target PCs, GPUs, simultaneous opens and fault/device scenarios; keep hardware audio verification separate.",
       "source": "Windows/Luma.Windows/PlayerWindow.cs",
+      "check": "windows-native"
+    },
+    {
+      "id": "windows-hevc-mp4",
+      "name": "Windows HEVC / AAC 5.1 MP4 compatibility",
+      "category": "Container",
+      "implementation": "Original container code + Windows facilities",
+      "stage": "verification",
+      "detail": "Modern Media Foundation HWND playback, per-stream decoder diagnostics, effective AAC channel inspection, MP4 text captions and conservative hev1-to-hvc1 compatibility copies implemented. Original Main10/1920x804/25fps/AAC48k6ch fixture added; compressed HEVC/AAC decoding remains system-provided.",
+      "next": "Require actual native AVC rendered frames and AAC six-channel PCM in Windows CI; retain explicit unverified HEVC and physical speaker results until positive evidence.",
+      "source": "Windows/Luma.Windows/MediaFoundationPlayer.cs",
       "check": "windows-native"
     },
     {

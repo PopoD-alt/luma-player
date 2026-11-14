@@ -13,7 +13,7 @@
     },
     {
       "id": "g711",
-      "name": "G.711 A-law / μ-law",
+      "name": "G.711 A-law / \u03bc-law",
       "category": "Audio",
       "status": "independent",
       "coverage": "Original exact sample reconstruction in supported WAVE, AIFC and AU carriers. Decoded output is16-bit PCM; audible Windows device output remains a separate check.",
@@ -32,7 +32,7 @@
       "name": "Native FLAC",
       "category": "Audio",
       "status": "independent",
-      "coverage": "Original native fLaC reconstruction,4–32-bit samples and up to eight channels;42 exact goldens including CRC/MD5. Bounded whole-file decoding. Ogg/MP4/Matroska FLAC is not implemented.",
+      "coverage": "Original native fLaC reconstruction,4\u201332-bit samples and up to eight channels;42 exact goldens including CRC/MD5. Bounded whole-file decoding. Ogg/MP4/Matroska FLAC is not implemented.",
       "reference": "Windows/Luma.Core/Audio/FlacDecoder.cs"
     },
     {
@@ -72,7 +72,7 @@
       "name": "Matroska AVC / HEVC + AAC-LC remux",
       "category": "Container",
       "status": "experimental",
-      "coverage": "Original EBML demux and MP4 remux, one AVC/HEVC video, selectable mono/stereo AAC-LC or audio off, and embedded plain text.512MiB/500,000 packets, known-size Clusters, bounded CFR reordering only. Independent macOS decode matched360 AVC frames,360 reordered AVC frames and60 frames each for HEVC8/10; AAC relative start was within25ms. Check the exact Windows artifact for native playback results.",
+      "coverage": "Original EBML demux and MP4 remux, one AVC/HEVC video, selectable mono/stereo/5.1 AAC-LC or audio off, and embedded plain text.512MiB/500,000 packets, known-size Clusters, bounded CFR reordering only. Independent macOS decode matched360 AVC frames,360 reordered AVC frames and60 frames each for HEVC8/10; AAC relative start was within25ms. Check the exact Windows artifact for native playback results.",
       "reference": "Windows/Luma.Core/Containers/MatroskaRemuxer.cs"
     },
     {
@@ -80,7 +80,7 @@
       "name": "HEVC / H.265 container path",
       "category": "Video",
       "status": "experimental",
-      "coverage": "Original bounded HEVC configuration/packet handling and Matroska-to-MP4 muxing; compressed decoding uses installed Windows facilities. Native Windows HEVC playback is unverified, including Main10/HDR; this is not an original HEVC decoder.",
+      "coverage": "Original bounded HEVC configuration/packet handling, Matroska-to-MP4 muxing and validated hev1-to-hvc1 compatibility copies. Modern Media Foundation performs compressed decoding; installed Windows HEVC support is required. Native HEVC playback remains unverified, including Main10/HDR; this is not an original HEVC decoder.",
       "reference": "Windows/Luma.Core/Containers/IsoMediaMuxer.cs"
     },
     {
@@ -200,7 +200,7 @@
       "name": "AAC-LC container path",
       "category": "Audio",
       "status": "experimental",
-      "coverage": "Original AAC-LC configuration/timing and Matroska-to-MP4 remux, mono/stereo7350–64000Hz and1024-sample frames. HE-AAC/SBR/PS and other layouts rejected. Independent container/audio-offset verification is not Windows audible-output proof; no original AAC compressed decoder.",
+      "coverage": "Original AAC-LC configuration/timing and Matroska-to-MP4 remux, mono/stereo/5.1 at7350\u201364000Hz with1024-sample frames. Effective MP4 channels read from ASC. HE-AAC/SBR/PS and other layouts rejected. Authored silent6ch48k fixture decoded independently on macOS; native Windows PCM results and physical output are separate evidence. No original general AAC decoder.",
       "reference": "Windows/Luma.Core/Containers/MatroskaTimeline.cs"
     },
     {
@@ -216,7 +216,7 @@
       "name": "AIFF / AIFC",
       "category": "Audio",
       "status": "independent",
-      "coverage": "Original signed PCM8/16/24/32 with NONE/twos/sowt and AIFC A-law/μ-law. Exact byte/endian/sample tests, SSND offsets/block tail, strict integer80-bit Hz and valid AIFC FVER. CAF is tracked separately.",
+      "coverage": "Original signed PCM8/16/24/32 with NONE/twos/sowt and AIFC A-law/\u03bc-law. Exact byte/endian/sample tests, SSND offsets/block tail, strict integer80-bit Hz and valid AIFC FVER. CAF is tracked separately.",
       "reference": "Windows/Luma.Core/Audio/PcmContainerDecoder.cs"
     },
     {
@@ -277,7 +277,7 @@
     },
     {
       "id": "ape",
-      "name": "Monkey’s Audio / APE",
+      "name": "Monkey\u2019s Audio / APE",
       "category": "Audio",
       "status": "unimplemented",
       "coverage": "No original Windows implementation or verified native Windows playback route. No VLC-equivalent support claim.",
@@ -376,7 +376,7 @@
       "name": "AU / SND",
       "category": "Audio",
       "status": "independent",
-      "coverage": "Original Sun AU signed PCM8/16/24/32 and G.711 A-law/μ-law. Exact samples, big-endian channels, annotations and unknown-size payloads tested; float/other compressed encodings rejected.",
+      "coverage": "Original Sun AU signed PCM8/16/24/32 and G.711 A-law/\u03bc-law. Exact samples, big-endian channels, annotations and unknown-size payloads tested; float/other compressed encodings rejected.",
       "reference": "Windows/Luma.Core/Audio/PcmContainerDecoder.cs"
     },
     {
