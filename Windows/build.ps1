@@ -145,6 +145,31 @@ function Invoke-VisualSmoke([string]$Executable) {
         if (@(Get-ChildItem -LiteralPath $smokeRoot -Filter '*.png' -File -Recurse).Count -eq 0) {
             throw 'Visual smoke exited successfully but produced no review PNG.'
         }
+        $resultsPath = Join-Path $smokeRoot 'smoke-results.json'
+        if (-not (Test-Path -LiteralPath $resultsPath -PathType Leaf)) {
+            throw 'Native smoke exited successfully but produced no smoke-results.json.'
+        }
+        $results = Get-Content -LiteralPath $resultsPath -Raw | ConvertFrom-Json -AsHashtable
+        if ($results -isnot [System.Collections.IDictionary] -or
+            -not $results.Contains('nativeMp4') -or -not $results.Contains('originalAudio') -or
+            -not $results.Contains('activeAudioRenderEndpoints')) {
+            throw 'Native smoke results are missing required verification fields.'
+        }
+        if ($results['nativeMp4'] -cne 'passed' -or
+            $results['originalAudio'] -cnotin @('passed', 'unverified-no-active-render-endpoint')) {
+            throw 'Native smoke results contain an unsuccessful or unknown playback status.'
+        }
+        $endpoints = $results['activeAudioRenderEndpoints']
+        if ($null -ne $endpoints -and
+            (($endpoints -isnot [int] -and $endpoints -isnot [long] -and $endpoints -isnot [uint32] -and $endpoints -isnot [uint64]) -or
+             $endpoints -lt 0 -or $endpoints -gt [uint32]::MaxValue)) {
+            throw 'Native smoke active render endpoint count must be an unsigned 32-bit integer or null.'
+        }
+        if ($results['originalAudio'] -ceq 'unverified-no-active-render-endpoint' -and
+            ($null -eq $endpoints -or $endpoints -ne 0)) {
+            throw 'Unverified audio hardware status requires an observed zero active render endpoints.'
+        }
+        return $results
     }
     finally { $process.Dispose() }
 }
@@ -186,11 +211,11 @@ try {
     }
     $executable = Join-Path $publishRoot 'Luma Player.exe'
     if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) { throw 'The published WPF executable is missing.' }
-    Invoke-VisualSmoke $executable
+    $smokeResults = Invoke-VisualSmoke $executable
     $metadata = [ordered]@{
         distribution = 'unsigned-windows-review'; sdk = $actualSdk; runtimeIdentifier = 'win-x64'; configuration = $Configuration
         commit = $env:GITHUB_SHA; operatingSystem = [Environment]::OSVersion.VersionString
-        coreTestsPassed = $true; visualSmokePassed = $true; runtimePackages = $runtimePackages
+        coreTestsPassed = $true; visualSmokePassed = $true; smokeResults = $smokeResults; runtimePackages = $runtimePackages
         createdUtc = [DateTime]::UtcNow.ToString('o')
     }
     $metadata | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $publishRoot 'BUILD-INFO.json') -Encoding utf8

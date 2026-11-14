@@ -54,6 +54,7 @@ internal sealed class PlayerWindow : Window
     readonly CancellationTokenSource lifetimeCancellation = new();
     List<SubtitleCue> cues = [];
     string? lastError;
+    uint? lastNativeError;
     WindowsUpdateConfig? updateConfig;
     WindowsRelease? pendingUpdate;
     int currentBuild = 1, generation, visualRevision, lastFrame = -1, repeatMode;
@@ -71,7 +72,14 @@ internal sealed class PlayerWindow : Window
         SetupStyles(); SetTheme(true);
         Content = BuildLayout(); RefreshQueue();
         movie.MediaOpened += (_, _) => NativeOpened();
-        movie.MediaFailed += (_, e) => { if (original is null && !closing) Fail("Windows could not play this file. Its codec may be unavailable. " + e.ErrorException.Message); };
+        movie.MediaFailed += (_, e) =>
+        {
+            if (original is not null || closing) return;
+            lastNativeError = unchecked((uint)e.ErrorException.GetBaseException().HResult);
+            Fail(lastNativeError == NativeAudio.HardwareProblem
+                ? "Windows could not open an audio output device. Connect or enable speakers or headphones, then reopen the file."
+                : "Windows could not play this file. Its codec may be unavailable. " + e.ErrorException.Message);
+        };
         movie.MediaEnded += (_, _) => Ended();
         timer.Tick += async (_, _) => await TickAsync(); timer.Start();
         updateTimer.Tick += async (_, _) => await PollUpdatesAsync(false); updateTimer.Start();
@@ -220,7 +228,7 @@ internal sealed class PlayerWindow : Window
     async Task LoadEntryAsync(MediaEntry entry)
     {
         SaveProgress(); loadCancellation.Cancel(); loadCancellation.Dispose(); loadCancellation = new(); var token = loadCancellation.Token; var version = ++generation;
-        movie.Close(); original = null; playing = false; opening = true; clock.Reset(); position = duration = 0; lastFrame = -1; visualRevision++; cues.Clear(); captions.Text = ""; image.Source = null; lastError = null;
+        movie.Close(); original = null; playing = false; opening = true; clock.Reset(); position = duration = 0; lastFrame = -1; visualRevision++; cues.Clear(); captions.Text = ""; image.Source = null; lastError = null; lastNativeError = null;
         current = entry; library.Data.SelectedId = entry.Id; pendingResume = entry.ResumeTime > 3 ? entry.ResumeTime : 0; RefreshQueue(); nowTitle.Text = entry.Title; empty.Visibility = Visibility.Visible; image.Visibility = Visibility.Collapsed; movie.Visibility = Visibility.Collapsed; backend.Text = "Opening…"; Notice("Opening " + entry.Title);
         try
         {
@@ -449,11 +457,20 @@ internal sealed class PlayerWindow : Window
             Check(captions.Text == SubtitleParser.At(cues, CurrentTime) && captions.Text.Length > 0, "Paused external caption was not displayed");
             Console.WriteLine("PASS: native Windows MP4 load, video dimensions, seek and resumed clock; paused external caption rendering");
         }
-        else Console.WriteLine("UNVERIFIED: Windows media-service MP4 route unavailable on this runner: " + lastError);
+        else throw new InvalidOperationException("Windows media-service MP4 route failed: " + lastError);
+        var activeAudioRenderEndpoints = NativeAudio.ActiveRenderEndpoints();
+        Console.WriteLine("INFO: active Core Audio render endpoints: " + (activeAudioRenderEndpoints?.ToString() ?? "unknown (probe failed)"));
+        var originalAudio = "passed";
         foreach (var audioFile in new[] { "Luma-Silence.flac", "Luma-MSADPCM.wav" })
         {
             var entry = library.Add([Path.Combine(fixtures, audioFile)]).Single(); await LoadEntryAsync(entry);
             await Until(() => !opening || lastError is not null, "Original decoded audio output", 20000);
+            if (lastNativeError == NativeAudio.HardwareProblem && activeAudioRenderEndpoints == 0)
+            {
+                originalAudio = "unverified-no-active-render-endpoint";
+                Console.WriteLine("UNVERIFIED: original " + audioFile + " audio output: NS_E_WMP_AUDIO_HW_PROBLEM and zero active Core Audio render endpoints. Exact decoded samples are checked separately by the core suites.");
+                continue;
+            }
             Check(lastError is null && duration > 1 && (backend.Text.Contains("FLAC", StringComparison.OrdinalIgnoreCase) || backend.Text.Contains("ADPCM", StringComparison.OrdinalIgnoreCase)), "Original audio did not reach Windows output: " + lastError);
             Pause(); Seek(duration / 2); speed.SelectedIndex = 2; volume.Value = .25; Play(); await Task.Delay(300);
             Check(CurrentTime > duration / 2 && movie.SpeedRatio == 1.25 && movie.Volume == .25, "Original audio transport did not retain seek/rate/volume"); Pause(); speed.SelectedIndex = 1;
@@ -473,5 +490,6 @@ internal sealed class PlayerWindow : Window
             Console.WriteLine("PASS: saved selected queue item starts and resumes on relaunch; reimporting it reuses the existing entry");
         }
         finally { restored.Close(); }
+        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { nativeMp4 = "passed", originalAudio, activeAudioRenderEndpoints }, new JsonSerializerOptions { WriteIndented = true }));
     }
 }
