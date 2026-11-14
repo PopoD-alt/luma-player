@@ -1,0 +1,51 @@
+name: Prepare reviewed release
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_sha:
+        description: Full 40-character commit SHA you personally reviewed
+        required: true
+        type: string
+      approve_packaging:
+        description: I have reviewed this commit and approve packaging it
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: luma-release
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: inputs.approve_packaging
+    # Only trusted, manually approved source runs on this signing machine.
+    runs-on: [self-hosted, macOS, ARM64, luma-release]
+    environment: production-review
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.reviewed_sha }}
+          persist-credentials: false
+      - name: Verify reviewed source
+        env:
+          REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$REVIEWED_SHA"
+          python3 Scripts/release.py doctor
+      - name: Validate and prepare notarized DMG locally
+        env:
+          REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+          SIGNING_IDENTITY: ${{ vars.DEVELOPER_ID_APPLICATION }}
+          NOTARY_PROFILE: ${{ vars.NOTARYTOOL_PROFILE }}
+        run: |
+          bash test-fullscreen.sh
+          python3 Scripts/release.py prepare --reviewed-sha "$REVIEWED_SHA" --notes RELEASE_NOTES.md --identity "$SIGNING_IDENTITY" --notary-profile "$NOTARY_PROFILE"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reviewed-dmg-release
+          path: build/releases/
+          if-no-files-found: error
+          retention-days: 7
+# Publication is intentionally a separate owner action. No repository-write
+# token or release-signing private key is stored in this workflow.

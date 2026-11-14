@@ -1,0 +1,17 @@
+{
+  "bitmapHeight" : 28,
+  "bitmapWidth" : 92,
+  "bytes" : 1189,
+  "canvasHeight" : 1080,
+  "canvasWidth" : 1920,
+  "clearTime" : 4,
+  "codec" : "HDMV PGS",
+  "displayTimes" : [
+    1,
+    2.5
+  ],
+  "expectedEvents" : 3,
+  "origin" : "Original generated LUMA 5x7 bitmap letterforms, scaled 4x; no downloaded or user content",
+  "x" : 914,
+  "y" : 940
+}

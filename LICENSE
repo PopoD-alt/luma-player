@@ -1,0 +1,25 @@
+Luma Player license
+
+Copyright (c) 2026 sdas. All rights reserved.
+
+Official binaries
+
+You may download, install and use official Luma Player binary releases at no
+charge. This permission does not transfer ownership of the app or its source.
+
+Source code
+
+The source is published for inspection. No general license to modify,
+redistribute, sublicense, or sell this source code or derived versions is granted
+without written permission from sdas, except for rights required by applicable
+law or the terms of the hosting platform. This is not an open-source license.
+
+Warranty
+
+To the extent permitted by applicable law, the software is provided as is,
+without warranties of any kind. The copyright holder is not liable for claims
+or damages arising from use of the software. Nothing here limits rights or
+liabilities that cannot lawfully be limited.
+
+Apple system frameworks retain their respective ownership and terms. This
+source tree does not include VLC, FFmpeg, or Sparkle implementation code.

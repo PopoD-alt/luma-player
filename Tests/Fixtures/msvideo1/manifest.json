@@ -1,0 +1,218 @@
+{
+  "width": 64,
+  "height": 48,
+  "palette": [
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      255,
+      0,
+      0
+    ],
+    [
+      0,
+      255,
+      0
+    ],
+    [
+      0,
+      0,
+      255
+    ],
+    [
+      255,
+      255,
+      255
+    ],
+    [
+      255,
+      255,
+      0
+    ],
+    [
+      255,
+      0,
+      255
+    ],
+    [
+      0,
+      255,
+      255
+    ],
+    [
+      132,
+      66,
+      33
+    ],
+    [
+      33,
+      132,
+      66
+    ],
+    [
+      66,
+      33,
+      132
+    ],
+    [
+      82,
+      165,
+      247
+    ],
+    [
+      247,
+      82,
+      165
+    ],
+    [
+      165,
+      247,
+      82
+    ],
+    [
+      99,
+      99,
+      99
+    ],
+    [
+      198,
+      198,
+      198
+    ]
+  ],
+  "streams": [
+    {
+      "bitDepth": 8,
+      "frames": [
+        {
+          "packet": "8-frame-00.msv1",
+          "rgba": "8-frame-00.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "8-frame-01.msv1",
+          "rgba": "8-frame-01.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "8-frame-02.msv1",
+          "rgba": "8-frame-02.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "8-frame-03.msv1",
+          "rgba": "8-frame-03.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "8-frame-04.msv1",
+          "rgba": "8-frame-04.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "8-frame-05.msv1",
+          "rgba": "8-frame-05.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "8-frame-06.msv1",
+          "rgba": "8-frame-06.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "8-frame-07.msv1",
+          "rgba": "8-frame-07.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "8-frame-08.msv1",
+          "rgba": "8-frame-08.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "8-frame-09.msv1",
+          "rgba": "8-frame-09.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "8-frame-10.msv1",
+          "rgba": "8-frame-10.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "8-frame-11.msv1",
+          "rgba": "8-frame-11.rgba",
+          "keyframe": false
+        }
+      ]
+    },
+    {
+      "bitDepth": 16,
+      "frames": [
+        {
+          "packet": "16-frame-00.msv1",
+          "rgba": "16-frame-00.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "16-frame-01.msv1",
+          "rgba": "16-frame-01.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "16-frame-02.msv1",
+          "rgba": "16-frame-02.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "16-frame-03.msv1",
+          "rgba": "16-frame-03.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "16-frame-04.msv1",
+          "rgba": "16-frame-04.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "16-frame-05.msv1",
+          "rgba": "16-frame-05.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "16-frame-06.msv1",
+          "rgba": "16-frame-06.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "16-frame-07.msv1",
+          "rgba": "16-frame-07.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "16-frame-08.msv1",
+          "rgba": "16-frame-08.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "16-frame-09.msv1",
+          "rgba": "16-frame-09.rgba",
+          "keyframe": true
+        },
+        {
+          "packet": "16-frame-10.msv1",
+          "rgba": "16-frame-10.rgba",
+          "keyframe": false
+        },
+        {
+          "packet": "16-frame-11.msv1",
+          "rgba": "16-frame-11.rgba",
+          "keyframe": false
+        }
+      ]
+    }
+  ]
+}

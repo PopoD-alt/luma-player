@@ -1,0 +1,374 @@
+{
+  "scope": "Major codec/container families, not an exhaustive list of VLC profiles. Plugin presence is not proof of playback.",
+  "vlcReference": "Installed VLC3.0.23 and VideoLAN feature documentation",
+  "entries": [
+    {
+      "id": "pcm",
+      "name": "PCM WAVE",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Integer 8/16/24/32-bit input; normalized to16-bit output.",
+      "reference": "Sources/OriginalCodecs.swift"
+    },
+    {
+      "id": "g711",
+      "name": "G.711 A-law / \u03bc-law",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "WAVE carriers; known sample-value tests.",
+      "reference": "Sources/OriginalCodecs.swift"
+    },
+    {
+      "id": "ima",
+      "name": "IMA ADPCM",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Mono/stereo WAVE blocks; no generic ADPCM-family claim.",
+      "reference": "Sources/OriginalCodecs.swift"
+    },
+    {
+      "id": "flac",
+      "name": "FLAC",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original full-file native fLaC decoder, with fixed/LPC/Rice/stereo/checksum checks. Matroska FLAC uses original frame handling and macOS decoding; native MOV/PCM sample counts tested.",
+      "reference": "Sources/OriginalFLAC.swift"
+    },
+    {
+      "id": "rgb",
+      "name": "RGB AVI",
+      "category": "Video",
+      "status": "independent",
+      "coverage": "Uncompressed24/32-bit frames; video only.",
+      "reference": "Sources/OriginalCodecs.swift"
+    },
+    {
+      "id": "rle8",
+      "name": "RLE8 AVI",
+      "category": "Video",
+      "status": "independent",
+      "coverage": "Complete palette keyframes only; no delta/partial frames. Video only.",
+      "reference": "Sources/OriginalCodecs.swift"
+    },
+    {
+      "id": "mjpeg",
+      "name": "Baseline MJPEG AVI",
+      "category": "Video",
+      "status": "experimental",
+      "coverage": "Original8-bit sequential Huffman JPEG; explicit tables required. No progressive, arithmetic, missing-DHT or interlaced fields. Video only.",
+      "reference": "Sources/OriginalJPEG.swift"
+    },
+    {
+      "id": "avc",
+      "name": "H.264 / AVC in MP4/MOV",
+      "category": "Video",
+      "status": "system",
+      "coverage": "Compatible local files use macOS decoding; not an independently written H.264 decoder.",
+      "reference": "Sources/PlaybackEngine.swift"
+    },
+    {
+      "id": "mkv",
+      "name": "Matroska AVC / HEVC and audio",
+      "category": "Container",
+      "status": "experimental",
+      "coverage": "Original demux/remux with macOS decoding. Tested AVC/HEVC Main10, alternate audio, AAC-LC/HE-AAC, MP3/FLAC/PCM, limited Opus, original text and PGS bitmap subtitles. Reordered video needs a complete CFR timeline; ASS styling remains limited.",
+      "reference": "Sources/MatroskaRemuxer.swift"
+    },
+    {
+      "id": "hevc",
+      "name": "HEVC / H.265",
+      "category": "Video",
+      "status": "system",
+      "coverage": "Matroska and compatible MOV/MP4 use macOS decoding. Native 8/10-bit fixtures and a Main10 1080p file tested. Hardware, profile and carrier limits still apply; no independent HEVC decoder.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "av1",
+      "name": "AV1",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "vp9",
+      "name": "VP9",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "vp8",
+      "name": "VP8",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "mpeg12",
+      "name": "MPEG-1 / MPEG-2 video",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "mpeg4part2",
+      "name": "MPEG-4 Part2 / DivX / Xvid",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "wmv",
+      "name": "WMV / VC-1",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "realvideo",
+      "name": "RealVideo",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "theora",
+      "name": "Theora",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "dirac",
+      "name": "Dirac",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "dv",
+      "name": "DV",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "prores",
+      "name": "ProRes",
+      "category": "Video",
+      "status": "system",
+      "coverage": "Six standard ProRes profiles in MOV passed native pixel decode, seek comparison and actual player output. Generated 8-bit source only: no original ProRes decoder, RAW, high-bit-depth/alpha conformance or Matroska claim.",
+      "reference": "Tests/NativeFormatEvidence.swift"
+    },
+    {
+      "id": "jpeg2000",
+      "name": "JPEG2000",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "cinepak",
+      "name": "Cinepak / Indeo",
+      "category": "Video",
+      "status": "unimplemented",
+      "coverage": "No independently implemented decoder or verified playback route. Microsoft Video 1 is now tracked separately.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "mp3",
+      "name": "MP3",
+      "category": "Audio",
+      "status": "system",
+      "coverage": "macOS decoding, including original Matroska framing. Native synthetic MP3-to-MOV-to-PCM roundtrip tested. Free-format MP3 is not implemented.",
+      "reference": "Sources/PlaybackEngine.swift"
+    },
+    {
+      "id": "aac",
+      "name": "AAC",
+      "category": "Audio",
+      "status": "system",
+      "coverage": "Delegated to macOS where playable; codec/profile coverage is not exhaustively verified.",
+      "reference": "Sources/PlaybackEngine.swift"
+    },
+    {
+      "id": "alac",
+      "name": "ALAC",
+      "category": "Audio",
+      "status": "system",
+      "coverage": "Delegated to macOS where playable; codec/profile coverage is not exhaustively verified.",
+      "reference": "Sources/PlaybackEngine.swift"
+    },
+    {
+      "id": "aiff",
+      "name": "AIFF / CAF",
+      "category": "Audio",
+      "status": "system",
+      "coverage": "Delegated to macOS where playable; codec/profile coverage is not exhaustively verified.",
+      "reference": "Sources/PlaybackEngine.swift"
+    },
+    {
+      "id": "ac3",
+      "name": "AC-3 / E-AC-3",
+      "category": "Audio",
+      "status": "experimental",
+      "coverage": "Original AC-3/E-AC-3 header framing and Matroska pass-through to macOS. Header/timing checks pass; full payload playback remains unverified. Dependent E-AC-3 substreams are rejected.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "dts",
+      "name": "DTS / DTS-HD",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "truehd",
+      "name": "Dolby TrueHD / MLP",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "vorbis",
+      "name": "Vorbis",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "opus",
+      "name": "Opus",
+      "category": "Audio",
+      "status": "experimental",
+      "coverage": "Matroska Opus mapping family 0, mono/stereo with macOS decoding. Original header/TOC framing, pre-skip, positive tail padding and seek roll metadata; exact native sample counts and seeking tested. Nonzero header gain and other mapping families remain unsupported.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "speex",
+      "name": "Speex",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "wma",
+      "name": "WMA",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "ape",
+      "name": "Monkey\u2019s Audio / APE",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "wavpack",
+      "name": "WavPack",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "musepack",
+      "name": "Musepack",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "amr",
+      "name": "AMR / GSM",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "midi",
+      "name": "MIDI / tracker / game audio",
+      "category": "Audio",
+      "status": "unimplemented",
+      "coverage": "No independent decoder or verified playback route in this build.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "text",
+      "name": "SRT / WebVTT",
+      "category": "Subtitles",
+      "status": "independent",
+      "coverage": "Original external UTF-8 SRT/VTT and embedded Matroska UTF-8/WebVTT text rendering and timing. System embedded tracks remain selectable.",
+      "reference": "Sources/SubtitleCue.swift"
+    },
+    {
+      "id": "ass",
+      "name": "ASS / SSA",
+      "category": "Subtitles",
+      "status": "experimental",
+      "coverage": "Embedded Matroska ASS/SSA readable text, track selection and timing. Advanced fonts, positioning, styling, karaoke and drawings remain unsupported.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "legacy-bitmap-subtitles",
+      "name": "VobSub / DVB subtitles",
+      "category": "Subtitles",
+      "status": "unimplemented",
+      "coverage": "No independent renderer in this build. PGS is tracked separately.",
+      "reference": "https://images.videolan.org/vlc/features.html"
+    },
+    {
+      "id": "h263",
+      "name": "H.263 in MOV",
+      "category": "Video",
+      "status": "system",
+      "coverage": "Native MOV fixture passed pixel decode/seek comparison and actual player output. No MPEG-4 ASP, arbitrary carrier/profile or independently written H.263 decoder claim.",
+      "reference": "Tests/NativeFormatEvidence.swift"
+    },
+    {
+      "id": "msvideo1",
+      "name": "Microsoft Video 1 AVI",
+      "category": "Video",
+      "status": "independent",
+      "coverage": "Original 8-bit indexed / 16-bit RGB555 solid, two/eight-color and delta blocks, with exact random/concurrent AVI seeks. Video only; dimensions must be multiples of four. Dynamic AVI palette chunks, partial edges and top-down storage remain unsupported.",
+      "reference": "Sources/OriginalMSVideo1.swift"
+    },
+    {
+      "id": "msadpcm",
+      "name": "Microsoft ADPCM WAVE",
+      "category": "Audio",
+      "status": "independent",
+      "coverage": "Original WAVE tag 2 mono/stereo decoding with custom coefficient tables, clipping, fact trimming and complete-header partial final blocks. Exact sample goldens, native reference prefixes and actual player transport tested.",
+      "reference": "Sources/OriginalMSADPCM.swift"
+    },
+    {
+      "id": "pgs",
+      "name": "PGS bitmap subtitles",
+      "category": "Subtitles",
+      "status": "experimental",
+      "coverage": "Original bounded PGS palette, fragmented object, RLE, composition, crop/window and clear handling. Matroska bitmap track selection, placement, seeking, delay and resizing tested. Blu-ray demux/PES, 3D, HDR extensions and other bitmap formats remain unsupported.",
+      "reference": "Sources/OriginalPGS.swift"
+    }
+  ]
+}

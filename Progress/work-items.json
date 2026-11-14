@@ -1,0 +1,55 @@
+{
+  "baseline_build": "0.5.0",
+  "scope": "Tracked codec and format groups, not an exhaustive inventory of every VLC codec, profile, container or protocol.",
+  "items": [
+    {
+      "id": "msvideo1",
+      "catalog_id": "msvideo1",
+      "name": "Microsoft Video 1",
+      "category": "Video",
+      "implementation": "Original decoder",
+      "stage": "integrated",
+      "detail": "Original 8/16-bit decoder, delta frames and AVI checkpoint cache passed exact golden, malformed, concurrent seek and production video-output tests.",
+      "next": "Broaden palette-change and edge/orientation variants; obtain more independent conformance streams.",
+      "source": "Sources/OriginalMSVideo1.swift",
+      "check": "msvideo1"
+    },
+    {
+      "id": "pgs",
+      "catalog_id": "pgs",
+      "name": "PGS bitmap subtitles",
+      "category": "Subtitles",
+      "implementation": "Original decoder",
+      "stage": "integrated",
+      "detail": "Original decoder passed RLE/composition goldens and production Matroska bitmap placement, clear, selection, delay, backward seek and resize checks.",
+      "next": "Broaden real-stream conformance and extended profiles. VobSub/DVB remain separate missing implementations.",
+      "source": "Sources/OriginalPGS.swift",
+      "check": "pgs"
+    },
+    {
+      "id": "msadpcm",
+      "catalog_id": "msadpcm",
+      "name": "Microsoft ADPCM",
+      "category": "Audio",
+      "implementation": "Original decoder",
+      "stage": "integrated",
+      "detail": "Original WAVE tag 2 decoder passed exact goldens, native reference prefixes, PCM round-trips and production pause/seek/rate/volume transport checks.",
+      "next": "Broaden independent encoders and unusual block/coefficient edge cases.",
+      "source": "Sources/OriginalMSADPCM.swift",
+      "check": "ms-adpcm"
+    },
+    {
+      "id": "prores-native",
+      "catalog_id": "prores",
+      "name": "ProRes native playback verification",
+      "category": "Video",
+      "implementation": "macOS decoder",
+      "stage": "integrated",
+      "detail": "Six standard ProRes profiles and H.263 passed native pixel decode/seek comparison plus actual production player output and seek.",
+      "next": "Native routes only; high-bit-depth/alpha/RAW and other carriers remain unverified.",
+      "source": "Tests/NativeFormatEvidence.swift",
+      "check": "native-formats"
+    }
+  ],
+  "baseline_inventory_count": 42
+}

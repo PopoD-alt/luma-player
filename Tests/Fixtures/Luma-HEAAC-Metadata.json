@@ -1,0 +1,183 @@
+{
+  "commands" : [
+
+  ],
+  "encoder_configurations" : [
+    {
+      "file" : "Luma-HEAACv1.m4a",
+      "format" : "aach",
+      "requested_bitrate" : "48000",
+      "requested_channels" : "2",
+      "requested_sample_rate" : "48000"
+    },
+    {
+      "file" : "Luma-HEAACv2.m4a",
+      "format" : "aacp",
+      "requested_bitrate" : "32000",
+      "requested_channels" : "2",
+      "requested_sample_rate" : "48000"
+    }
+  ],
+  "fixtures" : [
+    {
+      "audio_specific_config_hex" : "131056e598",
+      "bytes" : 10712,
+      "default_asbd" : {
+        "bits_per_channel" : 0,
+        "bytes_per_frame" : 0,
+        "bytes_per_packet" : 0,
+        "channels" : 2,
+        "format_flags" : 0,
+        "format_id" : "aac ",
+        "frames_per_packet" : 1024,
+        "packet_duration_seconds" : 0.042666666666666665,
+        "sample_rate" : 24000
+      },
+      "file" : "Luma-HEAACv1.m4a",
+      "first_packets" : [
+        {
+          "byte_size" : 20,
+          "offset" : 0,
+          "variable_frames" : 0
+        },
+        {
+          "byte_size" : 126,
+          "offset" : 20,
+          "variable_frames" : 0
+        },
+        {
+          "byte_size" : 90,
+          "offset" : 146,
+          "variable_frames" : 0
+        },
+        {
+          "byte_size" : 82,
+          "offset" : 236,
+          "variable_frames" : 0
+        }
+      ],
+      "format_list" : [
+        {
+          "bits_per_channel" : 0,
+          "bytes_per_frame" : 0,
+          "bytes_per_packet" : 0,
+          "channel_layout_tag" : 6619138,
+          "channels" : 2,
+          "format_flags" : 0,
+          "format_id" : "aach",
+          "frames_per_packet" : 2048,
+          "packet_duration_seconds" : 0.042666666666666665,
+          "sample_rate" : 48000
+        },
+        {
+          "bits_per_channel" : 0,
+          "bytes_per_frame" : 0,
+          "bytes_per_packet" : 0,
+          "channel_layout_tag" : 6619138,
+          "channels" : 2,
+          "format_flags" : 0,
+          "format_id" : "aac ",
+          "frames_per_packet" : 1024,
+          "packet_duration_seconds" : 0.042666666666666665,
+          "sample_rate" : 24000
+        }
+      ],
+      "magic_cookie_hex" : "038080802500000004808080174014001800000043300000bb800580808005131056e598068080800102",
+      "notes" : "Default ASBD and packet-table frames describe the AAC core. HE format-list entries describe expanded output. A zero variable_frames field uses each selected ASBD's fixed frames_per_packet.",
+      "packet_count" : 73,
+      "packet_table" : {
+        "priming_frames" : 2112,
+        "remainder_frames" : 640,
+        "valid_frames" : 72000
+      }
+    },
+    {
+      "audio_specific_config_hex" : "130856e59d4880",
+      "bytes" : 11376,
+      "default_asbd" : {
+        "bits_per_channel" : 0,
+        "bytes_per_frame" : 0,
+        "bytes_per_packet" : 0,
+        "channels" : 1,
+        "format_flags" : 0,
+        "format_id" : "aac ",
+        "frames_per_packet" : 1024,
+        "packet_duration_seconds" : 0.042666666666666665,
+        "sample_rate" : 24000
+      },
+      "file" : "Luma-HEAACv2.m4a",
+      "first_packets" : [
+        {
+          "byte_size" : 26,
+          "offset" : 0,
+          "variable_frames" : 0
+        },
+        {
+          "byte_size" : 128,
+          "offset" : 26,
+          "variable_frames" : 0
+        },
+        {
+          "byte_size" : 119,
+          "offset" : 154,
+          "variable_frames" : 0
+        },
+        {
+          "byte_size" : 99,
+          "offset" : 273,
+          "variable_frames" : 0
+        }
+      ],
+      "format_list" : [
+        {
+          "bits_per_channel" : 0,
+          "bytes_per_frame" : 0,
+          "bytes_per_packet" : 0,
+          "channel_layout_tag" : 6619138,
+          "channels" : 2,
+          "format_flags" : 0,
+          "format_id" : "aacp",
+          "frames_per_packet" : 2048,
+          "packet_duration_seconds" : 0.042666666666666665,
+          "sample_rate" : 48000
+        },
+        {
+          "bits_per_channel" : 0,
+          "bytes_per_frame" : 0,
+          "bytes_per_packet" : 0,
+          "channel_layout_tag" : 6553601,
+          "channels" : 1,
+          "format_flags" : 0,
+          "format_id" : "aach",
+          "frames_per_packet" : 2048,
+          "packet_duration_seconds" : 0.042666666666666665,
+          "sample_rate" : 48000
+        },
+        {
+          "bits_per_channel" : 0,
+          "bytes_per_frame" : 0,
+          "bytes_per_packet" : 0,
+          "channel_layout_tag" : 6553601,
+          "channels" : 1,
+          "format_flags" : 0,
+          "format_id" : "aac ",
+          "frames_per_packet" : 1024,
+          "packet_duration_seconds" : 0.042666666666666665,
+          "sample_rate" : 24000
+        }
+      ],
+      "magic_cookie_hex" : "03808080270000000480808019401400180000004cf000007d000580808007130856e59d4880068080800102",
+      "notes" : "Default ASBD and packet-table frames describe the AAC core. HE format-list entries describe expanded output. A zero variable_frames field uses each selected ASBD's fixed frames_per_packet.",
+      "packet_count" : 73,
+      "packet_table" : {
+        "priming_frames" : 2112,
+        "remainder_frames" : 640,
+        "valid_frames" : 72000
+      }
+    }
+  ],
+  "generator" : "Tests\/GenerateHEAACFixture.swift",
+  "limitations" : "These native fixtures use backward-compatible AAC-LC ASC plus SBR\/PS sync extensions. They do not exercise explicit AOT5\/AOT29 configurations, 960-frame AAC, or arbitrary MPEG-4 profiles.",
+  "metadata_authority" : "AudioFileGetProperty(DataFormat, FormatList, MagicCookieData, PacketTableInfo), AudioFileReadPacketData",
+  "provenance" : "Original generated 3s\/48kHz\/16-bit mono 440Hz tone, faded, upmixed by Apple's afconvert to HE-AAC stereo. No user media, VLC, FFmpeg, or downloaded assets."
+}
