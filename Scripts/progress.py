@@ -26,7 +26,7 @@ CHECKS = {
     'matroska': 'test-matroska.sh', 'audio': 'test.sh', 'video': 'test-video.sh',
     'fullscreen': 'test-fullscreen.sh', 'opus': 'test-opus.sh',
     'hevc': 'test-hevc.sh', 'aac': 'test-aac.sh', 'updates': 'test-updates.sh',
-    'release-plan': 'test-release-plan.sh'
+    'release-plan': 'test-release-plan.sh', 'windows-core': 'test-windows-core.sh'
 }
 
 def now():
@@ -42,10 +42,16 @@ def atomic(path, content):
         temporary = Path(stream.name)
     temporary.replace(path)
 
-def digest():
+def digest(scope='macos'):
     result = hashlib.sha256()
-    for path in sorted((ROOT / 'Sources').glob('*.swift')):
-        result.update(path.name.encode()); result.update(path.read_bytes())
+    files = sorted((ROOT / 'Sources').glob('*.swift'))
+    if scope == 'windows':
+        files = sorted(path for path in (ROOT / 'Windows').rglob('*')
+                       if path.is_file() and path.suffix in {'.cs', '.csproj', '.props', '.json', '.manifest', '.ps1'}
+                       and not {'bin', 'obj', 'artifacts'}.intersection(path.relative_to(ROOT / 'Windows').parts))
+    for path in files:
+        name = str(path.relative_to(ROOT)) if scope == 'windows' else path.name
+        result.update(name.encode()); result.update(path.read_bytes())
     return result.hexdigest()
 
 def update_check(identifier, value):
@@ -71,7 +77,7 @@ def snapshot():
             except json.JSONDecodeError: pass
     source_digest = digest()
     for record in records.values():
-        record['matches_current_source'] = record.get('source_digest') == source_digest
+        record['matches_current_source'] = record.get('source_digest') == digest(record.get('source_scope', 'macos'))
     built = ROOT / 'build/Luma Player.app/Contents/Info.plist'
     version = plistlib.loads(built.read_bytes()).get('CFBundleShortVersionString') if built.exists() else None
     evidence = read(PROGRESS / 'native-format-evidence.json', {})
@@ -109,8 +115,9 @@ def run_check(identifier):
     started = time.monotonic()
     log = ROOT / 'build/progress-logs' / f'{identifier}-{time.time_ns()}.log'
     log.parent.mkdir(parents=True, exist_ok=True)
+    scope = 'windows' if identifier.startswith('windows-') else 'macos'
     record = {'id': identifier, 'script': script.name, 'started_at': now(), 'status': 'running',
-              'source_digest': digest(), 'log': str(log), 'summary': []}
+              'source_scope': scope, 'source_digest': digest(scope), 'log': str(log), 'summary': []}
     update_check(identifier, record); snapshot()
     try:
         with log.open('w') as stream:
@@ -123,8 +130,8 @@ def run_check(identifier):
     finally:
         record['finished_at'] = now(); record['duration_seconds'] = round(time.monotonic() - started, 2)
         lines = log.read_text(errors='replace').splitlines() if log.exists() else []
-        record['summary'] = [line[:500] for line in lines if line.startswith(('PASS', 'FAIL', 'NOT VERIFIED'))][-10:]
-        record['source_changed_during_check'] = record['source_digest'] != digest()
+        record['summary'] = [line[:500] for line in lines if line.startswith(('PASS', 'FAIL', 'NOT VERIFIED', 'UNVERIFIED'))][-10:]
+        record['source_changed_during_check'] = record['source_digest'] != digest(scope)
         update_check(identifier, record); snapshot()
     print(f'{identifier}: {record["status"]}; log: {log}')
     return record['exit_code']
@@ -133,7 +140,7 @@ CANVAS = r'''import { Stack, Row, Grid, H1, H2, Text, Pill, Stat, Card, CardHead
 
 type Entry = { id:string; name:string; status:string; category:string; coverage:string; reference:string };
 type Work = { id:string; name:string; implementation:string; stage:string; detail:string; next:string; source:string; source_exists:boolean };
-type Check = { id:string; status:string; started_at:string; duration_seconds?:number; log:string; matches_current_source:boolean; source_changed_during_check?:boolean };
+type Check = { id:string; status:string; started_at:string; duration_seconds?:number; log:string; matches_current_source:boolean; source_scope?:string; source_changed_during_check?:boolean };
 type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null };
 const snapshot = __SNAPSHOT__ as unknown as Snapshot;
 const names: Record<string,string> = { independent: "Luma decoder", system: "macOS route", experimental: "Partial", unimplemented: "Missing / unverified", unverified: "Unverified" };
@@ -166,7 +173,7 @@ export default function LumaCodecProgress() {
       <Stat value={count("experimental")} label="Partial support" tone="warning"/>
       <Stat value={count("unimplemented")+count("unverified")} label="Missing or unverified"/>
     </Grid>
-    <Text size="small" tone="tertiary">Working-tree catalog · {entries.length} groups · snapshot {date(snapshot.generated_at)} · review app {snapshot.built_version ?? "not built"}. Refreshed when local progress is recorded; this is not a background worker.</Text>
+    <Text size="small" tone="tertiary">macOS working-tree format catalog · {entries.length} groups · snapshot {date(snapshot.generated_at)} · Mac review app {snapshot.built_version ?? "not built"}. Windows work and checks are listed separately below. Refreshed when local progress is recorded; this is not a background worker.</Text>
     {entries.length!==snapshot.baseline_count && <Text size="small" tone="secondary">Inventory expanded from {snapshot.baseline_count} to {entries.length} groups as broad families were separated and additional formats were tracked. Pending totals are not directly comparable to the earlier grouping.</Text>}
     <Divider/>
     <H2>Current development</H2>
@@ -177,7 +184,7 @@ export default function LumaCodecProgress() {
       <Stack gap={10}>
         <H2>Recorded checks</H2>
         {checks.length>0 && <Table headers={["Check","Result","Evidence"]} rowTone={checks.map(c=>tone(c.status))} rows={checks.map(c=>[
-          c.id,<div><Pill size="sm">{c.status}</Pill><Text size="small" tone="secondary">{c.matches_current_source?"Current source set":"Earlier source set"}{c.source_changed_during_check?" · source changed during run":""}</Text></div>,
+          c.id,<div><Pill size="sm">{c.status}</Pill><Text size="small" tone="secondary">{c.source_scope === "windows" ? "Windows" : "macOS"} · {c.matches_current_source?"current source set":"earlier source set"}{c.source_changed_during_check?" · source changed during run":""}</Text></div>,
           <div><Text size="small" tone="secondary">{date(c.started_at)}{typeof c.duration_seconds==="number"?` · ${c.duration_seconds}s`:""}</Text><Button variant="ghost" onClick={()=>open(c.log)}>Open log</Button></div>
         ])}/>}
         {snapshot.history.length>0 && <Card collapsible defaultOpen={false}><CardHeader>Recent completed attempts</CardHeader><CardBody><Table framed={false} headers={["Check","Result","Time / log"]} rows={snapshot.history.map(c=>[c.id,c.status,<Button variant="ghost" onClick={()=>open(c.log)}>{date(c.started_at)}</Button>])}/></CardBody></Card>}

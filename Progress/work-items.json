@@ -49,6 +49,17 @@
       "next": "Native routes only; high-bit-depth/alpha/RAW and other carriers remain unverified.",
       "source": "Tests/NativeFormatEvidence.swift",
       "check": "native-formats"
+    },
+    {
+      "id": "windows-port",
+      "name": "Windows desktop preview",
+      "category": "Platform",
+      "implementation": "Original ports + Windows output",
+      "stage": "verification",
+      "detail": "Windows codec/core goldens, exact original AVI output, MJPEG, fullscreen, MP4 seek, captions and restored queue tests passed in CI at 8d3f368. Review ZIP checksum and dark/light renders verified. Audio hardware output remains unverified: the runner has zero active render endpoints. This does not establish full macOS codec parity.",
+      "next": "Owner review and audible playback on Windows 11 x64. Windows update feed is unconfigured; Mac Matroska remux, ASS/PGS and other platform gaps remain.",
+      "source": "Windows/README.md",
+      "check": "windows-native"
     }
   ],
   "baseline_inventory_count": 42
