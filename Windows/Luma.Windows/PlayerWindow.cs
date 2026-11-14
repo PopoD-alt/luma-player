@@ -35,6 +35,7 @@ internal sealed class PlayerWindow : Window
     readonly TextBlock backend = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 360 };
     readonly ListBox queue = new() { BorderThickness = new Thickness(0), Margin = new Thickness(6), Background = Brushes.Transparent, DisplayMemberPath = "Title" };
     readonly TextBox search = new() { Margin = new Thickness(12, 0, 12, 12), ToolTip = "Search your queue" };
+    readonly TextBlock searchHint = new() { Text = "Search queue…", IsHitTestVisible = false, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(23, 0, 0, 12) };
     readonly Slider seek = new() { Minimum = 0, Maximum = 1, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 8, 0, 14) };
     readonly Slider volume = new() { Minimum = 0, Maximum = 1, Value = .7, Width = 100, VerticalAlignment = VerticalAlignment.Center };
     readonly ComboBox speed = new() { Width = 76, VerticalAlignment = VerticalAlignment.Center };
@@ -88,7 +89,7 @@ internal sealed class PlayerWindow : Window
         seek.ValueChanged += (_, _) => { if (!updatingSlider && !dragging && seek.IsKeyboardFocusWithin) Seek(seek.Value); };
         queue.SelectionChanged += async (_, _) => { if (!refreshingQueue && queue.SelectedItem is MediaEntry entry && entry.Id != current?.Id) await LoadEntryAsync(entry); };
         queue.MouseDoubleClick += async (_, _) => { if (queue.SelectedItem is MediaEntry entry) await LoadEntryAsync(entry); };
-        search.TextChanged += (_, _) => RefreshQueue();
+        search.TextChanged += (_, _) => { searchHint.Visibility = search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed; RefreshQueue(); };
         play.Click += (_, _) => TogglePlayback();
         volume.ValueChanged += (_, _) => movie.Volume = volume.Value;
         speed.SelectionChanged += (_, _) => { if (speed.SelectedItem is ComboBoxItem item) { var time = CurrentTime; rate = (double)item.Tag; position = time; clock.Restart(); movie.SpeedRatio = rate; } };
@@ -131,6 +132,10 @@ internal sealed class PlayerWindow : Window
         Resources[typeof(Button)] = buttons;
         var input = new Style(typeof(TextBox)); input.Setters.Add(new Setter(BackgroundProperty, new DynamicResourceExtension("ButtonBrush"))); input.Setters.Add(new Setter(ForegroundProperty, new DynamicResourceExtension("TextBrush"))); input.Setters.Add(new Setter(BorderBrushProperty, new DynamicResourceExtension("LineBrush"))); input.Setters.Add(new Setter(PaddingProperty, new Thickness(10, 8, 10, 8))); Resources[typeof(TextBox)] = input;
         var item = new Style(typeof(ListBoxItem)); item.Setters.Add(new Setter(ForegroundProperty, new DynamicResourceExtension("TextBrush"))); item.Setters.Add(new Setter(PaddingProperty, new Thickness(12, 13, 12, 13))); item.Setters.Add(new Setter(MarginProperty, new Thickness(4, 2, 4, 2))); item.Setters.Add(new Setter(HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
+        item.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
+        var rowFrame = new FrameworkElementFactory(typeof(Border)); rowFrame.SetValue(Border.CornerRadiusProperty, new CornerRadius(8)); rowFrame.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Control.BackgroundProperty)); rowFrame.SetValue(Border.PaddingProperty, new TemplateBindingExtension(Control.PaddingProperty));
+        var rowText = new FrameworkElementFactory(typeof(TextBlock)); rowText.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding("Title")); rowText.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis); rowFrame.AppendChild(rowText);
+        item.Setters.Add(new Setter(TemplateProperty, new ControlTemplate(typeof(ListBoxItem)) { VisualTree = rowFrame }));
         var selected = new Trigger { Property = ListBoxItem.IsSelectedProperty, Value = true }; selected.Setters.Add(new Setter(BackgroundProperty, new DynamicResourceExtension("SelectionBrush"))); selected.Setters.Add(new Setter(ForegroundProperty, new DynamicResourceExtension("TextBrush"))); item.Triggers.Add(selected); Resources[typeof(ListBoxItem)] = item;
     }
     void SetTheme(bool value)
@@ -147,6 +152,7 @@ internal sealed class PlayerWindow : Window
     Border Panel(UIElement child) { var border = new Border { Child = child, CornerRadius = new CornerRadius(14), BorderThickness = new Thickness(1) }; border.SetResourceReference(Border.BackgroundProperty, "PanelBrush"); border.SetResourceReference(Border.BorderBrushProperty, "LineBrush"); return border; }
     FrameworkElement BuildLayout()
     {
+        layout.SetResourceReference(Grid.BackgroundProperty, "WindowBrush");
         layout.ColumnDefinitions.Add(new() { Width = new GridLength(260) }); layout.ColumnDefinitions.Add(new() { Width = new GridLength(1, GridUnitType.Star) });
         foreach (var height in new[] { new GridLength(68), new GridLength(1, GridUnitType.Star), new GridLength(160), new GridLength(28) }) layout.RowDefinitions.Add(new() { Height = height });
         var top = new DockPanel { Margin = new Thickness(22, 0, 18, 0) };
@@ -159,7 +165,8 @@ internal sealed class PlayerWindow : Window
         var headerBorder = new Border { Child = top }; headerBorder.SetResourceReference(Border.BackgroundProperty, "PanelBrush"); header = headerBorder; Grid.SetColumnSpan(header, 2); layout.Children.Add(header);
 
         var side = new DockPanel(); var sideTop = new StackPanel { Margin = new Thickness(0, 22, 0, 0) };
-        var queueTitle = new DockPanel { Margin = new Thickness(18, 0, 18, 14) }; queueCount.HorizontalAlignment = HorizontalAlignment.Right; DockPanel.SetDock(queueCount, Dock.Right); queueTitle.Children.Add(queueCount); queueTitle.Children.Add(Text("Up next", 16, true)); sideTop.Children.Add(queueTitle); sideTop.Children.Add(search); DockPanel.SetDock(sideTop, Dock.Top); side.Children.Add(sideTop);
+        var queueTitle = new DockPanel { Margin = new Thickness(18, 0, 18, 14) }; queueCount.HorizontalAlignment = HorizontalAlignment.Right; DockPanel.SetDock(queueCount, Dock.Right); queueTitle.Children.Add(queueCount); queueTitle.Children.Add(Text("Up next", 16, true)); sideTop.Children.Add(queueTitle);
+        var searchBox = new Grid(); searchBox.Children.Add(search); searchHint.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush"); searchBox.Children.Add(searchHint); sideTop.Children.Add(searchBox); DockPanel.SetDock(sideTop, Dock.Top); side.Children.Add(sideTop);
         var sideBottom = new WrapPanel { Margin = new Thickness(10, 10, 10, 10) }; sideBottom.Children.Add(Button("↑", () => MoveSelected(-1))); sideBottom.Children.Add(Button("↓", () => MoveSelected(1))); sideBottom.Children.Add(Button("Remove", RemoveSelected)); sideBottom.Children.Add(Button("Clear", ClearQueue)); DockPanel.SetDock(sideBottom, Dock.Bottom); side.Children.Add(sideBottom); side.Children.Add(queue);
         sidebar = Panel(side); sidebar.Margin = new Thickness(12, 14, 0, 0); Grid.SetRow(sidebar, 1); Grid.SetRowSpan(sidebar, 2); layout.Children.Add(sidebar);
 
@@ -423,6 +430,9 @@ internal sealed class PlayerWindow : Window
         Check(Math.Abs(stage.ActualWidth - layout.ActualWidth) < 2 && Math.Abs(stage.ActualHeight - layout.ActualHeight) < 2, "Video does not fill fullscreen client area");
         ToggleFullscreen(); await Task.Delay(250); Check(!fullscreen && sidebar.Visibility == Visibility.Visible && ReferenceEquals(drawable, image), "Fullscreen exit lost chrome/drawable"); Play(); await Task.Delay(150); Check(CurrentTime > 2.5, "Playback did not resume"); Pause();
         Console.WriteLine("PASS: native Windows fullscreen entry/exit fills client area, preserves drawable and resumes original playback");
+        var preview = library.Add([Path.Combine(fixtures, "Luma-MJPEG.avi")]).Single(); await LoadEntryAsync(preview); Pause(); Seek(duration * .35);
+        await Until(() => original is not null && image.Source is not null && !rendering && lastFrame == Math.Clamp((int)(CurrentTime * original.FramesPerSecond), 0, original.FrameCount - 1), "Original MJPEG preview render");
+        Console.WriteLine("PASS: production original MJPEG player output and paused seek");
         foreach (var theme in new[] { true, false })
         {
             SetTheme(theme); await Task.Delay(100); UpdateLayout();
@@ -433,8 +443,22 @@ internal sealed class PlayerWindow : Window
         var native = library.Add([Path.Combine(fixtures, "Luma-Demo.mp4")]).Single(); await LoadEntryAsync(native);
         await Until(() => !opening || lastError is not null, "Windows native media load", 20000);
         if (lastError is null && movie.NaturalVideoWidth > 0 && duration > 0)
-        { Pause(); Seek(duration / 2); Play(); await Task.Delay(300); Check(CurrentTime > duration / 2, "Native media did not advance after seek"); Pause(); Console.WriteLine("PASS: native Windows MP4 load, video dimensions, seek and resumed clock"); }
+        {
+            Pause(); Seek(duration / 2); Play(); await Task.Delay(300); Check(CurrentTime > duration / 2, "Native media did not advance after seek"); Pause();
+            ReadSubtitles(Path.Combine(fixtures, "Luma-Demo.srt")); Seek(1.2); await Task.Delay(100);
+            Check(captions.Text == SubtitleParser.At(cues, CurrentTime) && captions.Text.Length > 0, "Paused external caption was not displayed");
+            Console.WriteLine("PASS: native Windows MP4 load, video dimensions, seek and resumed clock; paused external caption rendering");
+        }
         else Console.WriteLine("UNVERIFIED: Windows media-service MP4 route unavailable on this runner: " + lastError);
+        foreach (var audioFile in new[] { "Luma-Silence.flac", "Luma-MSADPCM.wav" })
+        {
+            var entry = library.Add([Path.Combine(fixtures, audioFile)]).Single(); await LoadEntryAsync(entry);
+            await Until(() => !opening || lastError is not null, "Original decoded audio output", 20000);
+            Check(lastError is null && duration > 1 && (backend.Text.Contains("FLAC", StringComparison.OrdinalIgnoreCase) || backend.Text.Contains("ADPCM", StringComparison.OrdinalIgnoreCase)), "Original audio did not reach Windows output: " + lastError);
+            Pause(); Seek(duration / 2); speed.SelectedIndex = 2; volume.Value = .25; Play(); await Task.Delay(300);
+            Check(CurrentTime > duration / 2 && movie.SpeedRatio == 1.25 && movie.Volume == .25, "Original audio transport did not retain seek/rate/volume"); Pause(); speed.SelectedIndex = 1;
+            Console.WriteLine("PASS: production original " + audioFile + " decode to Windows audio output, pause/seek/rate/volume and resumed clock");
+        }
         Unload();
         var restoredPath = Path.Combine(output, "restored-library.json");
         var persisted = new LibraryStore(restoredPath); var saved = persisted.Add([Path.Combine(fixtures, "Luma-MSVideo1-16.avi")]).Single();

@@ -4,8 +4,8 @@ Luma Player — a new home for your media.
 
 2
 00:00:04,000 --> 00:00:08,000
-Native macOS interface. VLC playback engine.
+Original decoders. Native media output.
 
 3
 00:00:08,000 --> 00:00:12,000
-Save a moment with Command-B.
+Save a moment with the bookmark control.
