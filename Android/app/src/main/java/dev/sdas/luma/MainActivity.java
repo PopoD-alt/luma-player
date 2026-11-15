@@ -43,6 +43,7 @@ import android.widget.TextView;
 import dev.sdas.luma.net.LanApi;
 import dev.sdas.luma.net.LanEndpoint;
 import dev.sdas.luma.net.StreamRelay;
+import dev.sdas.luma.net.ScopedWifiConnections;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
@@ -70,7 +71,7 @@ public final class MainActivity extends Activity {
     private final Map<String,Discovery.Desktop> desktops=new LinkedHashMap<>();
     private final Map<String,Long> localResume=new java.util.HashMap<>();
     private List<LanApi.Item> items=Collections.emptyList();
-    private LanApi api=new LanApi();private LanApi.Session session;private LanEndpoint selectedEndpoint;private Network selectedNetwork;
+    private LanApi api;private LanApi.Session session;private LanEndpoint selectedEndpoint;private volatile ScopedWifiConnections<Network> wifiConnections;
     private Discovery discovery;private LibVLC engine;private MediaPlayer player;private StreamRelay relay;
     private FrameLayout root,home,playback,videoContainer;private VLCVideoLayout video;
     private LinearLayout desktopRows,homeContent,playerControls,playerHeader;private TextView status,playlistTitle,playlistInfo,playerTitle,playerStatus,clock;
@@ -161,24 +162,36 @@ public final class MainActivity extends Activity {
     }
     private Network wifiNetwork(){
         ConnectivityManager connectivity=(ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);if(connectivity==null)return null;
-        for(Network network:connectivity.getAllNetworks()){NetworkCapabilities caps=connectivity.getNetworkCapabilities(network);if(caps!=null&&caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))return network;}return null;
+        try{Network active=connectivity.getActiveNetwork();if(usableWifi(active))return active;for(Network network:connectivity.getAllNetworks())if(usableWifi(network))return network;}catch(RuntimeException ignored){}return null;
     }
-    private LanApi forNetwork(Network network){return network==null?new LanApi():new LanApi(url->(HttpURLConnection)network.openConnection(url,java.net.Proxy.NO_PROXY));}
+    private boolean usableWifi(Network network){
+        if(network==null)return false;try{ConnectivityManager connectivity=(ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);if(connectivity==null)return false;NetworkCapabilities caps=connectivity.getNetworkCapabilities(network);if(caps==null||!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)||caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)||caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))return false;for(Network current:connectivity.getAllNetworks())if(network.equals(current))return true;}catch(RuntimeException ignored){}return false;
+    }
+    private ScopedWifiConnections<Network> forNetwork(LanEndpoint endpoint,Network preferred){return new ScopedWifiConnections<>(endpoint,preferred,new ScopedWifiConnections.Routes<Network>(){
+        public boolean usable(Network network){return usableWifi(network);}
+        public Network chooseWifi(){return wifiNetwork();}
+        public HttpURLConnection open(Network network,java.net.URL url)throws java.io.IOException{
+            if(!usableWifi(network))throw new ScopedWifiConnections.RouteException(ScopedWifiConnections.Reason.NO_WIFI);
+            android.util.Log.i("LumaPlayback","wifi-route-open: publicInfo="+(url.getPath().equals("/v1/info")&&url.getQuery()==null)+", "+networkDiagnostics(network));
+            return (HttpURLConnection)network.openConnection(url,java.net.Proxy.NO_PROXY);
+        }
+    });}
+    private Network currentWifiRoute(){ScopedWifiConnections<Network> current=wifiConnections;return current==null?null:current.selectedRoute();}
     private String networkDiagnostics(Network bound){
         try{
             ConnectivityManager connectivity=(ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
             if(connectivity==null)return "networkState=UNAVAILABLE, foreground="+foreground+", windowFocus="+windowFocused;
-            Network active=connectivity.getActiveNetwork(),route=bound==null?active:bound;
-            NetworkCapabilities caps=route==null?null:connectivity.getNetworkCapabilities(route);boolean listed=false;
-            if(route!=null)for(Network candidate:connectivity.getAllNetworks())if(route.equals(candidate)){listed=true;break;}
-            return "networkBound="+(bound!=null)+", networkListed="+listed+", networkCaps="+(caps!=null)+", networkWifi="+(caps!=null&&caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))+", activeMatchesRoute="+(route!=null&&route.equals(active))+", localPermission="+hasPermission()+", foreground="+foreground+", windowFocus="+windowFocused;
+            Network active=connectivity.getActiveNetwork(),route=bound;
+            NetworkCapabilities caps=route==null?null:connectivity.getNetworkCapabilities(route),activeCaps=active==null?null:connectivity.getNetworkCapabilities(active);boolean listed=false;int availableWifi=0;
+            for(Network candidate:connectivity.getAllNetworks()){if(route!=null&&route.equals(candidate))listed=true;NetworkCapabilities candidateCaps=connectivity.getNetworkCapabilities(candidate);if(candidateCaps!=null&&candidateCaps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)&&!candidateCaps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)&&!candidateCaps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))availableWifi++;}
+            return "networkBound="+(bound!=null)+", networkListed="+listed+", networkCaps="+(caps!=null)+", networkWifi="+(caps!=null&&caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))+", availableWifiCount="+availableWifi+", activeCaps="+(activeCaps!=null)+", activeWifi="+(activeCaps!=null&&activeCaps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))+", activeCellular="+(activeCaps!=null&&activeCaps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))+", activeVpn="+(activeCaps!=null&&activeCaps.hasTransport(NetworkCapabilities.TRANSPORT_VPN))+", activeMatchesRoute="+(route!=null&&route.equals(active))+", localPermission="+hasPermission()+", foreground="+foreground+", windowFocus="+windowFocused;
         }catch(RuntimeException ignored){return "networkState=UNAVAILABLE, foreground="+foreground+", windowFocus="+windowFocused;}
     }
     private void connectManual(){if(!hasPermission()){permissionAsked=false;ensurePermission();return;}try{connectDesktop(LanEndpoint.parse(manual.getText().toString().trim()),wifiNetwork());}catch(IllegalArgumentException error){status.setText(error.getMessage());}}
     private void connectDesktop(LanEndpoint endpoint,Network network){
-        if(connecting)return;if(!hasPermission()){ensurePermission();return;}disconnect(false);selectedEndpoint=endpoint;selectedNetwork=network;api=forNetwork(network);connecting=true;connect.setEnabled(false);status.setText("Connecting to desktop…");int version=generation;
-        LanApi client=api;
-        execute(()->{try{LanApi.Info info=client.info(endpoint);main.post(()->{if(stale(version))return;connecting=false;connect.setEnabled(true);pair(endpoint,info);});}catch(Exception error){main.post(()->{if(stale(version))return;connecting=false;connect.setEnabled(true);status.setText(safe(error));});}});
+        if(connecting)return;if(!hasPermission()){ensurePermission();return;}disconnect(false);selectedEndpoint=endpoint;wifiConnections=forNetwork(endpoint,network);api=new LanApi(wifiConnections);connecting=true;connect.setEnabled(false);status.setText("Connecting to desktop…");int version=generation;
+        LanApi client=api;ScopedWifiConnections<Network> scope=wifiConnections;
+        execute(()->{try{LanApi.Info info=client.info(endpoint);scope.pinExpectedHost(info.id);main.post(()->{if(stale(version))return;connecting=false;connect.setEnabled(true);pair(endpoint,info);});}catch(Exception error){main.post(()->{if(stale(version))return;connecting=false;connect.setEnabled(true);status.setText(safe(error));});}});
     }
     private void pair(LanEndpoint endpoint,LanApi.Info info){
         if(!foreground)return;EditText code=new EditText(this);code.setId(R.id.pair_code);code.setTextSize(25);code.setGravity(Gravity.CENTER);code.setInputType(InputType.TYPE_CLASS_NUMBER);code.setFilters(new InputFilter[]{new InputFilter.LengthFilter(6)});code.setHint("000000");
@@ -186,10 +199,10 @@ public final class MainActivity extends Activity {
         pairDialog=new AlertDialog.Builder(this).setTitle("Pair with "+info.name).setView(content).setNegativeButton("Cancel",(d,w)->cancelPair()).setPositiveButton("Pair",null).create();
         pairDialog.setOnCancelListener(d->cancelPair());LanApi client=api;
         pairDialog.setOnShowListener(d->{Button confirm=pairDialog.getButton(AlertDialog.BUTTON_POSITIVE);confirm.setId(R.id.pair_confirm);confirm.setOnClickListener(v->{String value=code.getText().toString();if(!value.matches("[0-9]{6}")){code.setError("Enter all six digits");return;}confirm.setEnabled(false);status.setText("Pairing…");int version=generation;
-            execute(()->{try{LanApi.Session paired=client.pair(endpoint,info,value);main.post(()->{if(stale(version))return;session=paired;getPreferences(MODE_PRIVATE).edit().putString("desktopUrl",endpoint.origin).apply();manual.setText(endpoint.origin);pairDialog.dismiss();pairDialog=null;playlistTitle.setText(info.name);status.setText("Connected · playlist updates automatically");refresh(true);});}catch(Exception error){main.post(()->{if(stale(version))return;confirm.setEnabled(true);status.setText(safe(error));code.setError("Check the current desktop code and try again");});}});
+            execute(()->{try{LanApi.Session paired=client.pair(endpoint,info,value);main.post(()->{if(stale(version))return;session=paired;getPreferences(MODE_PRIVATE).edit().putString("desktopUrl",endpoint.origin).apply();manual.setText(endpoint.origin);pairDialog.dismiss();pairDialog=null;playlistTitle.setText(info.name);status.setText("Connected · playlist updates automatically");refresh(true);});}catch(Exception error){main.post(()->{if(stale(version))return;confirm.setEnabled(true);status.setText(safe(error));if(error instanceof LanApi.ApiException&&((LanApi.ApiException)error).status==401)code.setError("Pairing could not finish. Reconnect or check the current desktop code.");else code.setError(null);});}});
         });});pairDialog.show();
     }
-    private void cancelPair(){generation++;pairDialog=null;connecting=false;connect.setEnabled(true);status.setText("Pairing cancelled. Your media remains private.");}
+    private void cancelPair(){generation++;ScopedWifiConnections<Network> scope=wifiConnections;if(scope!=null)scope.close();pairDialog=null;connecting=false;connect.setEnabled(true);status.setText("Pairing cancelled. Your media remains private.");}
     private void refresh(boolean explicit){
         if(session==null){if(explicit)status.setText("Connect and pair with your desktop first.");return;}if(polling)return;polling=true;LanApi.Session active=session;int version=generation;if(explicit)status.setText("Refreshing playlist…");
         LanApi client=api;
@@ -236,8 +249,8 @@ public final class MainActivity extends Activity {
         graphStartedAt=android.os.SystemClock.uptimeMillis();playerStatus.setText("Opening LAN stream…");
         try{
             int version=generation,clip=mediaGeneration;LanApi.Session active=session;
-            LanApi.Connections mediaConnections=api.connections();Network boundNetwork=selectedNetwork;
-            relay=new StreamRelay(active,item,url->{android.util.Log.i("LumaPlayback","relay-upstream-open: mediaGeneration="+clip+", "+networkDiagnostics(boundNetwork));return mediaConnections.open(url);},failure->main.post(()->{if(stale(version)||clip!=mediaGeneration||current!=item)return;lastError=failure==StreamRelay.Failure.AUTH?"Pairing expired. Return to the playlist and pair again.":failure==StreamRelay.Failure.REMOVED?"This item was removed from the desktop.":failure==StreamRelay.Failure.UNSAFE_RESPONSE?"The desktop returned an unsafe stream response.":"Desktop offline. Keep sharing enabled and retry.";playerStatus.setText(lastError);userPaused=true;if(player!=null)player.pause();}));
+            LanApi.Connections mediaConnections=api.connections();
+            relay=new StreamRelay(active,item,mediaConnections,failure->main.post(()->{if(stale(version)||clip!=mediaGeneration||current!=item)return;lastError=failure==StreamRelay.Failure.AUTH?"Pairing expired. Return to the playlist and pair again.":failure==StreamRelay.Failure.REMOVED?"This item was removed from the desktop.":failure==StreamRelay.Failure.UNSAFE_RESPONSE?"The desktop returned an unsafe stream response.":failure==StreamRelay.Failure.RECONNECT?"Wi-Fi or the desktop sharing session changed. Reconnect to the desktop's Wi-Fi and retry, or return to the playlist to pair again.":"Desktop offline. Keep sharing enabled and retry.";playerStatus.setText(lastError);userPaused=true;if(player!=null)player.pause();}));
             // Each native player owns its own surface tree. A retired helper
             // must never receive destroy/layout callbacks for the next player.
             videoContainer.removeView(video);video=new VLCVideoLayout(this);videoContainer.addView(video,0,new FrameLayout.LayoutParams(-1,-1));videoGraphSequence++;
@@ -323,7 +336,7 @@ public final class MainActivity extends Activity {
     private String playbackDiagnostics(){
         Media.Stats value=stats();return "preparing="+enginePreparing+", prepared="+enginePrepared+", cacheVerified="+fontCacheVerified+", preparationMs="+(enginePreparing?android.os.SystemClock.uptimeMillis()-preparationStartedAt:preparationDurationMs)+", graph="+videoGraphSequence+", graphAgeMs="+(graphStartedAt==0?0:android.os.SystemClock.uptimeMillis()-graphStartedAt)+", retiring="+retiringGraphs+", lastRetirementMs="+lastRetirementMs+", software="+softwarePlayback+", nativeState="+(player==null?-1:player.getPlayerState())+", nativeTimeMs="+(player==null?-1:player.getTime())+", position="+(player==null?-1:player.getPosition())+", lengthMs="+(player==null?-1:player.getLength())+", timeEvents="+nativeTimeEvents+", lastTimeEventMs="+lastNativeTimeEvent+", bufferingPercent="+nativeBufferingPercent+", bufferingEvents="+nativeBufferingEvents+", openingAgeMs="+(playRequestedAt==0?0:android.os.SystemClock.uptimeMillis()-playRequestedAt)+", playingEventSeen="+nativePlayingSeen+", resumeApplied="+autoResumeApplied+", forwardedBytes="+(relay==null?0:relay.forwardedBytes())+", relay={"+(relay==null?"none":relay.diagnostics())+"}, surfaceReady="+videoSurfaceReady()+", nativeSurfaceReady="+nativeSurfacesReady+", holderValid="+validVideoSurface(video)+", surfaceCreated="+surfaceCreatedEvents+", surfaceDestroyed="+surfaceDestroyedEvents+", rebinds="+surfaceRebinds+", rebindPending="+surfaceRebindPending+", restartPending="+surfaceRestartPending+", recoveryNeedsResume="+surfaceRecoveryNeedsResume+", size="+video.getWidth()+"x"+video.getHeight()+", videoTracks="+(player==null?-1:player.getVideoTracksCount())+", outputs="+videoOutputs+", outputCreated="+videoOutputWasCreated+", decodedVideo="+(value==null?0:value.decodedVideo)+", displayed="+(value==null?0:value.displayedPictures)+", decodedAudio="+(value==null?0:value.decodedAudio)+", playing="+(player!=null&&player.isPlaying());
     }
-    private void logPlayback(String reason){android.util.Log.i("LumaPlayback",reason+": "+playbackDiagnostics()+", "+networkDiagnostics(selectedNetwork));}
+    private void logPlayback(String reason){ScopedWifiConnections<Network> scope=wifiConnections;android.util.Log.i("LumaPlayback",reason+": "+playbackDiagnostics()+", routeVerifications="+(scope==null?0:scope.verificationCount())+", "+networkDiagnostics(currentWifiRoute()));}
     private void updatePlayer(){
         if(player==null||current==null)return;applyResume();long length=player.getLength(),time=Math.max(0,player.getTime());
         clock.setText(time(time)+" / "+time(length));if(!dragging&&length>0)seek.setProgress((int)Math.min(1000,time*1000/length));seek.setEnabled(player.isSeekable());
@@ -394,7 +407,7 @@ public final class MainActivity extends Activity {
     // Reapply once after geometry settles, rather than suppressing user swipes.
     private void scheduleFullscreenBars(){main.removeCallbacks(settleFullscreenBars);if(full)main.postDelayed(settleFullscreenBars,500);}
     private void setFull(boolean value){full=value;fullButton.setText(value?"Exit full screen":"Full screen");setChromeVisible(!value);applySystemBars();root.requestApplyInsets();scheduleFullscreenBars();setRequestedOrientation(value?ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);}
-    private void disconnect(boolean clearUrl){generation++;polling=false;connecting=false;session=null;localResume.clear();softwareItems.clear();items=Collections.emptyList();if(playlistInfo!=null)playlistInfo.setText("Pair with a desktop to see its current playlist.");if(list!=null)((BaseAdapter)list.getAdapter()).notifyDataSetChanged();if(pairDialog!=null){pairDialog.dismiss();pairDialog=null;}if(current!=null)leavePlayer();if(clearUrl)getPreferences(MODE_PRIVATE).edit().remove("desktopUrl").apply();}
+    private void disconnect(boolean clearUrl){generation++;ScopedWifiConnections<Network> scope=wifiConnections;wifiConnections=null;if(scope!=null)scope.close();polling=false;connecting=false;session=null;api=null;localResume.clear();softwareItems.clear();items=Collections.emptyList();if(playlistInfo!=null)playlistInfo.setText("Pair with a desktop to see its current playlist.");if(list!=null)((BaseAdapter)list.getAdapter()).notifyDataSetChanged();if(pairDialog!=null){pairDialog.dismiss();pairDialog=null;}if(current!=null)leavePlayer();if(clearUrl)getPreferences(MODE_PRIVATE).edit().remove("desktopUrl").apply();}
     private void execute(Runnable action){try{work.execute(action);}catch(java.util.concurrent.RejectedExecutionException error){status.setText("Please wait for the current desktop request to finish.");polling=false;connecting=false;connect.setEnabled(true);}}
     private boolean stale(int version){return destroyed||version!=generation;}
     private String permission(){return Build.VERSION.SDK_INT>=37?Manifest.permission.ACCESS_LOCAL_NETWORK:Build.VERSION.SDK_INT==36?Manifest.permission.NEARBY_WIFI_DEVICES:null;}
@@ -404,7 +417,7 @@ public final class MainActivity extends Activity {
     @Override protected void onResume(){super.onResume();foreground=true;ensurePermission();main.post(pulse);main.post(poll);if(wasPlaying&&current!=null){wasPlaying=false;userPaused=false;if(player!=null){if(nativeSurfacesReady&&validVideoSurface(video))player.play();}else startMedia(current);}else if(current!=null&&player==null){playButton.setText("Play");playerStatus.setText("Paused · tap Play to resume streaming");}}
     @Override protected void onPause(){foreground=false;main.removeCallbacks(pulse);main.removeCallbacks(poll);main.removeCallbacks(settleFullscreenBars);discovery.stop();if(player!=null){int observed=player.getPlayerState();wasPlaying=!userPaused&&lastError==null&&observed!=Media.State.Ended&&observed!=Media.State.Error&&observed!=Media.State.Stopped;userPaused=true;if(nativePlayingSeen||player.isPlaying())player.pause();}else if(enginePreparing&&current!=null){wasPlaying=!userPaused;userPaused=true;}super.onPause();}
     @Override protected void onStop(){if(player!=null&&current!=null){updatePlayer();stopPlayback();}super.onStop();}
-    @Override protected void onDestroy(){destroyed=true;generation++;discovery.stop();stopPlayback();releaseEngineWhenIdle();retiredPlayers.shutdown();session=null;work.shutdownNow();super.onDestroy();}
+    @Override protected void onDestroy(){destroyed=true;generation++;ScopedWifiConnections<Network> scope=wifiConnections;wifiConnections=null;if(scope!=null)scope.close();discovery.stop();stopPlayback();releaseEngineWhenIdle();retiredPlayers.shutdown();session=null;work.shutdownNow();super.onDestroy();}
     @Override public void onConfigurationChanged(Configuration config){super.onConfigurationChanged(config);scheduleFullscreenBars();MediaPlayer active=player;if(active!=null)main.post(()->{if(player==active)active.updateVideoSurfaces();});}
     @Override public void onWindowFocusChanged(boolean hasFocus){super.onWindowFocusChanged(hasFocus);windowFocused=hasFocus;if(hasFocus)scheduleFullscreenBars();}
     // Modern back gestures use the native API33 dispatcher registered in onCreate.
@@ -458,6 +471,8 @@ public final class MainActivity extends Activity {
     public void debugRecreateSurface(){if(!BuildConfig.DEBUG||player==null)throw new IllegalStateException();VLCVideoLayout activeVideo=video;View surface=activeVideo.findViewById(org.videolan.R.id.surface_video);surface.setVisibility(View.INVISIBLE);main.postDelayed(()->{if(video==activeVideo&&player!=null)surface.setVisibility(View.VISIBLE);},250);}
     public boolean debugFullscreenInsetsClear(){return BuildConfig.DEBUG&&full&&root.getPaddingLeft()==0&&root.getPaddingTop()==0&&root.getPaddingRight()==0&&root.getPaddingBottom()==0&&(Build.VERSION.SDK_INT<30||root.getRootWindowInsets()!=null&&!root.getRootWindowInsets().isVisible(WindowInsets.Type.systemBars()));}
     public boolean debugResumeApplied(){return BuildConfig.DEBUG&&autoResumeApplied;}
+    public void debugInvalidateWifiRoute(){if(!BuildConfig.DEBUG||wifiConnections==null)throw new IllegalStateException();wifiConnections.invalidateForTesting();}
+    public long debugWifiRouteReplacements(){return BuildConfig.DEBUG&&wifiConnections!=null?wifiConnections.replacementCount():0;}
     public String debugError(){return lastError;}
     public String debugDiagnostics(){return BuildConfig.DEBUG?playbackDiagnostics():"";}
     public void debugLeave(){if(!BuildConfig.DEBUG)throw new IllegalStateException();leavePlayer();}

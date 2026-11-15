@@ -55,12 +55,18 @@ public class LanPlaybackTest {
             app.onActivity(MainActivity::debugTapVideo);await(app,a->a.debugChromeVisible()&&a.debugExitFullLabel(),5000,"Tap shows playback controls and explicit fullscreen exit");
             app.onActivity(MainActivity::debugTapVideo);await(app,a->!a.debugChromeVisible(),5000,"Tap hides fullscreen chrome");
             app.onActivity(a->a.debugFull(false));await(app,a->!a.debugIsFull()&&a.debugChromeVisible()&&a.debugPlayerIdentity()==playerIdentity&&a.debugVideoViewIdentity()==viewIdentity,8000,"Fullscreen exit restores controls without replacing video output");
+            long routeReplacements=value(app,MainActivity::debugWifiRouteReplacements);
+            // Exercise the real public-info identity gate on the current Wi-Fi
+            // without toggling system Wi-Fi or creating an artificial HTTP path.
+            app.onActivity(MainActivity::debugInvalidateWifiRoute);
             app.onActivity(MainActivity::debugLeave);app.onActivity(a->a.debugPlay(hevc));
             await(app,a->{Media.Stats s=a.debugStats();return a.debugNativeSurfaceReady()&&a.debugPlayerIdentity()!=playerIdentity&&a.debugVideoViewIdentity()!=viewIdentity&&s!=null&&s.decodedVideo>=5&&s.displayedPictures>0&&s.decodedAudio>0;},30000,"Actual HEVC Main10/AAC5.1 native decode on a fresh player/surface tree");
             Media.Stats stats=value(app,MainActivity::debugStats);
+            assertTrue("Invalidated cached Wi-Fi route was used without successful public-info verification",value(app,MainActivity::debugWifiRouteReplacements)>routeReplacements);
+            app.onActivity(a->a.debugSeek(400));awaitSettledResume(app,400,"verified-route-HEVC");
             int stressedTransitions="true".equals(args.getString("stressTransitions"))?stressTransitions(app,demo,hevc):0;
             Bundle result=new Bundle();result.putString("fontCacheInitiallyEmpty",Boolean.toString(initiallyEmptyFontCache));result.putString("fontCacheVerified",Boolean.toString(value(app,MainActivity::debugFontCacheVerified)));result.putLong("preparationMs",value(app,MainActivity::debugPreparationDurationMs));result.putString("softwareRecoveryExercised",Boolean.toString(exerciseRecovery));result.putString("avcUsedSoftwareRetry",Boolean.toString(avcSoftwareRetry));result.putString("lumaEngine",value(app,MainActivity::debugEngineVersion));result.putString("playbackDiagnostics",value(app,MainActivity::debugDiagnostics));result.putInt("hevcDecodedVideo",stats.decodedVideo);result.putInt("hevcDisplayedPictures",stats.displayedPictures);result.putInt("aacDecodedAudio",stats.decodedAudio);result.putString("scope","Production desktop pair/list/byte-range stream; real libVLC decoded/displayed frames. Emulator audio decoding is not physical speaker proof; Wi-Fi discovery still needs target-device verification.");
-            InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
+            result.putString("wifiRouteRevalidationExercised","true");result.putLong("verifiedWifiReplacements",value(app,MainActivity::debugWifiRouteReplacements));InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
             if(stressedTransitions>0){Bundle stress=new Bundle();stress.putInt("stressTransitionsCompleted",stressedTransitions);stress.putString("stressScope","Same paired session, bound Network, Activity and native engine; ten alternating fresh AVC/HEVC graphs, actual decoded/displayed frames and progressing native clock after precise seek; AVC fullscreen transitions; maximum120seconds.");InstrumentationRegistry.getInstrumentation().sendStatus(0,stress);}
             assertFalse("Android persisted a media download",hasMedia(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir()));
             assertFalse("Android cached a saved movie",hasMedia(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir()));

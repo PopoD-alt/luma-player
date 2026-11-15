@@ -138,6 +138,7 @@ public final class LanApi {
             String text=StandardCharsets.UTF_8.newDecoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT).onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT).decode(java.nio.ByteBuffer.wrap(data.toByteArray())).toString();
             return new JSONObject(text);
         } catch(JSONException e){throw malformed();}
+        catch(ScopedWifiConnections.RouteException e){throw new ApiException(e.reason==ScopedWifiConnections.Reason.HOST_CHANGED||e.reason==ScopedWifiConnections.Reason.UNPINNED?401:0,e.getMessage());}
         catch(ApiException e){throw e;}
         catch(IOException e){throw new ApiException(0,"Desktop offline or unreachable. Keep both devices on the same Wi-Fi and sharing enabled.");}
         finally {if(connection!=null)connection.disconnect();}

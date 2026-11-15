@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * is used. No media file, whole-file cache, URL supplied by a remote caller or upload.
  */
 public final class StreamRelay implements AutoCloseable {
-    public enum Failure { AUTH, REMOVED, OFFLINE, UNSAFE_RESPONSE }
+    public enum Failure { AUTH, REMOVED, OFFLINE, UNSAFE_RESPONSE, RECONNECT }
     public interface Listener { void failed(Failure failure); }
     private final ServerSocket server;
     private final URL upstream;
@@ -85,10 +85,12 @@ public final class StreamRelay implements AutoCloseable {
                 if(headers.put(key,value.substring(colon+1).trim())!=null){replyError(output,400);return;}}
             String range=headers.get("range");if(range!=null&&(range.length()>100||!range.matches("bytes=(?:[0-9]+-[0-9]*|-[0-9]+)"))){replyError(output,416);return;}
             parsed.incrementAndGet();phase=Phase.UPSTREAM_OPEN;observe(requestId,phase);
-            remote=connections.open(upstream);requests.add(remote);remote.setInstanceFollowRedirects(false);remote.setUseCaches(false);
+            if(closed)return;
+            remote=connections.open(upstream);if(closed){remote.disconnect();remote=null;return;}requests.add(remote);remote.setInstanceFollowRedirects(false);remote.setUseCaches(false);
             remote.setConnectTimeout(5000);remote.setReadTimeout(10000);remote.setRequestMethod(head?"HEAD":"GET");
             remote.setRequestProperty("Connection","close");remote.setRequestProperty("User-Agent","LumaAndroid/0.1");
             if(range!=null)remote.setRequestProperty("Range",range);
+            if(closed)return;
             phase=Phase.UPSTREAM_CONNECT;observe(requestId,phase);upstreamAttempts.incrementAndGet();remote.connect();upstreamConnected.incrementAndGet();
             phase=Phase.UPSTREAM_RESPONSE;observe(requestId,phase);int status=remote.getResponseCode();upstreamStatus=status;phase=Phase.UPSTREAM_STATUS;observe(requestId,phase);
             if(status==401){replyError(output,401);fail(Failure.AUTH);return;}
@@ -109,7 +111,8 @@ public final class StreamRelay implements AutoCloseable {
                 while(!closed&&remaining>0){int read=media.read(buffer,0,(int)Math.min(buffer.length,remaining));if(read<0)throw new IOException("Incomplete LAN stream");output.write(buffer,0,read);output.flush();forwardedBytes.addAndGet(read);remaining-=read;if(firstByte){firstByte=false;firstBytes.incrementAndGet();phase=Phase.FIRST_BYTE;observe(requestId,phase);}}
                 if(remaining==0){completed.incrementAndGet();observe(requestId,Phase.COMPLETE);}else observe(requestId,Phase.CANCELLED);
             }
-        }catch(SocketTimeoutException e){observeIo(requestId,phase,e,began);if(!closed)fail(Failure.OFFLINE);}
+        }catch(ScopedWifiConnections.RouteException e){observeIo(requestId,phase,e,began);if(!closed)fail(e.reason==ScopedWifiConnections.Reason.HOST_CHANGED||e.reason==ScopedWifiConnections.Reason.UNPINNED?Failure.AUTH:Failure.RECONNECT);}
+        catch(SocketTimeoutException e){observeIo(requestId,phase,e,began);if(!closed)fail(Failure.OFFLINE);}
         catch(IOException error){observeIo(requestId,phase,error,began);/* A VLC seek closes its old range; preserve the existing failure policy. */}
         finally{if(remote!=null){requests.remove(remote);remote.disconnect();}sockets.remove(socket);}
     }
