@@ -149,6 +149,8 @@ def main():
                         help='Debug-only native output fault; require one successful software recovery.')
     parser.add_argument('--native-diagnostics', action='store_true',
                         help='Opt in to debug-only verbose native engine logs; evidence remains redacted and bounded.')
+    parser.add_argument('--stress-transitions', action='store_true',
+                        help='Bounded debug-only repeated video switches in the same paired session.')
     parser.add_argument('--app-apk', type=Path,
                         default=ROOT / 'Android/app/build/outputs/apk/debug/app-debug.apk')
     parser.add_argument('--test-apk', type=Path,
@@ -181,7 +183,7 @@ def main():
     if not debug.is_file() or not tests.is_file():
         raise RuntimeError('Build the development app and instrumentation APK first.')
     inputs = {'desktop': options.desktop, 'exerciseVideoRecovery': options.exercise_video_recovery,
-              'nativeDiagnostics': options.native_diagnostics}
+              'nativeDiagnostics': options.native_diagnostics, 'stressTransitions': options.stress_transitions}
     for name, path in [('appApk', debug), ('testApk', tests)]:
         with path.open('rb') as source:
             inputs[name] = {'name': path.name, 'bytes': path.stat().st_size,
@@ -212,6 +214,8 @@ def main():
                 command += ['-e', 'exerciseVideoRecovery', 'true']
             if options.native_diagnostics:
                 command += ['-e', 'nativeDiagnostics', 'true']
+            if options.stress_transitions:
+                command += ['-e', 'stressTransitions', 'true']
             command += ['dev.sdas.luma.preview.test/androidx.test.runner.AndroidJUnitRunner']
             diagnostics = NativeDiagnostics(parameters['code'])
             diagnostics.start()

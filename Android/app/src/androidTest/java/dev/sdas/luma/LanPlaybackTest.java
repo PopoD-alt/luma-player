@@ -58,8 +58,10 @@ public class LanPlaybackTest {
             app.onActivity(MainActivity::debugLeave);app.onActivity(a->a.debugPlay(hevc));
             await(app,a->{Media.Stats s=a.debugStats();return a.debugNativeSurfaceReady()&&a.debugPlayerIdentity()!=playerIdentity&&a.debugVideoViewIdentity()!=viewIdentity&&s!=null&&s.decodedVideo>=5&&s.displayedPictures>0&&s.decodedAudio>0;},30000,"Actual HEVC Main10/AAC5.1 native decode on a fresh player/surface tree");
             Media.Stats stats=value(app,MainActivity::debugStats);
+            int stressedTransitions="true".equals(args.getString("stressTransitions"))?stressTransitions(app,demo,hevc):0;
             Bundle result=new Bundle();result.putString("fontCacheInitiallyEmpty",Boolean.toString(initiallyEmptyFontCache));result.putString("fontCacheVerified",Boolean.toString(value(app,MainActivity::debugFontCacheVerified)));result.putLong("preparationMs",value(app,MainActivity::debugPreparationDurationMs));result.putString("softwareRecoveryExercised",Boolean.toString(exerciseRecovery));result.putString("avcUsedSoftwareRetry",Boolean.toString(avcSoftwareRetry));result.putString("lumaEngine",value(app,MainActivity::debugEngineVersion));result.putString("playbackDiagnostics",value(app,MainActivity::debugDiagnostics));result.putInt("hevcDecodedVideo",stats.decodedVideo);result.putInt("hevcDisplayedPictures",stats.displayedPictures);result.putInt("aacDecodedAudio",stats.decodedAudio);result.putString("scope","Production desktop pair/list/byte-range stream; real libVLC decoded/displayed frames. Emulator audio decoding is not physical speaker proof; Wi-Fi discovery still needs target-device verification.");
             InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
+            if(stressedTransitions>0){Bundle stress=new Bundle();stress.putInt("stressTransitionsCompleted",stressedTransitions);stress.putString("stressScope","Same paired session, bound Network, Activity and native engine; ten alternating fresh AVC/HEVC graphs, actual decoded/displayed frames and progressing native clock after precise seek; AVC fullscreen transitions; maximum120seconds.");InstrumentationRegistry.getInstrumentation().sendStatus(0,stress);}
             assertFalse("Android persisted a media download",hasMedia(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir()));
             assertFalse("Android cached a saved movie",hasMedia(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir()));
         }
@@ -78,8 +80,9 @@ public class LanPlaybackTest {
         public String toString(){return "timeMs="+time+", resumeApplied="+resumed+", pauseRequested="+paused+", playing="+playing+", displayed="+displayed+"; "+phase;}
     }
     private static ClockSnapshot snapshot(ActivityScenario<MainActivity> app){return value(app,ClockSnapshot::new);}
-    private static void awaitSettledResume(ActivityScenario<MainActivity> app,long expected,String phase)throws Exception{
-        long deadline=System.currentTimeMillis()+12000,anchor=-1,last=-1;int anchorFrames=0,stableSamples=0;ClockSnapshot observed=snapshot(app);
+    private static void awaitSettledResume(ActivityScenario<MainActivity> app,long expected,String phase)throws Exception{awaitSettledResume(app,expected,phase,12000);}
+    private static void awaitSettledResume(ActivityScenario<MainActivity> app,long expected,String phase,long timeout)throws Exception{
+        long deadline=System.currentTimeMillis()+timeout,anchor=-1,last=-1;int anchorFrames=0,stableSamples=0;ClockSnapshot observed=snapshot(app);
         android.util.Log.i("LumaPlayback","test-"+phase+"-wait: expectedMs="+expected+"; before="+observed);
         while(System.currentTimeMillis()<deadline){observed=snapshot(app);long time=observed.time;
             if(observed.resumed&&observed.playing&&!observed.paused&&time>=Math.max(0,expected-350)&&time<=expected+1800){
@@ -91,6 +94,29 @@ public class LanPlaybackTest {
         }
         fail(phase+" did not settle before transport checks; expectedMs="+expected+"; after="+observed);
     }
+    private static int stressTransitions(ActivityScenario<MainActivity> app,String demo,String hevc)throws Exception{
+        long deadline=System.currentTimeMillis()+120000;
+        for(int iteration=1;iteration<=10;iteration++){
+            boolean videoWithAudio=iteration%2==0;String item=videoWithAudio?hevc:demo;String phase="stress-transition-"+iteration;
+            int previousPlayer=value(app,MainActivity::debugPlayerIdentity),previousView=value(app,MainActivity::debugVideoViewIdentity);
+            android.util.Log.i("LumaPlayback",phase+"-open: family="+(videoWithAudio?"HEVC_AAC":"AVC")+"; before="+snapshot(app));
+            app.onActivity(a->{a.debugLeave();a.debugPlay(item);});
+            await(app,a->{Media.Stats s=a.debugStats();return a.debugNativeSurfaceReady()&&a.debugPlaying()&&a.debugResumeApplied()&&a.debugPlayerIdentity()!=previousPlayer&&a.debugVideoViewIdentity()!=previousView&&s!=null&&s.decodedVideo>=5&&s.displayedPictures>0&&(!videoWithAudio||s.decodedAudio>0);},stressRemaining(deadline,15000),phase+" actual fresh graph decoded/displayed frames");
+            app.onActivity(a->a.debugSeek(500));
+            awaitSettledResume(app,500,phase+"-precise-seek",stressRemaining(deadline,12000));
+            if(!videoWithAudio){
+                int before=value(app,a->a.debugStats().displayedPictures),identity=value(app,MainActivity::debugPlayerIdentity);
+                app.onActivity(a->a.debugFull(true));
+                await(app,a->a.debugIsFull()&&!a.debugChromeVisible()&&a.debugNativeSurfaceReady()&&a.debugPlayerIdentity()==identity&&a.getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE&&a.debugStats()!=null&&a.debugStats().displayedPictures>before,stressRemaining(deadline,8000),phase+" fullscreen actual output");
+                app.onActivity(a->a.debugFull(false));
+                await(app,a->!a.debugIsFull()&&a.debugChromeVisible()&&a.debugPlayerIdentity()==identity,stressRemaining(deadline,8000),phase+" fullscreen exit");
+            }
+            android.util.Log.i("LumaPlayback",phase+"-complete: "+snapshot(app));
+            stressRemaining(deadline,1);
+        }
+        return 10;
+    }
+    private static long stressRemaining(long deadline,long maximum){long left=deadline-System.currentTimeMillis();assertTrue("Same-session transition stress exceeded120seconds",left>0);return Math.min(left,maximum);}
     private static void dismissSystemFullscreenHint()throws Exception{
         // A clean Android image may show its own first-use immersive tutorial.
         // Acknowledge only that SystemUI prompt; leave application/OS policy intact.
