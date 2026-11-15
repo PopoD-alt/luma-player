@@ -1,9 +1,6 @@
 name: Bundled Windows owner review
 
 on:
-  push:
-    branches: [feature/vlc-lan-android]
-    paths: ['.github/workflows/windows-bundled-review.yml']
   workflow_dispatch:
     inputs:
       component_run_id:
@@ -26,8 +23,7 @@ jobs:
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
-      # Bootstrap this branch-only workflow using the already audited component.
-      COMPONENT_REVIEW_RUN_ID: ${{ inputs.component_run_id || '43762909502' }}
+      COMPONENT_REVIEW_RUN_ID: ${{ inputs.component_run_id }}
     steps:
       - uses: actions/checkout@v7
         with:

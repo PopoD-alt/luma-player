@@ -121,6 +121,19 @@ public class LanProtocolTest {
             assertFalse("Fixture did not keep upstream disconnect blocked",complete.isDone());release.countDown();complete.get(2,TimeUnit.SECONDS);
         }finally{release.countDown();relay.close();closer.shutdownNow();}
     }
+    @Test public void relayDiagnosticsKeepPhaseAndClassButNeverExceptionSecrets()throws Exception{
+        LanApi.Session session=new LanApi.Session(LanEndpoint.parse("http://127.0.0.1:1234"),new LanApi.Info("session","Desktop"),TOKEN);LanApi.Item item=LanApi.parsePlaylist(playlist(TOKEN),session).get(0);
+        try(StreamRelay relay=new StreamRelay(session,item,url->new HttpURLConnection(url){
+            public void connect(){}public void disconnect(){}public boolean usingProxy(){return false;}
+            public int getResponseCode()throws IOException{throw new IOException("https://private.invalid/media?token="+TOKEN);}
+        },failure->{});Socket client=new Socket("127.0.0.1",new URL(relay.playbackUrl()).getPort())){
+            client.setSoTimeout(1000);String request="GET "+new URL(relay.playbackUrl()).getPath()+" HTTP/1.1\r\nHost: localhost\r\n\r\n";client.getOutputStream().write(request.getBytes(StandardCharsets.US_ASCII));client.getOutputStream().flush();
+            assertEquals("Existing pre-response IO close policy changed",-1,client.getInputStream().read());
+            long deadline=System.currentTimeMillis()+1000;while(!relay.diagnostics().contains("ioClass=")&&System.currentTimeMillis()<deadline)Thread.sleep(5);
+            String observed=relay.diagnostics();assertTrue(observed.contains("accepted=1"));assertTrue(observed.contains("parsed=1"));assertTrue(observed.contains("upstreamAttempts=1"));assertTrue(observed.contains("upstreamStatus=0"));assertTrue(observed.contains("headers=0"));assertTrue(observed.contains("ioClass=IOException"));assertTrue(observed.contains("ioPhase=UPSTREAM_CONNECT"));
+            assertFalse(observed.contains(TOKEN));assertFalse(observed.contains("private.invalid"));assertFalse(observed.contains("https://"));assertFalse(observed.contains(new URL(relay.playbackUrl()).getPath()));
+        }
+    }
     static JSONObject playlist(String token)throws Exception{return new JSONObject().put("version",1).put("name","Desktop").put("items",new JSONArray().put(new JSONObject().put("id","episode-1").put("title","Episode").put("durationSeconds",12).put("resumeSeconds",2).put("mimeType","video/mp4").put("streamPath","/v1/media/episode-1?token="+token)));}
     interface Throwing{void run()throws Exception;}
     static void reject(Runnable run){try{run.run();fail("Unsafe endpoint accepted");}catch(IllegalArgumentException expected){}}
