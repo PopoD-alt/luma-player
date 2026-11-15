@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF><EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>Luma Player</AssemblyName><RootNamespace>Luma.WindowsApp</RootNamespace>
-    <Version>0.6.1</Version><AssemblyVersion>0.6.1.0</AssemblyVersion>
+    <Version>0.7.0</Version><AssemblyVersion>0.7.0.0</AssemblyVersion><FileVersion>0.7.0.4</FileVersion><InformationalVersion>0.7.0-review.4+libVLC3</InformationalVersion>
     <Product>Luma Player</Product><ApplicationManifest>app.manifest</ApplicationManifest>
     <PublishTrimmed>false</PublishTrimmed><PublishReadyToRun>false</PublishReadyToRun>
     <ApplicationIcon Condition="Exists('../Assets/Luma.ico')">../Assets/Luma.ico</ApplicationIcon>

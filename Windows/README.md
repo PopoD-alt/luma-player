@@ -1,62 +1,76 @@
-# Luma Player for Windows — review preview
+# Luma Player for Windows — libVLC review
 
-This is a native WPF port targeting **Windows 11 x64**. It uses .NET 10 and Windows desktop composition, with a DWM Mica backdrop when supported and an opaque fallback. Other Windows versions and Windows on ARM are unverified. The current source adds original AIFF/AIFC/AU decoding and a bounded AVC/HEVC + AAC-LC Matroska remux path. Use the matching review artifact and per-path smoke results to see which additions reached native Windows playback. A portable test or successful decoding of an output file on macOS is not proof of Windows playback, appearance or audible output.
+Luma keeps its native WPF interface, queue, bookmarks, resume positions, themes and fullscreen controls. Playback now goes directly to **libVLC 3** for local media. The app no longer makes a whole-file Matroska remux or an HEVC compatibility copy before playing a file, and that former 512 MiB gate does not apply to playback.
 
-Luma's source is proprietary and published for inspection. Official binaries are free to use under the repository LICENSE, included with builds as `LICENSE.txt`. No VLC, FFmpeg, libFLAC or other third-party codec engine is bundled. Microsoft's runtime and WPF have their own licenses and third-party notices, preserved under `Licenses/Microsoft/` in self-contained builds.
+This branch is **0.7.0 Windows review build 4**, targeting Windows 11 x64 and .NET 10. Windows on ARM, other Windows versions, every codec/profile and physical audio output are not implied by a successful build. Read the native results for the exact commit before treating a path as verified. No production Windows release is published by the build script.
 
-## Build a Windows review ZIP
+## Runtime requirement
 
-Use a Windows x64 desktop with PowerShell 7 and the official [.NET SDK 10.0.404](https://dotnet.microsoft.com/download/dotnet/10.0). From the repository root:
-
-```powershell
-pwsh -File .\Windows\build.ps1
-```
-
-The script runs the console core suites against `Tests/Fixtures`, then publishes the WPF app as a self-contained `win-x64` build. Managed assemblies are bundled into the executable; native runtime libraries can extract at startup. Trimming is disabled. Keep the complete published folder, its configuration, demo and notices together.
-
-The script launches `Luma Player.exe --smoke-test <fixturesRoot> <outputFolder>` with a timeout. That mode exercises the app's own window, original AVI playback and fullscreen path, writes PNGs and `smoke-results.json`, and must exit successfully before a ZIP is produced. The build also requires a passed native MP4 result and an explicit audio result. `BUILD-INFO.json` and `review.json` retain these per-path `smokeResults`; review them and the images, rather than reading the overall visual check as proof of audio hardware output.
-
-The core suite verifies exact decoded samples independently of audio hardware. The native original-audio check reports `originalAudio: "passed"` when its Windows playback check succeeds. A headless runner can instead report `"unverified-no-active-render-endpoint"` only when playback returns `NS_E_WMP_AUDIO_HW_PROBLEM` and Core Audio enumeration finds zero active render endpoints. That result must record `activeAudioRenderEndpoints: 0`; it does not establish audible output. Other playback errors remain failures. Endpoint counts may be null when unavailable, but a null count cannot justify skipping the audio hardware check. A hosted run also does not cover every GPU, multi-monitor/DPI combination or installed codec; verify audible playback on a real Windows audio device before claiming it works there.
-
-Outputs are `Windows/artifacts/win-x64/`, `Windows/artifacts/review/`, and `Windows/artifacts/Luma-Player-windows-x64-review.zip` with its SHA-256 file. Running the script replaces these regenerable outputs. It does not create a GitHub tag or release, upload files, sign with a publisher certificate, or update an app feed.
-
-The **Windows review build** Actions workflow can be started manually. Pushes to the `windows-port` branch also run it when Windows code, synthetic fixtures, the workflow or LICENSE changes. It uses a GitHub-hosted Windows x64 runner, retains review artifacts temporarily, and has no repository-write permissions. Download its ZIP and smoke-test evidence from the workflow run; these are review artifacts rather than a published Windows release.
-
-## Install and try the review build
-
-1. Obtain the review ZIP from a source and commit you trust. If downloaded as an Actions artifact, first extract GitHub's outer archive, then extract `Luma-Player-windows-x64-review.zip` into a normal folder.
-2. Keep the extracted files together. Run **Luma Player.exe** from that folder; do not run it from inside a ZIP.
-3. This preview is unsigned and has no established Windows publisher reputation. Windows may show a security warning. Review the provenance and local policy before choosing to run it; do not disable system protection globally.
-4. Open your own local media or the included synthetic demo. Check `FORMAT_SUPPORT.md` for the original decoder paths and the machine-dependent Windows playback route.
-
-The app includes a local media library, bookmarks and resume positions, external SRT/WebVTT subtitles and selectable supported Matroska plain-text caption tracks. For a successfully prepared MKV, use **More… → Audio tracks** to choose an AAC-LC track or turn audio off, and **More… → Embedded captions** to select readable UTF-8, WebVTT or ASS/SSA text. Supported local MP4 `tx3g`/`text` tracks also appear as plain captions. Unsupported embedded caption variants produce a warning without blocking otherwise supported video/audio. PGS packets have no Windows bitmap renderer yet. Verify these behaviors and audible playback on the target machine before using the preview with important state. Keep copies of your media.
-
-### HEVC / AAC 5.1 troubleshooting
-
-Build 3 adds the modern Windows Media Foundation engine for HEVC and multichannel AAC, replacing the legacy WPF playback route for those files. A usable installed Windows HEVC decoder is still required. This is not an original Luma HEVC decoder, and does not establish VLC-equivalent playback.
-
-For eligible `hev1` MP4 files, Luma validates the sample tables, complete out-of-band HEVC parameter sets, self-contained media references and every sample's NAL units before creating an `hvc1` compatibility copy. Compressed media bytes and your original file stay unchanged. Files with in-band parameter sets, encryption, fragmentation or unsupported tables remain on the original route. A compatibility copy needs temporary disk space approximately equal to the input size and is prepared before playback.
-
-If a file still fails, open **More… → Media diagnostics…**. The local report includes codec/profile, effective AAC channels, preparation details, native HRESULTs and actual per-stream decoded-sample results. It does not upload your media or report. A decoder-only check can succeed without proving video presentation, audible output or A/V synchronization. You can also capture a decoder report in PowerShell:
+Install the official **64-bit VLC 3** application separately, or set `LUMA_LIBVLC_PATH` to an absolute path to its `libvlc.dll`. The matching `libvlccore.dll` and `plugins` folder must remain beside it. For example:
 
 ```powershell
-& '.\Luma Player.exe' --media-probe 'C:\Media\sample.mp4' > media-diagnostics.json
+$env:LUMA_LIBVLC_PATH = 'C:\Program Files\VideoLAN\VLC\libvlc.dll'
+& '.\Luma Player.exe'
 ```
 
-This command probes the supplied file directly; the app's diagnostics probe its active compatibility copy when one was prepared. Review reports before sharing because filenames are included.
+The adapter checks the libVLC major version. An optional `<app>/libvlc/` runtime is considered only with a redistribution audit approval manifest. **The current review package does not bundle stock VLC or its plugins.** Runtime redistribution remains subject to the owner's package, dependency and source audit. A separately installed stock runtime used by development tests is not permission to redistribute it with Luma. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-## Formats and updates
+Keep all files from the Luma review folder together. The Windows review executable is unsigned and has no established trusted publisher reputation. Use the provenance and your local policy to decide whether to run it; do not disable system protection globally.
 
-Original portable tests cover integer WAVE, G.711, IMA/Microsoft ADPCM, 42 FLAC goldens, supported video-only AVI decoders, and 60 exact AIFF/AIFC/AU format/depth/channel vectors. AIFF/AIFC adds signed PCM 8/16/24/32-bit, `NONE`/`twos`/`sowt` variants and G.711; AU/SND adds signed big-endian PCM and G.711. Audio input is bounded to 256 MiB and 64 million decoded interleaved samples. Floating-point WAVE/AIFF/AU, CAF and arbitrary compressed AIFC/AU variants are not covered by these original decoders.
+## Playback
 
-The new original Matroska/MP4 code retains compressed AVC/HEVC and AAC-LC bytes, coding order, timing and relative track starts. It supports one video track, selectable mono/stereo/5.1 AAC-LC or audio off, and selectable embedded plain UTF-8/WebVTT/ASS/SSA text. It does **not** create new AVC, HEVC or AAC decoders: Windows media facilities still perform compressed decoding. The path is bounded to 512 MiB, 500,000 packets, known-size Clusters and supported timelines; reordered video needs a complete bounded CFR timeline. AAC is LC-only, 1,024 samples per frame and 7,350–64,000 Hz. HE/SBR/PS, other Matroska audio mappings, WebM, HDR/display metadata preservation and PGS rendering remain outside this path. ASS fonts, styling, positioning, animation, karaoke and vector drawing are not reproduced.
+Open or drop local media, then use the queue, seek bar, volume, speed and bookmarks. F11 enters/exits video fullscreen; Space toggles playback and the arrow keys seek. Fullscreen keeps the same native player and A/V clock.
 
-Structural/golden tests exercise the container, timeline and subtitle code. Independent macOS decoding matched 360 AVC frames, 360 reordered AVC frames and 60 frames each of HEVC 8/10-bit against their sources; AAC signal start retained the 250 ms relative offset within 25 ms. The Windows build requires native AVC MP4/MKV, B-frame seek, embedded captions and lifecycle recovery checks to pass. HEVC playback probes retain their own passed or unverified result; audible output is explicitly unverified when the runner has no active render endpoint. Inspect the matching artifact: independent macOS decode is container-output evidence, and does not establish Windows codec availability or speaker output.
+**More → Audio tracks** and **More → Caption tracks** use libVLC's actual track list. Audio and captions can be turned off explicitly. The Captions button adds an external subtitle file; caption timing controls adjust the native subtitle delay. Embedded and external captions are rendered by libVLC, including the styling supported by the selected runtime. Selecting a track does not remux the file or silently choose a different audio track after an error.
 
-The Windows-specific [support inventory](CodecSupport.json) is separate from the Mac catalog and is not exhaustive or a parity percentage. Only the previously verified synthetic Windows AVC MP4 route is labeled `system`; installed codecs and portable reconstruction alone do not establish supported playback. Full VLC compatibility is unfinished. See [FORMAT_SUPPORT.md](FORMAT_SUPPORT.md) for per-format boundaries and evidence.
+The breadth of formats comes from the separately installed runtime and its modules. DRM, malformed media, every codec profile, interactive disc menus and every output device are not guaranteed. **More → Playback diagnostics** shows local runtime/version, native decoded/displayed counters and track state. It does not upload the report or media. WPF UI snapshots do not capture the native video child; native libVLC snapshots and displayed-picture counters are separate evidence.
 
-Build 3's Windows-hosted tests passed actual H.264 native rendering, Source Reader video pixels and six-channel/48 kHz AAC PCM decoding from the authored silent fixture. Both original `hev1` and normalized `hvc1` retained decodable AAC. HEVC 8/10-bit presentation and direct decode returned `MF_E_TOPO_CODEC_NOT_FOUND` (`0xC00D5212`) on that runner; the new backend does not supply the missing HEVC decoder. Original audio output remains unverified because the runner had zero active render endpoints. [Microsoft's codec FAQ](https://support.microsoft.com/en-gb/windows/apps/windowsmediaplayer/codecs-faq) describes adding applicable official codec extensions. Codec availability, licensing, physical sound and real-device HEVC playback must be checked on the target PC.
+## Share the current playlist locally
 
-Windows uses a separate ECDSA-P256/SHA-256 signed-update configuration in `appsettings.windows.json`. Its initial feed and public key are blank, so there is no live Windows update service. It must never consume the Mac Ed25519 manifest or DMG feed. Review ZIPs are installed manually; quit the old app before replacing its extracted folder. Signed Windows update publishing, Authenticode signing and installer distribution need their own validation before a public Windows release.
+Sharing is off on every launch. Click **Share playlist → Start sharing** to show the local URLs, a random six-digit pairing code, expiry, paired-device count and discovery status. In Luma for Android, discover this computer or enter a displayed URL and pair with the code. The phone plays the original streamed file; desktop playback is not controlled remotely.
 
-Report the exact commit, Windows version, codec/container and reproducible behavior when providing feedback. Do not attach private media, saved library state or credentials.
+Use a trusted home network. The protocol uses local HTTP, so clients can buffer the media they are authorized to read. This computer must remain awake with sharing enabled. No cloud account, router port forwarding, upload, deletion or remote filesystem browser is added.
+
+- Codes expire after ten minutes; existing paired tokens remain valid until sharing stops.
+- **Stop and revoke** closes active streams and revokes all tokens. Closing the desktop app also stops sharing. Closing just the sharing details window leaves sharing active, indicated by **Sharing on** in the main toolbar.
+- The shared list follows the live queue, including updated resume metadata. Removed/missing files are unavailable; removing an actively shared item also closes its stream.
+- At most the first 1,000 items are exposed, with explicit truncation/total-count metadata. Titles are bounded to 512 UTF-16 units without broken surrogate pairs; times and JSON are bounded across clients.
+- Windows attempts Bonjour/DNS-SD registration for `_luma-player._tcp.` using the built-in Windows API. Manual URLs work when multicast discovery is unavailable. An API registration result is not proof of discovery across a firewall or another network.
+
+The wire contract is [Networking/PROTOCOL.md](../Networking/PROTOCOL.md). Authentication, private-source checks, single byte ranges, request limits, connection limits, cancellation and revocation have portable real-listener tests.
+
+## Build and validate
+
+Use PowerShell 7 on a Windows x64 desktop with the pinned [.NET SDK 10.0.404](https://dotnet.microsoft.com/download/dotnet/10.0). With a separately installed runtime, run:
+
+```powershell
+pwsh -File .\Windows\build.ps1 -SmokeTimeoutSeconds 600
+```
+
+For **explicit development/CI use only**, acquire the official pinned stock runtime into a separate ignored cache:
+
+```powershell
+pwsh -File .\Windows\build.ps1 -AcquireTestVlc -SmokeTimeoutSeconds 600
+```
+
+That flag verifies the VLC 3.0.24 archive SHA-256 before extraction, sets the process runtime path and records `libvlc-runtime-gate.json`. It never copies the runtime/plugins into the publish folder or ZIP. The script rejects such DLLs/plugins in the current review artifact. Runtime binaries are not installed automatically by the app.
+
+The script runs the original portable core suites plus sharing tests, publishes the WPF app, and runs its native smoke mode. The new smoke requires native displayed-picture counters, snapshots, seeking, raw `hev1` Main10/AAC 5.1 decode, caption selection, lifecycle/resume, fullscreen and opt-in sharing UI checks. Native Windows results must be read from the matching CI run; cross-compilation alone cannot validate these operations.
+
+When Core Audio reports zero active output endpoints, only the explicit smoke path requests `--aout=adummy`. Actual AAC decoding is still checked, while physical sound is recorded as unverified. Production playback uses normal output. Neither a decoded-audio counter nor a hosted CI run establishes sound at a speaker or audible A/V synchronization.
+
+Outputs are under `Windows/artifacts/`. The script replaces its own regenerable outputs and does not create tags, upload, publish, sign or configure a release feed. Microsoft runtime notices are retained with self-contained builds.
+
+For Android emulator interoperability, the portable test executable supports:
+
+```text
+dotnet Windows/Luma.Core.Tests/bin/Debug/net10.0/Luma.Core.Tests.dll --sharing-test-host <fixturesRoot> <readyJsonPath>
+```
+
+It exposes only the generated Demo and HEVC/AAC fixtures, writes private ready JSON with port/code/opaque IDs, and stops on stdin EOF or its test lifetime limit. Keep stdin open while the client runs. Do not publish the pairing-ready file in CI logs or artifacts.
+
+## Saved data and updates
+
+The existing local library location and schema are preserved. The old original decoders, demuxers and remux tests remain in `Luma.Core` as independent reference work; they are not the Windows GUI's active playback backend. See [FORMAT_SUPPORT.md](FORMAT_SUPPORT.md) and [CodecSupport.json](CodecSupport.json) for that distinction.
+
+Windows retains its separate ECDSA-P256/SHA-256 updater. Its initial feed and key are blank, so no live Windows update service is claimed. It must not consume the Mac Ed25519/DMG feed. Review folders are replaced manually after quitting Luma. Signed publishing, installer distribution and a bundled runtime require separate owner review before production release.

@@ -100,6 +100,7 @@ jobs:
           name: Luma-Android-streaming-evidence-${{ github.sha }}
           path: |
             build/android-integration/
+            Android/build/reports/
             Android/app/build/reports/
             Android/app/build/test-results/
           if-no-files-found: warn

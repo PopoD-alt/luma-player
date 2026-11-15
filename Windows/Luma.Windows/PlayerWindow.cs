@@ -179,7 +179,7 @@ internal sealed class PlayerWindow : Window
         Item("Play original video demo", () => _ = ImportAsync([Path.Combine(AppContext.BaseDirectory, "Demos", "Luma-MSVideo1-16.avi")]));
         Item("Saved bookmarks", ShowBookmarks); Item("Caption timing −0.25s", () => ChangeCaptionDelay(-.25)); Item("Caption timing +0.25s", () => ChangeCaptionDelay(.25));
         Item("Turn captions off", () => TryControl(() => vlc?.SelectSubtitle(-1)));
-        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.6.1 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by separately installed libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
+        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.7.0 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by separately installed libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
         return menu;
     }
     async Task OpenMediaAsync()

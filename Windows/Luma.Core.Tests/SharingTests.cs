@@ -80,7 +80,20 @@ public static class SharingTests
             using var hanging = new TcpClient(); await hanging.ConnectAsync(IPAddress.Loopback, server.Port); await hanging.GetStream().WriteAsync("GET /v1/info HTTP/1.1\r\n"u8.ToArray()); await Until(() => server.ActiveConnections > 0);
             int stoppedPort = server.Port; server.Stop(); await Until(() => server.ActiveConnections == 0);
             Check(!server.IsRunning && server.PairedDevices == 0 && server.PairingCode.Length == 0, "Stop cancels active connections and revokes tokens/code");
-            try { using var rejected = new TcpClient(); await rejected.ConnectAsync(IPAddress.Loopback, stoppedPort).WaitAsync(TimeSpan.FromSeconds(2)); throw new InvalidOperationException("Stopped listener accepted a client"); } catch (SocketException) { }
+            using (var rejected = new TcpClient())
+            using (var connectTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+            {
+                Task connection = rejected.ConnectAsync(IPAddress.Loopback, stoppedPort, connectTimeout.Token).AsTask();
+                try { await connection.WaitAsync(TimeSpan.FromSeconds(2)); throw new InvalidOperationException("Stopped listener accepted a client"); }
+                catch (SocketException) { }
+                catch (TimeoutException) { }
+                catch (OperationCanceledException) when (connectTimeout.IsCancellationRequested) { }
+                finally
+                {
+                    connectTimeout.Cancel(); rejected.Dispose();
+                    try { await connection; } catch (Exception error) when (error is SocketException or OperationCanceledException or ObjectDisposedException) { }
+                }
+            }
             await using var renewed = new PlaylistSharingServer("New sharing session", time); renewed.Start(IPAddress.Loopback);
             Check((await Send(renewed.Port, "GET", "/v1/playlist", headers: bearer)).Status == 401, "Previous session token is not reusable");
             for (int i = 0; i < 5; i++) Check((await Send(renewed.Port, "POST", "/v1/pair", "{\"code\":\"bad\"}")).Status == 401, "Bounded failed attempts");

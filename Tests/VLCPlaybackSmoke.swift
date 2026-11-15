@@ -22,6 +22,18 @@ import Foundation
             engine.load(root.appendingPathComponent(name))
             try await wait(engine) { engine.isPlaying && engine.duration > 1 && (engine.vlcStatistics?.displayedVideo ?? 0) > 0 }
             if name.contains("AAC51") { try await wait(engine) { (engine.vlcStatistics?.decodedAudio ?? 0) > 0 } }
+            if name == "Luma-Demo.mp4" {
+                let drawable = host.subviews.first
+                let replacement = NSView(frame: host.bounds); window.contentView = replacement
+                engine.attachVideoView(replacement)
+                guard drawable != nil, replacement.subviews.first === drawable else { throw Failure.check("Host replacement recreated the native canvas") }
+                engine.addSubtitle(root.appendingPathComponent("Luma-Demo.srt"))
+                try await wait(engine) { engine.subtitleTracks.contains(where: { $0.id >= 0 }) && engine.selectedSubtitleTrack >= 0 }
+                engine.setSubtitleDelay(0.5)
+                guard abs(engine.actualSubtitleDelay - 0.5) < 0.001 else { throw Failure.check("Native subtitle timing was not applied") }
+                engine.setSubtitleTrack(-1); guard engine.selectedSubtitleTrack == -1 else { throw Failure.check("Native subtitles off") }
+                print("PASS: native canvas retained across host replacement; actual libVLC external subtitle parsing/selection/delay/off")
+            }
             engine.pause(); try await wait(engine) { engine.state == "paused" }
             engine.seek(to: min(0.7, engine.duration / 2)); engine.setRate(1.25)
             try await wait(engine) { abs(engine.currentTime - min(0.7, engine.duration / 2)) < 0.3 }

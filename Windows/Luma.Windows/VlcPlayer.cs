@@ -119,14 +119,18 @@ internal sealed class VlcPlayer : HwndHost
             events = Native.libvlc_media_player_event_manager(player); int token = revision;
             notification = (pointer, _) =>
             {
-                int type = Marshal.ReadInt32(pointer);
-                Post(() =>
+                try
                 {
-                    if (token != revision || disposed != 0 || player == IntPtr.Zero || failed) return;
-                    if (type == 0x10a) { RaiseFailure("libVLC could not open or decode this media. Its installed modules may not support this file."); return; }
-                    if (type == 0x109) { if (opened && !ended) { ended = true; Ended?.Invoke(this, EventArgs.Empty); } return; }
-                    Refresh(); if (type is 0x114 or 0x115 or 0x116) TracksChanged?.Invoke(this, EventArgs.Empty);
-                });
+                    int type = Marshal.ReadInt32(pointer);
+                    Post(() =>
+                    {
+                        if (token != revision || disposed != 0 || player == IntPtr.Zero || failed) return;
+                        if (type == 0x10a) { RaiseFailure("libVLC could not open or decode this media. Its installed modules may not support this file."); return; }
+                        if (type == 0x109) { if (opened && !ended && Native.libvlc_media_player_get_state(player) == 6) { ended = true; Ended?.Invoke(this, EventArgs.Empty); } return; }
+                        Refresh(); if (type is 0x114 or 0x115 or 0x116) TracksChanged?.Invoke(this, EventArgs.Empty);
+                    });
+                }
+                catch (Exception) { /* A managed exception must never unwind through libVLC's native callback. */ }
             };
             foreach (int type in new[] { 0x104, 0x109, 0x10a, 0x111, 0x112, 0x114, 0x115, 0x116 })
             { if (Native.libvlc_event_attach(events, type, notification, IntPtr.Zero) != 0) throw new InvalidOperationException("libVLC event registration failed."); attached.Add(type); }

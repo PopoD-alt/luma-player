@@ -116,6 +116,7 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     var vlcStatistics: (decodedVideo: Int32, displayedVideo: Int32, decodedAudio: Int32)? { vlc?.statistics }
     var actualPlaybackRate: Double { usingVLC ? vlc?.actualRate ?? 0 : Double(player.rate) }
     var vlcRuntimePath: String? { vlc?.runtimePath }
+    var actualSubtitleDelay: Double { vlc?.actualSubtitleDelay ?? 0 }
     func snapshot(to url: URL) -> Bool { usingVLC && vlc?.snapshot(to: url) == true }
 
     init() {
@@ -127,6 +128,11 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
 
     func attachVideoView(_ view: NSView) {
         if canvas?.superview === view { return }
+        if let output = canvas {
+            output.removeFromSuperview(); output.frame = view.bounds
+            view.addSubview(output); output.needsLayout = true
+            return
+        }
         canvas?.removeFromSuperview()
         let output = PlaybackCanvas(frame: view.bounds)
         output.autoresizingMask = [.width, .height]

@@ -24,7 +24,7 @@ import Darwin
     typealias SetFloat = @convention(c) (Pointer?, Float) -> Int32
     typealias GetVersion = @convention(c) () -> UnsafePointer<CChar>?
     typealias GetTracks = @convention(c) (Pointer?) -> Pointer?
-    typealias AddSlave = @convention(c) (Pointer?, Int32, UnsafePointer<CChar>?, Int32) -> Int32
+    typealias AddSlave = @convention(c) (Pointer?, Int32, UnsafePointer<CChar>?, Bool) -> Int32
     typealias GetStats = @convention(c) (Pointer?, Pointer?) -> Int32
     typealias Snapshot = @convention(c) (Pointer?, UInt32, UnsafePointer<CChar>?, UInt32, UInt32) -> Int32
 
@@ -75,7 +75,7 @@ import Darwin
             let freePlayer = try resolve("libvlc_media_player_release", as: Release.self)
             // Never enable a web interface, recursive media discovery or
             // embedded Lua/network-controlled scripts from an opened file.
-            let options = ["--no-video-title-show", "--no-osd", "--no-lua", "--no-snapshot-preview", "--quiet"]
+            let options = ["--ignore-config", "--no-video-title-show", "--no-osd", "--no-lua", "--no-metadata-network-access", "--no-sub-autodetect-file", "--no-snapshot-preview", "--quiet"]
             let strings = options.map { strdup($0) }
             defer { strings.forEach { free($0) } }
             let arguments = strings.map { $0.map { UnsafePointer<CChar>($0) } }
@@ -126,7 +126,7 @@ import Darwin
     var seekable: Bool { !closed && function("libvlc_media_player_is_seekable", GetInt.self)(mediaPlayer) != 0 }
     var playing: Bool { !closed && function("libvlc_media_player_is_playing", GetInt.self)(mediaPlayer) != 0 }
     var actualRate: Double { closed ? 0 : Double(function("libvlc_media_player_get_rate", GetFloat.self)(mediaPlayer)) }
-    func seek(_ seconds: Double) { guard !closed else { return }; function("libvlc_media_player_set_time", SetTime.self)(mediaPlayer, Int64(max(0, seconds) * 1000)) }
+    func seek(_ seconds: Double) { guard !closed, seconds.isFinite else { return }; function("libvlc_media_player_set_time", SetTime.self)(mediaPlayer, Int64(min(Double(Int64.max / 2000), max(0, seconds)) * 1000)) }
     func volume(_ percent: Double) { guard !closed else { return }; _ = function("libvlc_audio_set_volume", SetInt.self)(mediaPlayer, Int32(percent)) }
     func rate(_ rate: Double) { guard !closed else { return }; _ = function("libvlc_media_player_set_rate", SetFloat.self)(mediaPlayer, Float(rate)) }
     var selectedAudio: Int32 { closed ? -1 : function("libvlc_audio_get_track", GetInt.self)(mediaPlayer) }
@@ -134,8 +134,9 @@ import Darwin
     func audio(_ id: Int32) { guard !closed else { return }; _ = function("libvlc_audio_set_track", SetInt.self)(mediaPlayer, id) }
     func subtitle(_ id: Int32) { guard !closed else { return }; _ = function("libvlc_video_set_spu", SetInt.self)(mediaPlayer, id) }
     func subtitleDelay(_ seconds: Double) { guard !closed else { return }; _ = function("libvlc_video_set_spu_delay", (@convention(c) (Pointer?, Int64) -> Int32).self)(mediaPlayer, Int64(seconds * 1_000_000)) }
+    var actualSubtitleDelay: Double { closed ? 0 : Double(function("libvlc_video_get_spu_delay", GetTime.self)(mediaPlayer)) / 1_000_000 }
     func addSubtitle(_ url: URL) -> Bool {
-        !closed && url.absoluteString.withCString { function("libvlc_media_player_add_slave", AddSlave.self)(mediaPlayer, 0, $0, 1) == 0 }
+        !closed && url.absoluteString.withCString { function("libvlc_media_player_add_slave", AddSlave.self)(mediaPlayer, 0, $0, true) == 0 }
     }
     func tracks(audio: Bool) -> [PlaybackTrack] {
         guard !closed else { return [] }

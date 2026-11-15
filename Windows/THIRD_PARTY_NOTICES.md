@@ -2,7 +2,11 @@
 
 Luma's own source code is proprietary. Official Luma binaries are intended to be free of charge; free pricing does not grant source-code rights. See the repository's [LICENSE](../LICENSE) for Luma's terms.
 
-The original Luma WAVE, FLAC and AVI parsers and sample/frame reconstruction do not depend on VLC, FFmpeg or libFLAC. Public format specifications referenced by the code are documentation sources, not bundled codec implementations.
+The active Windows playback backend dynamically loads a separately installed **libVLC 3** runtime through its public C ABI. libVLC is provided by VideoLAN under LGPL terms; the selected runtime's plugins and dependencies can carry additional licenses. No stock VLC runtime, plugins or FFmpeg binaries are copied into the current review artifact. Their use as an external test dependency does not approve redistribution.
+
+The pinned official VLC 3.0.24 Windows ZIP is a development/CI-only external dependency when `-AcquireTestVlc` is explicitly used. Its original notices must remain with that separately extracted runtime. The current build records an external-runtime gate and rejects VLC DLLs/plugins in its publish folder. Before any bundled deployment, retain the exact applicable license texts, notices, corresponding-source/rebuild material and an approved dependency/plugin inventory; an upstream package label alone is insufficient. The optional app-local loader requires an owner redistribution audit approval manifest.
+
+The original Luma WAVE, FLAC and AVI parsers and sample/frame reconstruction remain independent reference implementations with no VLC/FFmpeg/libFLAC dependency. They are retained in source/tests and are no longer the normal Windows GUI playback backend. Public format specifications referenced by that code are documentation sources.
 
 A self-contained Windows build also distributes Microsoft's .NET runtime and Windows Desktop/WPF components. Their MIT licenses and applicable third-party notices remain separate from Luma's license. Microsoft maintains the primary [.NET runtime license](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT), [.NET runtime third-party notices](https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT), [WPF license](https://github.com/dotnet/wpf/blob/main/LICENSE.TXT) and [WPF third-party notices](https://github.com/dotnet/wpf/blob/main/THIRD-PARTY-NOTICES.TXT). Those links track upstream development; the exact files retained with the build identify its bundled versions and terms.
 

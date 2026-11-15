@@ -30,3 +30,43 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'
 }
+
+// A debug APK is personal-development evidence. Release packaging is fail-closed.
+def verifyReleaseRuntimeAudit = tasks.register('verifyReleaseRuntimeAudit') {
+    group = 'verification'
+    description = 'Requires the central native-component audit and matching resolved AAR bytes.'
+    def registry = rootProject.file('../ThirdParty/libvlc/packages.json')
+    inputs.file(registry)
+    // Always inspect the resolved artifact, even if an earlier invocation passed.
+    outputs.upToDateWhen { false }
+    doLast {
+        def document = new groovy.json.JsonSlurper().parse(registry)
+        def record = document.packages['android-libvlc-all-3.7.7']
+        def audit = record?.audit
+        def flags = ['moduleLicensesReviewed', 'dependencyLicensesReviewed',
+                     'completeCorrespondingSources', 'replacementMechanismVerified']
+        if (audit?.status != 'approved-for-redistribution' || !flags.every { audit[it] == true }) {
+            throw new GradleException('Android release blocked: the libVLC native module/dependency/source/replacement audit is incomplete. Debug APKs remain development-only; see ThirdParty/libvlc/packages.json.')
+        }
+        def artifacts = configurations.releaseRuntimeClasspath.resolvedConfiguration.resolvedArtifacts.findAll {
+            it.moduleVersion.id.group == 'org.videolan.android' && it.name == 'libvlc-all'
+        }
+        if (artifacts.size() != 1 || artifacts[0].moduleVersion.id.version != '3.7.7' || artifacts[0].extension != 'aar') {
+            throw new GradleException('Android release blocked: resolved libVLC artifact does not match the audited coordinate.')
+        }
+        def digest = java.security.MessageDigest.getInstance('SHA-256')
+        artifacts[0].file.withInputStream { input ->
+            byte[] buffer = new byte[65536]
+            int count
+            while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+        }
+        def actual = digest.digest().collect { String.format(java.util.Locale.ROOT, '%02x', it & 0xff) }.join()
+        def expected = record?.artifact?.sha256
+        if (!(expected instanceof String) || !(expected ==~ /[a-f0-9]{64}/) || actual != expected) {
+            throw new GradleException('Android release blocked: resolved libVLC AAR SHA256 does not match the approved registry.')
+        }
+    }
+}
+tasks.configureEach {
+    if (name in ['preReleaseBuild', 'assembleRelease', 'bundleRelease']) dependsOn(verifyReleaseRuntimeAudit)
+}
