@@ -21,6 +21,8 @@ on:
       - 'ThirdParty/**'
       - 'Scripts/prepare-libvlc*'
       - 'Scripts/run-android-integration.py'
+      - 'Scripts/prepare-android-ci-wifi.py'
+      - 'Scripts/test-android-ci-wifi.py'
       - '.github/workflows/cross-platform-review.yml'
       - 'LICENSE'
       - 'THIRD_PARTY_NOTICES.md'
@@ -86,7 +88,9 @@ jobs:
           dotnet-version: '10.0.404'
       - name: Build and check Android development apps
         working-directory: Android
-        run: bash ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug
+        run: |
+          python3 ../Scripts/test-android-ci-wifi.py
+          bash ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug
       - name: Enable emulator acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -101,7 +105,9 @@ jobs:
           profile: pixel_7_pro
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
-          script: python3 Scripts/run-android-integration.py ${{ inputs.native_diagnostics && '--native-diagnostics' || '' }} ${{ inputs.stress_transitions && '--stress-transitions' || '' }}
+          script: |
+            python3 Scripts/prepare-android-ci-wifi.py --prepare-disposable-emulator --report build/android-integration/network-precondition.json
+            python3 Scripts/run-android-integration.py ${{ inputs.native_diagnostics && '--native-diagnostics' || '' }} ${{ inputs.stress_transitions && '--stress-transitions' || '' }}
       - name: Preserve Android evidence only
         if: always()
         uses: actions/upload-artifact@v7
