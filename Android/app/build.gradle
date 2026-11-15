@@ -1,12 +1,58 @@
 plugins { id 'com.android.application' }
 
 // Personal validation of a locally rebuilt component before central approval.
-// A separate output directory preserves the frozen default CI artifacts.
+// Separate generated files by runtime choice; Gradle may clean stale APK outputs
+// when switching choices, so copy private review evidence before another build.
 def developmentAarPath = providers.gradleProperty('lumaDevelopmentAar').orNull
 def developmentAar = developmentAarPath == null ? null : file(developmentAarPath)
+def runtimePackageId = providers.gradleProperty('lumaRuntimePackage').orNull
+if (developmentAar != null && runtimePackageId != null) throw new GradleException('Select either lumaDevelopmentAar or lumaRuntimePackage, never both.')
+def repositoryRoot = rootProject.file('..').canonicalFile
+def runtimeRegistry = new File(repositoryRoot, 'ThirdParty/libvlc/packages.json')
+def approvedRecord = null
+def approvedRuntimeRoot = null
+def approvedAar = null
+if (runtimePackageId != null) {
+    if (!(runtimePackageId ==~ /android-lgpl-arm64-[A-Za-z0-9._-]+/)) throw new GradleException('Unsupported Android runtime package ID.')
+    approvedRecord = new groovy.json.JsonSlurper().parse(runtimeRegistry).packages[runtimePackageId]
+    if (approvedRecord?.platform != 'android-arm64-v8a' || !(approvedRecord.runtimeEntry ==~ /[A-Za-z0-9._-]+\.aar/)) throw new GradleException('Select a registered Android ARM64 AAR package.')
+    approvedRuntimeRoot = new File(repositoryRoot, "ThirdParty/runtime/${runtimePackageId}")
+    approvedAar = new File(approvedRuntimeRoot, approvedRecord.runtimeEntry)
+    if (!approvedAar.isFile()) throw new GradleException('Stage the registered Android runtime with Scripts/prepare-libvlc.py before selecting it.')
+    layout.buildDirectory = layout.projectDirectory.dir('build-approved-runtime')
+}
 if (developmentAar != null) {
     if (!developmentAar.isFile() || !developmentAar.name.endsWith('.aar')) throw new GradleException('Build the local custom AAR before selecting lumaDevelopmentAar.')
     layout.buildDirectory = layout.projectDirectory.dir('build-custom-native')
+}
+def selectedLocalAar = approvedAar ?: developmentAar
+
+def verifyApprovedRuntime = {
+    def execution = providers.exec {
+        workingDir repositoryRoot
+        commandLine 'python3', new File(repositoryRoot, 'Scripts/prepare-libvlc.py'), 'verify', '--runtime', approvedRuntimeRoot, '--distribution'
+        ignoreExitValue = true
+    }
+    def output = execution.standardOutput.asText.get()
+    if (execution.result.get().exitValue != 0) throw new GradleException('Android runtime verification failed: ' + output.take(2000) + execution.standardError.asText.get().take(2000))
+    def result = new groovy.json.JsonSlurper().parseText(output)
+    if (result.package != runtimePackageId || result.redistributionApproved != true || result.developmentOnly != false || new File(result.runtimeEntry).canonicalFile != approvedAar.canonicalFile) throw new GradleException('Android runtime verifier did not approve the selected AAR.')
+    def digest = java.security.MessageDigest.getInstance('SHA-256')
+    approvedAar.withInputStream { input ->
+        byte[] buffer = new byte[65536]
+        int count
+        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+    }
+    def actual = digest.digest().collect { String.format(java.util.Locale.ROOT, '%02x', it & 0xff) }.join()
+    if (!(approvedRecord.runtimeSha256 ==~ /[a-f0-9]{64}/) || actual != approvedRecord.runtimeSha256) throw new GradleException('Selected Android AAR differs from the approved registry hash.')
+}
+
+def verifySelectedRuntimeAudit = runtimePackageId == null ? null : tasks.register('verifySelectedRuntimeAudit') {
+    group = 'verification'
+    description = 'Verifies the selected immutable native package, source bundle, notices and exact AAR.'
+    inputs.file(runtimeRegistry)
+    outputs.upToDateWhen { false }
+    doLast { verifyApprovedRuntime() }
 }
 
 android {
@@ -19,9 +65,10 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = '0.1.0-preview'
-        buildConfigField 'boolean', 'LUMA_CUSTOM_RUNTIME', developmentAar != null ? 'true' : 'false'
+        buildConfigField 'boolean', 'LUMA_CUSTOM_RUNTIME', selectedLocalAar != null ? 'true' : 'false'
+        buildConfigField 'boolean', 'LUMA_APPROVED_RUNTIME', runtimePackageId != null ? 'true' : 'false'
         testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'
-        ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }
+        ndk { if (selectedLocalAar != null) abiFilters 'arm64-v8a'; else abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }
     }
     buildFeatures { buildConfig = true }
     buildTypes {
@@ -29,14 +76,39 @@ android {
         release { minifyEnabled = false }
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
-    packaging { jniLibs { useLegacyPackaging = false; if (developmentAar != null) keepDebugSymbols += ['**/libvlc.so', '**/libvlcjni.so', '**/libc++_shared.so'] } }
+    packaging { jniLibs { useLegacyPackaging = false; if (selectedLocalAar != null) keepDebugSymbols += ['**/libvlc.so', '**/libvlcjni.so', '**/libc++_shared.so'] } }
+}
+
+if (runtimePackageId != null) {
+    def generatedAssets = layout.buildDirectory.dir('generated/approved-runtime-assets')
+    def runtimeAssets = tasks.register('prepareApprovedRuntimeAssets', Sync) {
+        dependsOn(verifySelectedRuntimeAudit)
+        from(layout.projectDirectory.dir('src/main/assets')) { exclude 'third-party/DEVELOPMENT-NOTICE.txt' }
+        from(new File(approvedRuntimeRoot, 'Notices')) { into 'third-party/libvlc/Notices' }
+        into(generatedAssets)
+        inputs.file(runtimeRegistry)
+        doLast {
+            def metadata = new File(destinationDir, 'third-party/libvlc/LUMA-RUNTIME.json')
+            metadata.parentFile.mkdirs()
+            metadata.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([
+                package: runtimePackageId, aarSha256: approvedRecord.runtimeSha256,
+                correspondingSource: approvedRecord.correspondingSource,
+                sourceDelivery: 'Distribute the matching library source companion and application source snapshot with the APK.'
+            ])) + '\n'
+        }
+    }
+    android.sourceSets.main.assets.setSrcDirs([runtimeAssets])
+    tasks.configureEach {
+        if (name == 'preBuild') dependsOn(verifySelectedRuntimeAudit)
+        if (name.startsWith('merge') && name.endsWith('Assets') || name.toLowerCase(java.util.Locale.ROOT).contains('lint')) dependsOn(runtimeAssets)
+    }
 }
 
 dependencies {
     // Official candidate is pinned for development; ThirdParty audit gates redistribution.
-    if (developmentAar == null) implementation 'org.videolan.android:libvlc-all:3.7.7'
+    if (selectedLocalAar == null) implementation 'org.videolan.android:libvlc-all:3.7.7'
     else {
-        implementation files(developmentAar)
+        implementation files(selectedLocalAar)
         // Exact transitive Java dependencies from the official binding POM.
         implementation 'androidx.annotation:annotation:1.7.1'
         implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -58,6 +130,7 @@ def verifyReleaseRuntimeAudit = tasks.register('verifyReleaseRuntimeAudit') {
     outputs.upToDateWhen { false }
     doLast {
         if (developmentAar != null) throw new GradleException('Android release blocked: lumaDevelopmentAar is a personal debug/replacement test path; an approved registry-backed production component is required.')
+        if (runtimePackageId != null) { verifyApprovedRuntime(); return }
         def document = new groovy.json.JsonSlurper().parse(registry)
         def record = document.packages['android-libvlc-all-3.7.7']
         def audit = record?.audit

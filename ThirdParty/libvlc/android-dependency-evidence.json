@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "profileRevision": "ffmpeg-portable-r2-no-renderer",
+  "ffmpegFlags": {
+    "CONFIG_GPL": 0,
+    "CONFIG_GPLV3": 0,
+    "CONFIG_NONFREE": 0,
+    "CONFIG_VERSION3": 0
+  },
+  "generatedDependencyFiles": 1683,
+  "GPLMarkedSourcePathsScanned": 159,
+  "selectedGPLSourcePaths": [],
+  "forbiddenLinkedSymbolsPresent": [],
+  "excludedSymbols": [
+    "ff_ac3dsp_init_aarch64",
+    "ff_ac3_exponent_min_neon",
+    "ff_float_to_fixed24_neon",
+    "ff_crc32_aarch64"
+  ],
+  "rendererDiscovererJNIReferencesPresent": false,
+  "patches": {
+    "ffmpegPortablePatchSha256": "9217579a71a2cc9f817034d5ecd334050be1368966745045a6cbb9e363d2e3f6",
+    "jniNoRendererPatchSha256": "7d5c0c64845a4c6865f676ec85101abb4000a25918890a096d863cd70332b950",
+    "scope": "Three GPL-granted FFmpeg optimized units and unused renderer-discovery JNI initialization excluded; existing LGPL portable C retained"
+  },
+  "scope": "Actual final native build/source selection and linked-symbol verification, not legal or patent clearance."
+}

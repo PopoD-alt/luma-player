@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "filesScanned": 471,
+  "gplGrantHits": [
+    "vlc/src/win32/mta_holder.h",
+    "libvlcjni/libvlc/src/org/videolan/libvlc/RendererDiscoverer.java"
+  ],
+  "scope": "Core/JNI/Java source header review. Windows-only sources require separate platform selection; complete license texts retained verbatim.",
+  "fluidLite": {
+    "commit": "b0f187b404e393ee0a495b277154d55d7d03cbeb",
+    "officialURL": "https://codeload.github.com/divideconcept/FluidLite/tar.gz/b0f187b404e393ee0a495b277154d55d7d03cbeb",
+    "fileContentsMatchOfficialSource": true,
+    "filesCompared": 147
+  },
+  "excludedFromAndroidBinary": [
+    "vlc/src/win32/mta_holder.h (Windows-only)",
+    "libvlcjni/libvlc/src/org/videolan/libvlc/RendererDiscoverer.java (source-excluded; bytecode and JNI references absent)"
+  ]
+}

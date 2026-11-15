@@ -1,0 +1,1577 @@
+{
+  "schema": 1,
+  "selectedRecipePackages": [
+    "aom",
+    "ass",
+    "bluray",
+    "cddb",
+    "dav1d",
+    "dvbpsi",
+    "ebml",
+    "ffmpeg",
+    "flac",
+    "fluidlite",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gcrypt",
+    "gettext",
+    "gme",
+    "gpg-error",
+    "gsm",
+    "harfbuzz",
+    "iconv",
+    "jpeg",
+    "lame",
+    "libarchive",
+    "libdsm",
+    "libplacebo",
+    "librist",
+    "libtasn1",
+    "libxml2",
+    "lua",
+    "luac",
+    "matroska",
+    "microdns",
+    "modplug",
+    "mpg123",
+    "mysofa",
+    "nfs",
+    "ogg",
+    "openjpeg",
+    "opus",
+    "png",
+    "protobuf",
+    "shout",
+    "smb2",
+    "soxr",
+    "spatialaudio",
+    "speex",
+    "speexdsp",
+    "ssh2",
+    "taglib",
+    "theora",
+    "twolame",
+    "upnp",
+    "utfcpp",
+    "vorbis",
+    "vpx",
+    "zlib",
+    "zvbi"
+  ],
+  "selectedPackageCount": 57,
+  "sourceAliases": [
+    {
+      "recipePackage": "luac",
+      "sourceRecipePackage": "lua",
+      "reason": "Host Lua compiler uses the same pinned Lua archive as the target library."
+    }
+  ],
+  "archiveCount": 56,
+  "archives": [
+    {
+      "filename": "libaom-3.15.0.tar.gz",
+      "sha256": "ea08c38ecc078bc85bb1b691020e52b06250f1a81fe7ca5b624629225081af96",
+      "bytes": 6622801,
+      "recipePackage": "aom",
+      "sha512": "68712a22e6912cdc16a208a62b4bd3a21fd4840924ed09191a4b85717bb6412b306ef302037e2ec4b524cdfb3c63ea2743671b989d84e45eca9c962eaa4d466b",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libaom-3.15.0/AUTHORS",
+          "sha256": "c31b80ca48fde06ca03aef2f3dec15413fe0c2661fe6b56e86ccd69dbc6f9a1d",
+          "bytes": 13178
+        },
+        {
+          "path": "libaom-3.15.0/LICENSE",
+          "sha256": "4764a286d8b2faeaf42f4418e7d7a28d58fc8fd4d00a3d0a7f44b0a4099de7f2",
+          "bytes": 1316
+        },
+        {
+          "path": "libaom-3.15.0/third_party/fastfeat/LICENSE",
+          "sha256": "499041ddee5227b6f29ca06c17803e5fe24d60f243c69635cd76b7ba08d0ddd5",
+          "bytes": 1504
+        },
+        {
+          "path": "libaom-3.15.0/third_party/googletest/src/LICENSE",
+          "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+          "bytes": 1475
+        },
+        {
+          "path": "libaom-3.15.0/third_party/highway/LICENSE-BSD3",
+          "sha256": "d25e82e26acd42ca3ccc9993622631163425b869b9e16284226d534cff6470f2",
+          "bytes": 1515
+        },
+        {
+          "path": "libaom-3.15.0/third_party/libwebm/AUTHORS.TXT",
+          "sha256": "3edb5f5496bfff3d6d4a62fa75fe996b814920d0d6e348c2e65c589e7ac5d177",
+          "bytes": 137
+        },
+        {
+          "path": "libaom-3.15.0/third_party/libwebm/LICENSE.TXT",
+          "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+          "bytes": 1496
+        },
+        {
+          "path": "libaom-3.15.0/third_party/libyuv/LICENSE",
+          "sha256": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+          "bytes": 1506
+        },
+        {
+          "path": "libaom-3.15.0/third_party/vector/LICENSE",
+          "sha256": "ff6c857ce2708e87701323078aef115c1872a1f80a9649f86dc899b48083bc60",
+          "bytes": 1084
+        },
+        {
+          "path": "libaom-3.15.0/third_party/x86inc/LICENSE",
+          "sha256": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8",
+          "bytes": 936
+        }
+      ]
+    },
+    {
+      "filename": "libass-0.17.5.tar.xz",
+      "sha256": "2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc",
+      "bytes": 460148,
+      "recipePackage": "ass",
+      "sha512": "b9e06023e9f5760ba1946f8dbcd8c411908bc6c77030099098f8252edabd31c98a6523cffb7cccf7b62e12bb374d136600a98e29a7916ccc218100ff694bfb7c",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libass-0.17.5/COPYING",
+          "sha256": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
+          "bytes": 755
+        }
+      ]
+    },
+    {
+      "filename": "libbluray-1.4.1.tar.xz",
+      "sha256": "76b5dc40097f28dca4ebb009c98ed51321b2927453f75cc72cf74acd09b9f449",
+      "bytes": 468052,
+      "recipePackage": "bluray",
+      "sha512": "76d686260b7cceb9e9e0272e4b9c4a815511925240dc4b69107c0816131728912f5cf3d08d5eab769024e024377f6591d1bbd51a459039a521639d569473cec6",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libbluray-1.4.1/COPYING",
+          "sha256": "b3aa400aca6d2ba1f0bd03bd98d03d1fe7489a3bbb26969d72016360af8a5c9d",
+          "bytes": 24478
+        },
+        {
+          "path": "libbluray-1.4.1/contrib/asm/LICENSE.txt",
+          "sha256": "293b6af371eee28b0ff16f0334ea19e20a3d5522143faa4b95b346855507879a",
+          "bytes": 1598
+        },
+        {
+          "path": "libbluray-1.4.1/contrib/libudfread/COPYING",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        }
+      ]
+    },
+    {
+      "filename": "libcddb-1.3.2.tar.bz2",
+      "sha256": "35ce0ee1741ea38def304ddfe84a958901413aa829698357f0bee5bb8f0a223b",
+      "bytes": 352909,
+      "recipePackage": "cddb",
+      "sha512": "0e07e7d37f2013164d75b530a5528f54847271fd20f3b7bedb192a05d1f61dcf006d10dc2927efe155a01eddcc57b940bc31d8ac88d5dfc4f1a09771caa84e0a",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libcddb-1.3.2/AUTHORS",
+          "sha256": "af8ae4fe177b21fd947ebd24fa866279d48a2d2f85a8a0192a171d86a980d2e1",
+          "bytes": 75
+        },
+        {
+          "path": "libcddb-1.3.2/COPYING",
+          "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+          "bytes": 25275
+        }
+      ]
+    },
+    {
+      "filename": "dav1d-1.5.4.tar.xz",
+      "sha256": "686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5",
+      "bytes": 1038852,
+      "recipePackage": "dav1d",
+      "sha512": "75ab7c922bc9647d73534c9f6c95a514748557adbf7a4debf95eee52ef1db681012cbaad165a46141d904cdd01c1e6319cdea33d254afb5c6b3d968679e55b98",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "dav1d-1.5.4/COPYING",
+          "sha256": "dd92c3c2247c5651606fc23a5e2d6a1ebc5ace9a3e49cbde0e12f05ad1cb1ee5",
+          "bytes": 1317
+        }
+      ]
+    },
+    {
+      "filename": "libdvbpsi-1.3.3.tar.bz2",
+      "sha256": "02b5998bcf289cdfbd8757bedd5987e681309b0a25b3ffe6cebae599f7a00112",
+      "bytes": 488020,
+      "recipePackage": "dvbpsi",
+      "sha512": "70f9e783a947e026ea50afe98ad2b3bfce075bd8d76932f73a6253b077a3a180aa632e9a1fff20308e2f0f3f881d727b4e4aad9b8da2b384edf9a3a0f9eacc69",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libdvbpsi-1.3.3/COPYING",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        },
+        {
+          "path": "libdvbpsi-1.3.3/AUTHORS",
+          "sha256": "66ad6934bcf53c8c19cfc854ad95f179f3b5bb3a052d8001f1b2e99167851148",
+          "bytes": 2260
+        }
+      ]
+    },
+    {
+      "filename": "libebml-1.4.6.tar.xz",
+      "sha256": "d06cf1d5ad89390389eeb1eb7d50f70b55ac7538b19aeac8859eed3f2a9908dc",
+      "bytes": 52424,
+      "recipePackage": "ebml",
+      "sha512": "86b469a1c1352e9ea6f581267ab8fc357575f2e410a3a732b12203575744667b152c135cf314978500d6a19fac4ef4015b89fdcfcca43f5bfc49f63e27ecbce2",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libebml-1.4.6/LICENSE.LGPL",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        }
+      ]
+    },
+    {
+      "filename": "ffmpeg-8.1.2.tar.xz",
+      "sha256": "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c",
+      "bytes": 11710924,
+      "recipePackage": "ffmpeg",
+      "sha512": "b3adc16fe426217bb607da01c4137cee0a9788fc08e077874336db185d2b7287746a7dc94cf0181ea92cd8afcdb06094ee9456e2986112354f84538cb9a5ed0b",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "ffmpeg-8.1.2/COPYING.LGPLv2.1",
+          "sha256": "246041b6ecf9bc32d718a62c57877c78b5eb397b6467e74ed7ae2626ab189c30",
+          "bytes": 26517
+        },
+        {
+          "path": "ffmpeg-8.1.2/COPYING.GPLv2",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "bytes": 18092
+        },
+        {
+          "path": "ffmpeg-8.1.2/COPYING.LGPLv3",
+          "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+          "bytes": 7651
+        },
+        {
+          "path": "ffmpeg-8.1.2/COPYING.GPLv3",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+          "bytes": 35147
+        },
+        {
+          "path": "ffmpeg-8.1.2/doc/authors.texi",
+          "sha256": "fb5fac6dd8f7474033e933814491a8297d8723c52be4dcbcc82eef9c4f008dd2",
+          "bytes": 403
+        },
+        {
+          "path": "ffmpeg-8.1.2/LICENSE.md",
+          "sha256": "2e1d16c72fd74e12063776371da757322f8b77589386532f4fd8634bde7de1af",
+          "bytes": 4346
+        }
+      ]
+    },
+    {
+      "filename": "flac-1.4.2.tar.xz",
+      "sha256": "e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4",
+      "bytes": 1013700,
+      "recipePackage": "flac",
+      "sha512": "20bdf0990a7432ac765037764bc8733a0d5646866fe6cc6f4868152d2a051c89676e501012ae489c7f87b3aacb45a5b30265afaca164cf0cf53ac058644a74c5",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "flac-1.4.2/AUTHORS",
+          "sha256": "195407de2759edfd405b0f855711b63f3c8911bf3034c55ec3175bb3a2c6e589",
+          "bytes": 2459
+        },
+        {
+          "path": "flac-1.4.2/COPYING.FDL",
+          "sha256": "f45cc81b400a048b56c9edbd4c3317f7a8958463dfd55aa96f268ecfd6baa12c",
+          "bytes": 20403
+        },
+        {
+          "path": "flac-1.4.2/COPYING.GPL",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "bytes": 18092
+        },
+        {
+          "path": "flac-1.4.2/COPYING.LGPL",
+          "sha256": "5df07007198989c622f5d41de8d703e7bef3d0e79d62e24332ee739a452af62a",
+          "bytes": 26436
+        },
+        {
+          "path": "flac-1.4.2/COPYING.Xiph",
+          "sha256": "6e58d3036f05e2a0d58af854c12a505ddbe75011d71a598a2170987f3b15408d",
+          "bytes": 1509
+        }
+      ]
+    },
+    {
+      "filename": "fluidlite-b0f187b404e393ee0a495b277154d55d7d03cbeb.tar.xz",
+      "sha256": "d503f4239a2c4038966ac99d2d40167ef1aa27c44866240116af363dd9d0ad90",
+      "bytes": 555720,
+      "recipePackage": "fluidlite",
+      "gitCommit": "b0f187b404e393ee0a495b277154d55d7d03cbeb",
+      "verification": "pinned source recipe commit plus generated git archive; no publisher SHA512 claimed",
+      "notices": [
+        {
+          "path": "fluidlite-b0f187b404e393ee0a495b277154d55d7d03cbeb/LICENSE",
+          "sha256": "a5564e99fd7f49e1344152a8c5bc1d420d5f973b30e010946764db0b5b9e668c",
+          "bytes": 736
+        }
+      ]
+    },
+    {
+      "filename": "fontconfig-2.12.3.tar.gz",
+      "sha256": "ffc3cbf6dd9fcd516ee42f48306a715e66698b238933d6fa7cef02ea8b3b818e",
+      "bytes": 1903035,
+      "recipePackage": "fontconfig",
+      "sha512": "b17725c028be1c5e6f76c136b0ed7db1be7694cbbf217310083512708e05cdc1a824427f89082e6ef259c10297900f26cbe899f7c5762e7662855739f3eff5ea",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "fontconfig-2.12.3/AUTHORS",
+          "sha256": "db6d73a160bb2de10268f88ef60aae91771fefdeee4992b791c76ce6592a4a4b",
+          "bytes": 62
+        },
+        {
+          "path": "fontconfig-2.12.3/COPYING",
+          "sha256": "fa4cd9ab005185e10cd8f7504518856c7dd36c01e766c2bac87f4fc638e9f886",
+          "bytes": 1313
+        }
+      ]
+    },
+    {
+      "filename": "freetype-2.14.3.tar.xz",
+      "sha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+      "bytes": 2670220,
+      "recipePackage": "freetype2",
+      "sha512": "43de86ea70b4b47f6efaae67f3440f65a24ffac29dc6d11203a9764e4f1a749ce1ba7645acd23525220b3ba12ddad8687b962b9f1254e2c0a86070854e85d5a0",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "freetype-2.14.3/LICENSE.TXT",
+          "sha256": "bd36c8b474855fa294c2ec5c184544478ef3720aad37d65a6296a4f264fd2d3b",
+          "bytes": 2149
+        }
+      ]
+    },
+    {
+      "filename": "fribidi-1.0.12.tar.xz",
+      "sha256": "0cd233f97fc8c67bb3ac27ce8440def5d3ffacf516765b91c2cc654498293495",
+      "bytes": 1154912,
+      "recipePackage": "fribidi",
+      "sha512": "cd624f519b270303e89139ced4020115abe3b6a0d774ba57f17fa69c6036edebd76c635a42c468786e76c6ffb0c7d63b435cd2663bc2fba08dec405840dd8e49",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "fribidi-1.0.12/AUTHORS",
+          "sha256": "cb173f55c9514c8f38f4647ac3fedd5f8611358d331e65ab955da931e826861c",
+          "bytes": 1640
+        },
+        {
+          "path": "fribidi-1.0.12/COPYING",
+          "sha256": "32434afcc8666ba060e111d715bfdb6c2d5dd8a35fa4d3ab8ad67d8f850d2f2b",
+          "bytes": 26440
+        }
+      ]
+    },
+    {
+      "filename": "libgcrypt-1.12.2.tar.bz2",
+      "sha256": "7ce33c2492221a0436f96a8500215e9f3e3dcb5fd26a757cd415e7a843babd5e",
+      "bytes": 4441855,
+      "recipePackage": "gcrypt",
+      "sha512": "dc1a4a6c00a0d84d90c8d71f4bd121b968c80df74137d6e8867f1f4cc014a539efb5238c1a1429d7cb95e493a40718fc19252edc592ffe0f43057b372896591c",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libgcrypt-1.12.2/COPYING",
+          "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+          "bytes": 17984
+        },
+        {
+          "path": "libgcrypt-1.12.2/AUTHORS",
+          "sha256": "481225960dca5cdffc76a5d326f8a8227de869c947c1b2a1e3957cce82156758",
+          "bytes": 9112
+        },
+        {
+          "path": "libgcrypt-1.12.2/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "bytes": 26419
+        },
+        {
+          "path": "libgcrypt-1.12.2/LICENSES",
+          "sha256": "289f9561592dbcee8f1f9a1aca26df3cb0dbf3a989dbdd08effac19a8192c834",
+          "bytes": 14713
+        }
+      ]
+    },
+    {
+      "filename": "gettext-0.26.tar.xz",
+      "sha256": "d1fb86e260cfe7da6031f94d2e44c0da55903dbae0a2fa0fae78c91ae1b56f00",
+      "bytes": 10061740,
+      "recipePackage": "gettext",
+      "sha512": "544e41c9390695df1c21542842e9ca027a03cb7d4045d8cd759dec1a3dfb624aae900751b458bdb31d6454b37c40c474a952059b884555a03c7c95d6d0e687b1",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "gettext-0.26/AUTHORS",
+          "sha256": "b0a47f17ae2fbe64475d144d03076fe3893f7c2a7bb93af357db41beae4b7bda",
+          "bytes": 2572
+        },
+        {
+          "path": "gettext-0.26/gettext-runtime/AUTHORS",
+          "sha256": "d013195954f932a5234c357ef74c4e872d0a067c8b60aa1f57ce8e68f8026f4c",
+          "bytes": 109
+        },
+        {
+          "path": "gettext-0.26/gettext-runtime/intl/AUTHORS",
+          "sha256": "4bd9e2cd15ab6d68b30965512b63a1d4aae95f4c1dd040657a4d1300252a695f",
+          "bytes": 96
+        },
+        {
+          "path": "gettext-0.26/gettext-runtime/libasprintf/AUTHORS",
+          "sha256": "590f1c4aa72c2c14dd52b0e230bf652e2109d00099fc7bb272e4594b800913d0",
+          "bytes": 33
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/AUTHORS",
+          "sha256": "4027705b723299dd8e6153939ab73395e22685503994cc8de92fa2ebaa432a49",
+          "bytes": 60
+        },
+        {
+          "path": "gettext-0.26/libtextstyle/AUTHORS",
+          "sha256": "71c0580cb05d28848b341e5a4da2761d4a8eb482592358d646dab104648a8303",
+          "bytes": 271
+        },
+        {
+          "path": "gettext-0.26/COPYING",
+          "sha256": "e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b",
+          "bytes": 35151
+        },
+        {
+          "path": "gettext-0.26/gettext-runtime/COPYING",
+          "sha256": "7ef2cdfe58e0c0460657b6598b49af29d4e03c1e41cbaf0e1da1eb8ad74b95d0",
+          "bytes": 495
+        },
+        {
+          "path": "gettext-0.26/gettext-runtime/libasprintf/COPYING",
+          "sha256": "03133addae5b99a6148c538300e6d97074453089be1423b741bd081f18e2b298",
+          "bytes": 65
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/COPYING",
+          "sha256": "5d4cff30d5038f82a0edc79798456049b61e1752fdb7e9ab1f4bfb9fae3a7303",
+          "bytes": 78
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/gnulib-lib/libxml/COPYING",
+          "sha256": "c5c63674f8a83c4d2e385d96d1c670a03cb871ba2927755467017317878574bd",
+          "bytes": 1289
+        },
+        {
+          "path": "gettext-0.26/gnulib-local/lib/libxml/COPYING",
+          "sha256": "c5c63674f8a83c4d2e385d96d1c670a03cb871ba2927755467017317878574bd",
+          "bytes": 1289
+        },
+        {
+          "path": "gettext-0.26/libtextstyle/COPYING",
+          "sha256": "e79e9c8a0c85d735ff98185918ec94ed7d175efc377012787aebcf3b80f0d90b",
+          "bytes": 35151
+        },
+        {
+          "path": "gettext-0.26/libtextstyle/lib/libxml/COPYING",
+          "sha256": "c5c63674f8a83c4d2e385d96d1c670a03cb871ba2927755467017317878574bd",
+          "bytes": 1289
+        },
+        {
+          "path": "gettext-0.26/gettext-runtime/intl/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "bytes": 26419
+        },
+        {
+          "path": "gettext-0.26/gettext-runtime/libasprintf/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "bytes": 26419
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/tree-sitter-0.23.2/LICENSE",
+          "sha256": "5f9cf9fb6acb1972b35ae29119ce563bb60ec097656bc4b69b9bac2d04c7a147",
+          "bytes": 1085
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/tree-sitter-0.23.2/lib/src/unicode/LICENSE",
+          "sha256": "6a18c5fac70d7860b57f5b72b4e2c9a1ba6b3d2741eef7ff9767c5379364f10d",
+          "bytes": 21001
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/tree-sitter-d-0.8.2/LICENSE",
+          "sha256": "ecf206b1a27e8e4ea07f1e1529cb111b4be5ce8420bd27b8269981d9c0c389f8",
+          "bytes": 1040
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/tree-sitter-go-0.23.4/LICENSE",
+          "sha256": "2e0110e07abef7c2548b26ec9d6969775617ca539a0dc8dbeeb14d6452c711d1",
+          "bytes": 1080
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/tree-sitter-rust-0.23.2/LICENSE",
+          "sha256": "31d5b6f4243d5c7c6e1c4ebbbb9f6407bd1457a08bcc4f706521710341acba36",
+          "bytes": 1080
+        },
+        {
+          "path": "gettext-0.26/gettext-tools/tree-sitter-typescript-0.23.2/LICENSE",
+          "sha256": "49bf33cf78ef5897e4e161ce1517df7de1ae5042a65b6bcfd44401e0fc606559",
+          "bytes": 1080
+        }
+      ]
+    },
+    {
+      "filename": "game-music-emu-0.6.5.tar.gz",
+      "sha256": "8531678502451c2cf04248cda45c8b4645e19fcfb63e6a7ec2549641c47bb392",
+      "bytes": 349606,
+      "recipePackage": "gme",
+      "sha512": "c28fc36098f5e083ef43cda3f037275d7f071868ab44abf577da3f07bd9f2ffae8a65fa842b060df42baa98ad6b5f42817001749fb3c08a4023dea7334d513e9",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "game-music-emu-0.6.5/gme/ext/LICENSE",
+          "sha256": "8fb093f26ed0d78c8ca033bbec7063ac5b34c5d2475e6bd121d03ccfaaf2355f",
+          "bytes": 1089
+        },
+        {
+          "path": "game-music-emu-0.6.5/license.gpl2.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "bytes": 18092
+        },
+        {
+          "path": "game-music-emu-0.6.5/license.txt",
+          "sha256": "d2efc89fbb7533572a472d34e07964951810a3a4f8d3159ecc2dcaa1452c5c26",
+          "bytes": 26938
+        }
+      ]
+    },
+    {
+      "filename": "libgpg-error-1.61.tar.bz2",
+      "sha256": "7a85413f2bc354f4f8aa832b718af122e48965e9e0eb9012ee659c13c6385c93",
+      "bytes": 1124751,
+      "recipePackage": "gpg-error",
+      "sha512": "3e59eb52d061709fd8dfe56a4b36d2d5b49dd5e0c90c283899669d6a355286cb3a3f851631f8456c78c48b652bb31a4c1f8b081ccdf87e5db64b313d141a7670",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libgpg-error-1.61/COPYING",
+          "sha256": "231f7edcc7352d7734a96eef0b8030f77982678c516876fcb81e25b32d68564c",
+          "bytes": 18002
+        },
+        {
+          "path": "libgpg-error-1.61/AUTHORS",
+          "sha256": "341d1631ccd3eb5b8a054177cfdaeb5e16357f27fd985486da5f38faf879db3f",
+          "bytes": 2468
+        },
+        {
+          "path": "libgpg-error-1.61/COPYING.LIB",
+          "sha256": "a9bdde5616ecdd1e980b44f360600ee8783b1f99b8cc83a2beb163a0a390e861",
+          "bytes": 26527
+        }
+      ]
+    },
+    {
+      "filename": "libgsm_1.0.13.tar.gz",
+      "sha256": "52c518244d428c2e56c543b98c9135f4a76ff780c32455580b793f60a0a092ad",
+      "bytes": 65318,
+      "recipePackage": "gsm",
+      "sha512": "0d0cf9e1e81e64cd84f588c1e4f0cb74b849d45e41fdebf860f63588084c73c7c5198bfe73a6c976bda5735ee516661d3db00afbb5cc5886a7ee3a7b31d673aa",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "gsm-1.0-pl13/COPYRIGHT",
+          "sha256": "81c68a3374937ed9b5e4929c709e81a2c4b35b5d1f450ecf8c473e2daea46ff6",
+          "bytes": 1450
+        }
+      ]
+    },
+    {
+      "filename": "harfbuzz-14.2.1.tar.xz",
+      "sha256": "a54a5d8e9380a41fbb762ce367bcbf7704792dfca0d93f1bbca86c5a57902e0e",
+      "bytes": 19559952,
+      "recipePackage": "harfbuzz",
+      "sha512": "481dca68900e57895d3671baf0595c2d3a26f4f08d0db5662e83089f0d0ff6dc0c28c64c2811eb0f812b0525ed428e90db44f091a88bef47ace2f97d8285b013",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "harfbuzz-14.2.1/AUTHORS",
+          "sha256": "19bfe8f5ed100636cd24ab0c90a3f71c21d8b02d9ba00719447a0faab364d49f",
+          "bytes": 201
+        },
+        {
+          "path": "harfbuzz-14.2.1/COPYING",
+          "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+          "bytes": 1971
+        },
+        {
+          "path": "harfbuzz-14.2.1/src/ms-use/COPYING",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "bytes": 1141
+        },
+        {
+          "path": "harfbuzz-14.2.1/test/COPYING",
+          "sha256": "9b35b8485f69cd298fccbb3c40a827dc06cf1185553bef827903497d2944a8d7",
+          "bytes": 4370
+        },
+        {
+          "path": "harfbuzz-14.2.1/test/shape/data/aots/COPYING",
+          "sha256": "f55f74bf740db07bb032a90aa74af4307adea3d489c1ccba12453cf0c0a764cb",
+          "bytes": 593
+        },
+        {
+          "path": "harfbuzz-14.2.1/test/shape/data/text-rendering-tests/COPYING",
+          "sha256": "d24039e4d22c9bc72096f6174374539d92a3d6e1163938546ec59179fe095e6f",
+          "bytes": 584
+        }
+      ]
+    },
+    {
+      "filename": "libiconv-1.17.tar.gz",
+      "sha256": "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313",
+      "bytes": 5413283,
+      "recipePackage": "iconv",
+      "sha512": "18a09de2d026da4f2d8b858517b0f26d853b21179cf4fa9a41070b2d140030ad9525637dc4f34fc7f27abca8acdc84c6751dfb1d426e78bf92af4040603ced86",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libiconv-1.17/COPYING.LIB",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        },
+        {
+          "path": "libiconv-1.17/AUTHORS",
+          "sha256": "ed10ef2a01effb12849006d43262ffde5cf72a7d5423bbc8aa66fc6959774c0c",
+          "bytes": 31
+        },
+        {
+          "path": "libiconv-1.17/libcharset/COPYING.LIB",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        },
+        {
+          "path": "libiconv-1.17/libcharset/AUTHORS",
+          "sha256": "ed10ef2a01effb12849006d43262ffde5cf72a7d5423bbc8aa66fc6959774c0c",
+          "bytes": 31
+        },
+        {
+          "path": "libiconv-1.17/COPYING",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+          "bytes": 35147
+        }
+      ]
+    },
+    {
+      "filename": "jpegsrc.v10.tar.gz",
+      "sha256": "8b9eaa13242690ebd03e1728ab1edf97a81a78ed6e83624d493655f31ac95ab5",
+      "bytes": 1099508,
+      "recipePackage": "jpeg",
+      "sha512": "3bdd55d805d76f35cbcd44074e27684a25b40f4811c62374ec9300dde31fa75a17ff3fccfcb8f5947311fa7b07f52dc9cba343562ae4ceb8b3cbe30fda1e4311",
+      "verification": "exact source recipe SHA512",
+      "notices": []
+    },
+    {
+      "filename": "lame-3.100.tar.gz",
+      "sha256": "ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e",
+      "bytes": 1524133,
+      "recipePackage": "lame",
+      "sha512": "0844b9eadb4aacf8000444621451277de365041cc1d97b7f7a589da0b7a23899310afd4e4d81114b9912aa97832621d20588034715573d417b2923948c08634b",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "lame-3.100/COPYING",
+          "sha256": "bfe4a52dc4645385f356a8e83cc54216a293e3b6f1cb4f79f5fc0277abf937fd",
+          "bytes": 25284
+        },
+        {
+          "path": "lame-3.100/LICENSE",
+          "sha256": "7a40cbd8818c57e5285e83c772a459a996d1662c824a879836b97b473c07cae4",
+          "bytes": 487
+        },
+        {
+          "path": "lame-3.100/mpglib/AUTHORS",
+          "sha256": "d8ecf9556aafa8c653796d6be3dc43deea374257680e21c30109a5c3c4484263",
+          "bytes": 604
+        },
+        {
+          "path": "lame-3.100/debian/copyright",
+          "sha256": "1f27f9f698183275bd615c1140b7bf6e498750e9280597c6eb39790e54ae809b",
+          "bytes": 2303
+        }
+      ]
+    },
+    {
+      "filename": "libarchive-3.8.9.tar.xz",
+      "sha256": "888c934f9d95648ecb9163dc8e23ab80a476ecb81a8f1154704a227b5b676dde",
+      "bytes": 6617696,
+      "recipePackage": "libarchive",
+      "sha512": "f37425417a9e3fdc194a2b892137452ddba6601c69e822598692d4d776c573a90e70aac4598d47c915615facc45d0c83fc46c24856ddf04afd7494b63bb9f137",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libarchive-3.8.9/COPYING",
+          "sha256": "30e556b3959e3985d66efefec5eaac51d4995053caa1d3cffe6eb916f146f229",
+          "bytes": 3089
+        }
+      ]
+    },
+    {
+      "filename": "libdsm-0.4.3.tar.xz",
+      "sha256": "d31921bd6f6a23878266b945731f7d57505472ef85d66f944c43b9f8eacc2a8a",
+      "bytes": 128284,
+      "recipePackage": "libdsm",
+      "sha512": "4abe2318aa5d63397404ce87fc42be30d364dffef3bdf6e081a2bb3ac4f011f39fa8acb5ba06361e94795a308df321b077e7a3cf2ec10d5e1e6c9b912cbbd8ba",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libdsm-0.4.3/AUTHORS",
+          "sha256": "37442d1321e7452b1d7cebce4d7d0caeddf1b18baf967f1dcb1f8c45a7244939",
+          "bytes": 258
+        },
+        {
+          "path": "libdsm-0.4.3/COPYING",
+          "sha256": "806b80ec9ff3b429533869fd5b0e47cad4e572e2c338f1994fa5f912b44d8008",
+          "bytes": 27427
+        }
+      ]
+    },
+    {
+      "filename": "libplacebo-0.2.1.tar.gz",
+      "sha256": "d5d920a1745e4209287d32e8b96a85127b61b843304813980e11104cd9f15e82",
+      "bytes": 169802,
+      "recipePackage": "libplacebo",
+      "sha512": "d662c1972ee36f45d1e75b1c38edb7d2a47a1df8dedd811c37662ae88514403c978088bc4a42c3bf850b22e9cc882cb5de730bf2463f36caf284f6172e177dbb",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libplacebo-0.2.1/LICENSE",
+          "sha256": "f55acf28f3afab9acf0b0184681725281c5786642fd4613012a24c033f7689a2",
+          "bytes": 25355
+        }
+      ]
+    },
+    {
+      "filename": "librist-v0.2.20.tar.gz",
+      "sha256": "9e40eeb87f014790531ad41326cc271b930a65962e4b15231b301fc59b29fe31",
+      "bytes": 3507334,
+      "recipePackage": "librist",
+      "sha512": "3553d5db0cf67ab07ff85b55e4948958aa59251c236efa7b6605fce5c8e9552bce967cbfabdb1430cb21c1343b9eeebb582aaeb64bdb569b4cbe7493b8f3844a",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "librist-v0.2.20/COPYING",
+          "sha256": "b9841591a3452ee30033d8e3586c7b1244a0b2fc1dc6cb04576957c313cb2792",
+          "bytes": 1319
+        },
+        {
+          "path": "librist-v0.2.20/contrib/mbedtls/LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "bytes": 11358
+        }
+      ]
+    },
+    {
+      "filename": "libtasn1-4.21.0.tar.gz",
+      "sha256": "1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87",
+      "bytes": 1816537,
+      "recipePackage": "libtasn1",
+      "sha512": "6a581c4c072b168bf29a0dec7e59a9329a798e392b7d1033791d0e3166a5d1164e2a7065373a84018d500a01563657900c318b1fd437c227c3174b754f9998d3",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libtasn1-4.21.0/AUTHORS",
+          "sha256": "34384e8860c713e31e9339a5d4eb0727a9a93d2a5bb74b36053d9a66920bff9e",
+          "bytes": 456
+        },
+        {
+          "path": "libtasn1-4.21.0/COPYING",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "bytes": 35149
+        },
+        {
+          "path": "libtasn1-4.21.0/COPYING.LESSERv2",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+          "bytes": 26419
+        }
+      ]
+    },
+    {
+      "filename": "libxml2-2.15.3.tar.xz",
+      "sha256": "78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07",
+      "bytes": 3152452,
+      "recipePackage": "libxml2",
+      "sha512": "6f7f1aabd012454553e851bd1ee548fbd14d21c576f2b2ab9eeedab3dfba51392083f74b34f060e9b538baeea212cdb462b8669c214c711771fb9a897fdc1c60",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libxml2-2.15.3/Copyright",
+          "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626",
+          "bytes": 1314
+        },
+        {
+          "path": "libxml2-2.15.3/test/html-tokenizer/NOTICE",
+          "sha256": "d6a2cb265a0a249a234b89eeffa7f316ebe5bff546672a0a2b1a861dd2238460",
+          "bytes": 1270
+        },
+        {
+          "path": "libxml2-2.15.3/result/html-tokenizer/NOTICE",
+          "sha256": "d6a2cb265a0a249a234b89eeffa7f316ebe5bff546672a0a2b1a861dd2238460",
+          "bytes": 1270
+        }
+      ]
+    },
+    {
+      "filename": "lua-5.1.5.tar.gz",
+      "sha256": "2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333",
+      "bytes": 221213,
+      "recipePackage": "lua",
+      "sha512": "0142fefcbd13afcd9b201403592aa60620011cc8e8559d4d2db2f92739d18186860989f48caa45830ff4f99bfc7483287fd3ff3a16d4dec928e2767ce4d542a9",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "lua-5.1.5/COPYRIGHT",
+          "sha256": "ee5e3e82af1e1b543c4f216e399d7c8cfee797711913f349e385101c4ae60a79",
+          "bytes": 1528
+        }
+      ]
+    },
+    {
+      "filename": "libmatroska-1.7.2.tar.xz",
+      "sha256": "f3e4d406daf7f1399962c43940e4a87de089474d5bcfbf2e6ca516e98bb87cfc",
+      "bytes": 63016,
+      "recipePackage": "matroska",
+      "sha512": "86b21a0ff3e5149a2824a9f21f9460179d02aecf477f2b9f1f92ce2f991033bd0cb209d81a4aeee2c0c5ffc193dac57a84dd4f529939b12c900f2cfb881618fb",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libmatroska-1.7.2/LICENSE.LGPL",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        }
+      ]
+    },
+    {
+      "filename": "microdns-0.2.0.tar.xz",
+      "sha256": "2da28e7dda4861d76f797f92ac3e6c3e048333b95f9e4fc3a6548ad8afd8c446",
+      "bytes": 50544,
+      "recipePackage": "microdns",
+      "sha512": "fc642d463f52409e76515897e3662b7b08ee35dc760e595980c343a4fd24f1b76cdfbd4f91ea2115a02243be8ae8908670440ead96715c8983abb2a8559702b6",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "microdns-0.2.0/AUTHORS",
+          "sha256": "23c9bc2b0e5da9c1b08a5392f2b05615b5a85e6e12d0d3331708519aa50ec9d7",
+          "bytes": 560
+        },
+        {
+          "path": "microdns-0.2.0/COPYING",
+          "sha256": "f764ee3ea10043718c7cc2ce3e2c8a8b3a4e9a3f4b5b4bbb74c603d2a974aabe",
+          "bytes": 26598
+        }
+      ]
+    },
+    {
+      "filename": "libmodplug-0.8.9.0.tar.gz",
+      "sha256": "457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de",
+      "bytes": 576566,
+      "recipePackage": "modplug",
+      "sha512": "880e10154fd367ee24ace53ca7e32a5c1fee7dfff1f934e6499944c12779427da63e2f55f8d6ce25db0a42a5b4424053bf64305b31dbfc4ef6a8909924d655fd",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libmodplug-0.8.9.0/COPYING",
+          "sha256": "49942e7b3b175f549e751feb08b5270ca6f6c5fb7a1be9f9517db275ec32c92e",
+          "bytes": 57
+        },
+        {
+          "path": "libmodplug-0.8.9.0/AUTHORS",
+          "sha256": "9bf4fdca73ed1f9654ba5930261fd8d31d3874327e9925bf64c4ac7dfd9ac11a",
+          "bytes": 648
+        }
+      ]
+    },
+    {
+      "filename": "mpg123-1.33.6.tar.bz2",
+      "sha256": "929a7c18ba662b8927aed4de229ad9ae8ab2b4806dd0f30b90113eb1b4e2195a",
+      "bytes": 1123797,
+      "recipePackage": "mpg123",
+      "sha512": "83d8fca128b1fd39e336e6052837b16951360d6f1a47919e00d4b7285717ee7cd4dd56c24bd873316ba6969081fe619cda93ebb20771aed052c6e9d07657f2ab",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "mpg123-1.33.6/AUTHORS",
+          "sha256": "fb18c9abae864a20f691e949e4c7871c79f5f0861b3a3dcaf5881c3c02cf5cc2",
+          "bytes": 9370
+        },
+        {
+          "path": "mpg123-1.33.6/COPYING",
+          "sha256": "c22482728a634a8dfdb4ff72a96d4c1ed64cd8f3e79335c401751ac591609366",
+          "bytes": 40718
+        },
+        {
+          "path": "mpg123-1.33.6/doc/LICENSE",
+          "sha256": "cca79ea6fc0a7715e52450df2d86311f990e85067dd13f4d7f5a88d4fd23a07c",
+          "bytes": 957
+        }
+      ]
+    },
+    {
+      "filename": "libmysofa-1.2.1.tar.gz",
+      "sha256": "94cb02e488de4dc0860c8d23b29d93d290bb0a004d4aa17e1642985bba158ee9",
+      "bytes": 200011479,
+      "recipePackage": "mysofa",
+      "sha512": "2058c94cd09aeeabe40975edd320d7447bd9e535108f32b2a5305c023c7bf89f0c2f44df182390b7e4be8f6ffc9b09c2e35817896bb5e63d3ec9f1bd5b7e972c",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libmysofa-1.2.1/LICENSE",
+          "sha256": "9c8713ccc5d6d93d20c7a1cfcb876e64baf551bfbe67faa4e60d39cda9ffd023",
+          "bytes": 1453
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.CIPIC_subject_003_hrir_final",
+          "sha256": "78149b9a8138d9fdcbd77b66e554711a1a2a5451d16b432b5eaec6d642697d85",
+          "bytes": 2259
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.D1_48K_24bit_0.3s_FIR_SOFA",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "bytes": 11358
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.FHK_HRIR_L2354",
+          "sha256": "47c326d67143bb68c008a900c954c8a6779bdafa25d350d12c57d532c3a32200",
+          "bytes": 19587
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.H20_44K_16bit_256tap_FIR_SOFA",
+          "sha256": "44ba2315604e3fbe0f11c0d9cbb6114159ba74c3f31b5a72b2493476b3f9b44a",
+          "bytes": 1113
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.LISTEN_1002_IRC_1002_C_HRIR",
+          "sha256": "29661b4a131466c1d5cdb786db0e531244c14850af0d3fb80fb8c801bdbe7145",
+          "bytes": 619
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.MIT_KEMAR_pinnae",
+          "sha256": "548b43283652608c38ed82accb918fae135885016de78c969cbd8cd7215d15ec",
+          "bytes": 1414
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.TU-Berlin_QU_KEMAR_anechoic",
+          "sha256": "84be1cf7d2cf8ea106fcf1f24e360cd922a05f80c6172e3f70608b0eaed50460",
+          "bytes": 19431
+        },
+        {
+          "path": "libmysofa-1.2.1/tests/LICENSE.pulse",
+          "sha256": "fabb8e1099a0812e0be1951a94cdda0def9b3e60f1aa5b649a0dbe01fc637fc0",
+          "bytes": 12851
+        },
+        {
+          "path": "libmysofa-1.2.1/windows/third-party/sys/LICENSE",
+          "sha256": "818fd40b46dfbe838f4dc0957bfe44afc4b35d450237723b82d793a0403f3c77",
+          "bytes": 7991
+        },
+        {
+          "path": "libmysofa-1.2.1/windows/third-party/zlib-1.2.11/LICENSE",
+          "sha256": "05b547d6a157efb1659997b605b63cd36f2e3f30d167b5a6826ecdde052d154f",
+          "bytes": 66
+        }
+      ]
+    },
+    {
+      "filename": "libnfs-6.0.2.tar.gz",
+      "sha256": "4e5459cc3e0242447879004e9ad28286d4d27daa42cbdcde423248fad911e747",
+      "bytes": 338988,
+      "recipePackage": "nfs",
+      "sha512": "539790ab98aac7b2f25755b745d1f5e016518f1adb3748b8c58df187048bc31e091915d59e6359bb95c49dd986361cbbf2536edcda02598b0fac236762b61a46",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libnfs-libnfs-6.0.2/COPYING",
+          "sha256": "edd960c0142b8ada98b43b6396b78f4e557b0bc70ac601a51e397ad04070e2c5",
+          "bytes": 1601
+        },
+        {
+          "path": "libnfs-libnfs-6.0.2/LICENCE-BSD.txt",
+          "sha256": "d9406ced95457941032aa11d04623b8ab71f2827a3395ebef137aec475be35b1",
+          "bytes": 1457
+        },
+        {
+          "path": "libnfs-libnfs-6.0.2/LICENCE-GPL-3.txt",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+          "bytes": 35147
+        },
+        {
+          "path": "libnfs-libnfs-6.0.2/LICENCE-LGPL-2.1.txt",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        }
+      ]
+    },
+    {
+      "filename": "libogg-1.3.6.tar.xz",
+      "sha256": "5c8253428e181840cd20d41f3ca16557a9cc04bad4a3d04cce84808677fa1061",
+      "bytes": 439952,
+      "recipePackage": "ogg",
+      "sha512": "2168548e57e23fadca4aa66351214b23d699bc3aa47f5d065f8b583a3fe85c99333014a6aa38e4021b0e3750115b88258a6c00cac1e1496cdee5f12cdc633814",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libogg-1.3.6/COPYING",
+          "sha256": "d2ab5758336489da61c12cc5bb757da5339c4ae9001f9bb0562b4370249af814",
+          "bytes": 1466
+        },
+        {
+          "path": "libogg-1.3.6/AUTHORS",
+          "sha256": "6fcb33d0cdd60b5054e7df820916388b590427514288c2bab01c626bb8ae9506",
+          "bytes": 198
+        }
+      ]
+    },
+    {
+      "filename": "openjpeg-2.5.4.tar.gz",
+      "sha256": "a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a",
+      "bytes": 2157028,
+      "recipePackage": "openjpeg",
+      "sha512": "702a10e20caaf8209684ded7c9fcf32f5ba6a972cf2d9fcf2611cdc6a446d2c3bb60324205758e6b6f92278c8cf4ef0fbae511e6ffb45ed6e8df514db0c6ab25",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "openjpeg-2.5.4/AUTHORS.md",
+          "sha256": "cf22e984f9fbb9be7550e9a94120595ba8c4a7de0d63f47d3725f4b2e28a4387",
+          "bytes": 712
+        },
+        {
+          "path": "openjpeg-2.5.4/LICENSE",
+          "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6",
+          "bytes": 2112
+        },
+        {
+          "path": "openjpeg-2.5.4/src/bin/wx/OPJViewer/source/license.txt",
+          "sha256": "8081c33f6953950dcf424aa844714658b73ada0fcaea16e4487f5fa07ef0960d",
+          "bytes": 1683
+        },
+        {
+          "path": "openjpeg-2.5.4/thirdparty/astyle/LICENSE.md",
+          "sha256": "2e8480e753b7a1d100c80920f4250b1bc9f93a18c6a5953c42b11445218cd0fb",
+          "bytes": 1094
+        },
+        {
+          "path": "openjpeg-2.5.4/thirdparty/liblcms2/COPYING",
+          "sha256": "c725daac91a9259ce5e195683c0eeb797d345035c36ac5ba114c9fa80e11639a",
+          "bytes": 1078
+        },
+        {
+          "path": "openjpeg-2.5.4/thirdparty/libpng/LICENSE",
+          "sha256": "7317e078e2d3b5d7ba5a6159e650945153262b44b76f6700f8e9edb261c5143e",
+          "bytes": 5345
+        }
+      ]
+    },
+    {
+      "filename": "opus-1.6.1.tar.gz",
+      "sha256": "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1",
+      "bytes": 10472813,
+      "recipePackage": "opus",
+      "sha512": "93742e86b2eb222808a5055e62627d142e6e7347b3d5aebb4d39b45df78ed7d437746c51eb24d724a7c865d064e9d16f4541a4ce6a82fcf7dcc23427d2252e16",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "opus-1.6.1/AUTHORS",
+          "sha256": "f9fd849e652219ce98e008303370b352d37663d0ffb27b8dc514ad93c9c7438b",
+          "bytes": 239
+        },
+        {
+          "path": "opus-1.6.1/COPYING",
+          "sha256": "01e1167d54a096d123cf6dfbbeb19587278845c6481d2d66d545669846079551",
+          "bytes": 1945
+        }
+      ]
+    },
+    {
+      "filename": "libpng-1.6.58.tar.xz",
+      "sha256": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775",
+      "bytes": 1070096,
+      "recipePackage": "png",
+      "sha512": "5937d6409d7ad564c9dba7969c5d39eea8bbc01936f433bf5936c872ec290dea353783f89bded91e124b3b3b15518320097de365acd3b0bcc922a0e90c94adc8",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libpng-1.6.58/AUTHORS",
+          "sha256": "0c777e9f2a67bd4058ab91050eb7a56106c92ed038ba8fe5f54c83344f2d93ca",
+          "bytes": 1773
+        },
+        {
+          "path": "libpng-1.6.58/LICENSE",
+          "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+          "bytes": 5345
+        },
+        {
+          "path": "libpng-1.6.58/ci/LICENSE_MIT.txt",
+          "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+          "bytes": 1036
+        },
+        {
+          "path": "libpng-1.6.58/contrib/gregbook/COPYING",
+          "sha256": "d6cb0e9e560f51085556949a84af12b79a00f10ab8b66c752537faf7cd665572",
+          "bytes": 18097
+        },
+        {
+          "path": "libpng-1.6.58/contrib/gregbook/LICENSE",
+          "sha256": "b6a03c1803eb58ffb1f1278d5c7d4096c4c116e66dce8a7553e8c77d163c3438",
+          "bytes": 2373
+        },
+        {
+          "path": "libpng-1.6.58/contrib/pngexif/LICENSE_MIT.txt",
+          "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+          "bytes": 1036
+        },
+        {
+          "path": "libpng-1.6.58/contrib/pngminus/LICENSE.txt",
+          "sha256": "1806f1f10d393e9e377b3a8d1b968452b54f1a90378f14eeef45426946ace330",
+          "bytes": 1164
+        },
+        {
+          "path": "libpng-1.6.58/scripts/cmake/AUTHORS.md",
+          "sha256": "50633b976f0133862c921aa67d56de2c0b42eb344c8ca3853686efb092a447db",
+          "bytes": 862
+        }
+      ]
+    },
+    {
+      "filename": "protobuf-3.4.1-cpp.tar.gz",
+      "sha256": "2bb34b4a8211a30d12ef29fd8660995023d119c99fbab2e5fe46f17528c9cc78",
+      "bytes": 4274863,
+      "recipePackage": "protobuf",
+      "sha512": "6189e23c7e381f62e971bd0e35ad9c3ed8effe584755357013887c6a582cb5a9a654c39affa2a073b658854138f31bfb70f89fa1df494e9386f1d64fd73d07d2",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "protobuf-3.4.1/LICENSE",
+          "sha256": "af67c58de2e18677a0b8cb5fffbe2232aabb8eb2930e8cd684769cef3d74a262",
+          "bytes": 2133
+        },
+        {
+          "path": "protobuf-3.4.1/gmock/scripts/generator/LICENSE",
+          "sha256": "5e0df8c845c742e76f2f64d2d9ce1b7e74a2422fddbc577ae6a56319083de0bf",
+          "bytes": 11386
+        },
+        {
+          "path": "protobuf-3.4.1/gmock/LICENSE",
+          "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+          "bytes": 1475
+        },
+        {
+          "path": "protobuf-3.4.1/gmock/gtest/LICENSE",
+          "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+          "bytes": 1475
+        }
+      ]
+    },
+    {
+      "filename": "libshout-2.4.6.tar.gz",
+      "sha256": "39cbd4f0efdfddc9755d88217e47f8f2d7108fa767f9d58a2ba26a16d8f7c910",
+      "bytes": 571153,
+      "recipePackage": "shout",
+      "sha512": "e8478cdbf9a27674c16a7b620d1576f2e31a47262b8e29b314d0f46d4e5be24b9a29790b7b226f48939bc34cacf5734fae0aa5686c7ed5879cdbd827ff8e0339",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libshout-2.4.6/COPYING",
+          "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+          "bytes": 25275
+        },
+        {
+          "path": "libshout-2.4.6/src/common/avl/COPYING",
+          "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+          "bytes": 25275
+        },
+        {
+          "path": "libshout-2.4.6/src/common/net/COPYING",
+          "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+          "bytes": 25275
+        },
+        {
+          "path": "libshout-2.4.6/src/common/timing/COPYING",
+          "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+          "bytes": 25275
+        },
+        {
+          "path": "libshout-2.4.6/src/common/httpp/COPYING",
+          "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+          "bytes": 25275
+        },
+        {
+          "path": "libshout-2.4.6/src/common/thread/COPYING",
+          "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+          "bytes": 25275
+        }
+      ]
+    },
+    {
+      "filename": "libsmb2-6.1.tar.gz",
+      "sha256": "cee0a62457a46b1a4d48b9b0094cf53f489e3ff5028d1344c188156aeb1c7239",
+      "bytes": 257668,
+      "recipePackage": "smb2",
+      "sha512": "7f481b22f90b82d19c6bb29537ef10229b3ff4aff3d46dff5b11ee22c9c0410f1d58f466cf0774507d1d6f03c06dd82b223b1f4be75da239402e57749382fe5f",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libsmb2-libsmb2-6.1/COPYING",
+          "sha256": "749c710c2b3d5c95906c785f28af9abbe4ce909311e72eb72eee5c6873e2fa6f",
+          "bytes": 895
+        },
+        {
+          "path": "libsmb2-libsmb2-6.1/LICENCE-LGPL-2.1.txt",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        }
+      ]
+    },
+    {
+      "filename": "soxr-0.1.3-Source.tar.xz",
+      "sha256": "b111c15fdc8c029989330ff559184198c161100a59312f5dc19ddeb9b5a15889",
+      "bytes": 94384,
+      "recipePackage": "soxr",
+      "sha512": "f4883ed298d5650399283238aac3dbe78d605b988246bea51fa343d4a8ce5ce97c6e143f6c3f50a3ff81795d9c19e7a07217c586d4020f6ced102aceac46aaa8",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "soxr-0.1.3-Source/AUTHORS",
+          "sha256": "e5d53cd6c716dfeabe47a9f3613a8c6815aa4a67f0f77900787c59445396aeff",
+          "bytes": 39
+        },
+        {
+          "path": "soxr-0.1.3-Source/LICENCE",
+          "sha256": "dc98676341fdcd29d9f279c9679d6a75288785b174ded8d1b2e316c366166135",
+          "bytes": 1024
+        },
+        {
+          "path": "soxr-0.1.3-Source/COPYING.LGPL",
+          "sha256": "f2f118b9029ec1871b953639ecc46651b2fc7b62e295e6cf3ef2ac4c9a058b33",
+          "bytes": 26432
+        }
+      ]
+    },
+    {
+      "filename": "spatialaudio-0.3.0.tar.bz2",
+      "sha256": "284c1dbd8efd46c03be84ac7070bc87cae81b7125352b143a70be3e2b96988e3",
+      "bytes": 934033,
+      "recipePackage": "spatialaudio",
+      "sha512": "ef1835a94cd87c55ac9327762ae8f1143272de2463ca850299be15d6cf7f5a554e536cc18f70475c25e2c78f434b9c51de158a7246956c8c1f9de3256a67b87a",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "spatialaudio-0.3.0/LICENSE",
+          "sha256": "63176449375086d82d675541c56bce8dd1ed7b2e9cff41c9fb8b8b388f2869b6",
+          "bytes": 27436
+        }
+      ]
+    },
+    {
+      "filename": "speex-1.2.1.tar.gz",
+      "sha256": "4b44d4f2b38a370a2d98a78329fefc56a0cf93d1c1be70029217baae6628feea",
+      "bytes": 1043278,
+      "recipePackage": "speex",
+      "sha512": "52e00300df82e1c7fb527b245af02b99a1f37faef74d004b7cd981052f1aa22a412cb18f5c7a5618df4c958f727c97eb7385beec99d68548d5b02e76192d4e0a",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "speex-1.2.1/AUTHORS",
+          "sha256": "6e5a9d92c5f9ccd28fe0b15ad59443fbf435bfc6ab2221f532006d3717ddf642",
+          "bytes": 502
+        },
+        {
+          "path": "speex-1.2.1/COPYING",
+          "sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+          "bytes": 1773
+        }
+      ]
+    },
+    {
+      "filename": "speexdsp-1.2.1.tar.gz",
+      "sha256": "8c777343e4a6399569c72abc38a95b24db56882c83dbdb6c6424a5f4aeb54d3d",
+      "bytes": 922584,
+      "recipePackage": "speexdsp",
+      "sha512": "41b5f37b48db5cb8c5a0f6437a4a8266d2627a5b7c1088de8549fe0bf0bb3105b7df8024fe207eef194096e0726ea73e2b53e0a4293d8db8e133baa0f8a3bad3",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "speexdsp-1.2.1/AUTHORS",
+          "sha256": "6e5a9d92c5f9ccd28fe0b15ad59443fbf435bfc6ab2221f532006d3717ddf642",
+          "bytes": 502
+        },
+        {
+          "path": "speexdsp-1.2.1/COPYING",
+          "sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+          "bytes": 1773
+        }
+      ]
+    },
+    {
+      "filename": "libssh2-1.11.1.tar.xz",
+      "sha256": "9954cb54c4f548198a7cbebad248bdc87dd64bd26185708a294b2b50771e3769",
+      "bytes": 721700,
+      "recipePackage": "ssh2",
+      "sha512": "8322b54a522b0cbbb07916d29ec045c08f8ed94bd8abb5e524038640e90a317667a25be46d95b62b101ed726ade0a51a90fb246cf34c045c38f927f4e439e431",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libssh2-1.11.1/COPYING",
+          "sha256": "f7f9633cf9ff2f1333f3d7ce46973a8716a4d2a2815ad56f30d437d5fea7bafe",
+          "bytes": 1959
+        },
+        {
+          "path": "libssh2-1.11.1/docs/AUTHORS",
+          "sha256": "e161024bacda626cc77bc905db2fcfb0870e83f53b98f9b8b736f22cb48ab862",
+          "bytes": 1219
+        }
+      ]
+    },
+    {
+      "filename": "taglib-1.13.1.tar.gz",
+      "sha256": "c8da2b10f1bfec2cd7dbfcd33f4a2338db0765d851a50583d410bacf055cfd0b",
+      "bytes": 1372618,
+      "recipePackage": "taglib",
+      "sha512": "986231ee62caa975afead7e94630d58acaac25a38bc33d4493d51bd635d79336e81bba60586d7355ebc0670e31f28d32da3ecceaf33292e4bc240c64bf00f35b",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "taglib-1.13.1/AUTHORS",
+          "sha256": "047780f6bded3712fc24edc77b9187bfa49ea3826ed090933cb6342458eace85",
+          "bytes": 889
+        },
+        {
+          "path": "taglib-1.13.1/COPYING.LGPL",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "bytes": 26530
+        },
+        {
+          "path": "taglib-1.13.1/COPYING.MPL",
+          "sha256": "53692a2ed6c6a2c6ec9b32dd0b820dfae91e0a1fcdf625ca9ed0bdf8705fcc4f",
+          "bytes": 25755
+        }
+      ]
+    },
+    {
+      "filename": "libtheora-1.1.1.tar.xz",
+      "sha256": "f36da409947aa2b3dcc6af0a8c2e3144bc19db2ed547d64e9171c59c66561c61",
+      "bytes": 1434496,
+      "recipePackage": "theora",
+      "sha512": "032fb60f10ac0074ec87d5f8c586702309edc50dc0d2842d2f9b9c46ebd1500acc399e9309f858f318fff5b8fbe953234db3afb54ed74a03d0f2c6ee8c3ed481",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libtheora-1.1.1/LICENSE",
+          "sha256": "654a0238f789f4435c4818f50005b141d013c5a09a31d861efc1d0d67ba975a4",
+          "bytes": 964
+        },
+        {
+          "path": "libtheora-1.1.1/AUTHORS",
+          "sha256": "76ce13651678372266b233e026810a368e2cf0a0d255d19805d268d80ac1dbcd",
+          "bytes": 702
+        },
+        {
+          "path": "libtheora-1.1.1/COPYING",
+          "sha256": "8417fad7da775735564e209484a2e011e0fa201e94f01fdbee6e4977e478e6fc",
+          "bytes": 1470
+        }
+      ]
+    },
+    {
+      "filename": "twolame-0.4.0.tar.gz",
+      "sha256": "cc35424f6019a88c6f52570b63e1baf50f62963a3eac52a03a800bb070d7c87d",
+      "bytes": 890908,
+      "recipePackage": "twolame",
+      "sha512": "cc594bc8d2322922280f915a3c0aa52540cca0350d6498bc96f3f60fd6e53f951e775ea015a44bdb29ec883b46b31a0e5483f6a5c188b02e30008289273c7d03",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "twolame-0.4.0/doc/html/authors.html",
+          "sha256": "8249529eccb53bbf55492e1bb6fff7460561c54037c2838e3c812e1bd9e04da3",
+          "bytes": 4439
+        },
+        {
+          "path": "twolame-0.4.0/AUTHORS",
+          "sha256": "89acea387ca97766b248e553ea68400898669b1637cfa31e4ceefff9efa3744d",
+          "bytes": 1856
+        },
+        {
+          "path": "twolame-0.4.0/COPYING",
+          "sha256": "257a842724705950b07da76ce0e22ffa80ec77b3e9dfc6702522ac342409da0f",
+          "bytes": 26428
+        }
+      ]
+    },
+    {
+      "filename": "pupnp-release-1.14.31.tar.gz",
+      "sha256": "ce1dd3da7268ad61a56041af0ee80a3d067e7fbd197e2a387ae53942f70068bd",
+      "bytes": 826590,
+      "recipePackage": "upnp",
+      "sha512": "be0f876adb7a0799187531cc83a29afd5bfe8f7772e909f88faf406e344f992ccb07ef410f7511766576bde8128478926e33cebfcfa8ed1ba15fe136e0bfc8c7",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "pupnp-release-1.14.31/COPYING",
+          "sha256": "c8b99423cad48bb44e2cf52a496361404290865eac259a82da6d1e4331ececb3",
+          "bytes": 1477
+        },
+        {
+          "path": "pupnp-release-1.14.31/site/LICENSE",
+          "sha256": "0375955c8a79d6e8fa0792d45d00fc4e7710d7ac95bcbd27f9225a83f5c946fd",
+          "bytes": 1499
+        }
+      ]
+    },
+    {
+      "filename": "utfcpp-3.2.5.tar.gz",
+      "sha256": "14fd1b3c466814cb4c40771b7f207b61d2c7a0aa6a5e620ca05c00df27f25afd",
+      "bytes": 28865,
+      "recipePackage": "utfcpp",
+      "sha512": "1ce12c8158a2f3bcddec104ceacedaea4031b4c88fc0fa1f1fae8dfa8df81c846861df9d01e8f294d79b9e4ab8c51bd1289f404eed24d07abc760688fee13090",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "utfcpp-3.2.5/LICENSE",
+          "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+          "bytes": 1338
+        }
+      ]
+    },
+    {
+      "filename": "libvorbis-1.3.7.tar.xz",
+      "sha256": "b33cc4934322bcbf6efcbacf49e3ca01aadbea4114ec9589d1b1e9d20f72954b",
+      "bytes": 1203792,
+      "recipePackage": "vorbis",
+      "sha512": "bbf5f11f623d959b3ba98d6b52806521b0b918b59b867f0658c153ea1013293364eead4987e9e71f8798021379310860a2e548fcf89d10caf23d45e41aba45cd",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libvorbis-1.3.7/COPYING",
+          "sha256": "ec1815db59fcd302846df949d7424876cb2e2dc5ed1606c5fb0b36787b1cf43a",
+          "bytes": 1470
+        },
+        {
+          "path": "libvorbis-1.3.7/AUTHORS",
+          "sha256": "f5cab9f16035f770f50299f85cf2938c06dc3a9a30425961067788102ec896d3",
+          "bytes": 65
+        }
+      ]
+    },
+    {
+      "filename": "libvpx-1.16.0.tar.gz",
+      "sha256": "7a479a3c66b9f5d5542a4c6a1b7d3768a983b1e5c14c60a9396edc9b649e015c",
+      "bytes": 5635379,
+      "recipePackage": "vpx",
+      "sha512": "07f5e352411d6c0be331706d1835ac89bafbeddcbbac5542b473323766e9e974f4f68b33590f2aa50a7d8d69468a642b508cbb0a7c49a82c9933b07820f9c9d9",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "libvpx-1.16.0/AUTHORS",
+          "sha256": "fd2d1ac03d9d3c864bd98c2042de2d8f7fbd78b298c8d9c506076b6c6a9de889",
+          "bytes": 9352
+        },
+        {
+          "path": "libvpx-1.16.0/LICENSE",
+          "sha256": "8267348d5af1262c11d1a08de2f5afc77457755f1ac658627dd9acf71011d615",
+          "bytes": 1537
+        },
+        {
+          "path": "libvpx-1.16.0/third_party/googletest/src/LICENSE",
+          "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+          "bytes": 1475
+        },
+        {
+          "path": "libvpx-1.16.0/third_party/libwebm/AUTHORS.TXT",
+          "sha256": "3edb5f5496bfff3d6d4a62fa75fe996b814920d0d6e348c2e65c589e7ac5d177",
+          "bytes": 137
+        },
+        {
+          "path": "libvpx-1.16.0/third_party/libwebm/LICENSE.TXT",
+          "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+          "bytes": 1496
+        },
+        {
+          "path": "libvpx-1.16.0/third_party/libyuv/LICENSE",
+          "sha256": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+          "bytes": 1506
+        },
+        {
+          "path": "libvpx-1.16.0/third_party/nalloc/LICENSE",
+          "sha256": "d7dd0396ec46975e1bf9093680068ef301bc0ed204603e623a6f7073ab922ab1",
+          "bytes": 1069
+        },
+        {
+          "path": "libvpx-1.16.0/third_party/x86inc/LICENSE",
+          "sha256": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8",
+          "bytes": 936
+        }
+      ]
+    },
+    {
+      "filename": "zlib-1.3.2.tar.xz",
+      "sha256": "d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3",
+      "bytes": 1320064,
+      "recipePackage": "zlib",
+      "sha512": "cf3d49fbabddc57cca99858feeca8f910e9de42a16014cddd406814d2d24ee33fee2af3805d7efbb1b04b05f55818092b000daf82502b675df65f2512c353f73",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "zlib-1.3.2/LICENSE",
+          "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+          "bytes": 1002
+        },
+        {
+          "path": "zlib-1.3.2/contrib/dotzlib/LICENSE_1_0.txt",
+          "sha256": "36266a8fd073568394cb81cdb2b124f7fdae2c64c1a7ed09db34b4d22efa2951",
+          "bytes": 1359
+        },
+        {
+          "path": "zlib-1.3.2/contrib/minizip/LICENSE.Info-Zip",
+          "sha256": "fc686023047ce5ce3a18a9b8a777156f0e475929d3de06bac279f3c025d2b2ca",
+          "bytes": 3509
+        }
+      ]
+    },
+    {
+      "filename": "zvbi-0.2.45.tar.gz",
+      "sha256": "e6c954fde2a5a635187f19e1ab870a88c1a982012c5f1b33b8f2513e0ab7a50e",
+      "bytes": 943158,
+      "recipePackage": "zvbi",
+      "sha512": "c627b65627446287cededd26857a7f25191adc8c42cab5a66e76f9673e06cafa52d9c3e2d31e60f949bbcaa155f61b31d775876f97f3f5c7cffe980548992a07",
+      "verification": "exact source recipe SHA512",
+      "notices": [
+        {
+          "path": "zvbi-0.2.45/AUTHORS",
+          "sha256": "349107750f8e6a3555e9ad47f625806e70ce6dd108926eb158528b27c2c03586",
+          "bytes": 7027
+        },
+        {
+          "path": "zvbi-0.2.45/COPYING.md",
+          "sha256": "6d679539253897582d38fcd1eabfa670c01c0ece73d8cd3dc97869fcf723f106",
+          "bytes": 78695
+        }
+      ]
+    }
+  ],
+  "issues": [],
+  "noticeFiles": 188,
+  "noticeBytes": 1692913,
+  "totalSourceBytes": 326524993,
+  "scope": "Actual completed .sum-* dependency packages, excluding unrelated cached old archives. Source completeness still requires resolving every issue and including VLC/JNI/patches/original recipes/NDK notices."
+}

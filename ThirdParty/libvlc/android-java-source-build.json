@@ -1,0 +1,66 @@
+{
+  "path": "ThirdParty/work/android-lgpl/source-bindings-project/build/outputs/aar/luma-libvlc-source-bindings-release.aar",
+  "sha256": "5f9bdf082674119f3301f08f2261c6bce828b19a2d6b3618ee2bb360e3e2f1b8",
+  "bytes": 20303106,
+  "metadata": {
+    "schema": 1,
+    "bindingsSource": "libvlcjni0b8dc65efb203c86a0476bc337ddd99ecf1c0ef6",
+    "javaSources": {
+      "org/videolan/libvlc/AWindow.java": "298eddf8f3cbf8a122a42bb2df684b08bb5553e0dd4b7e689b32778a969ba670",
+      "org/videolan/libvlc/Dialog.java": "fd1d9dc403fdb04fb8012a8bfc099e7f6cdb34af636c8f46fa1be4034e041b39",
+      "org/videolan/libvlc/FactoryManager.java": "b21aa5a1d37e7811c7a54d01c2c4cb43347eec27b7216b6c02039c6cf9b20a14",
+      "org/videolan/libvlc/LibVLC.java": "fb5a1f23bae3f6bc194fe33a1f7a858b5fffbbd2f784a86d6c2e2766da7278b3",
+      "org/videolan/libvlc/LibVLCFactory.java": "bddaf25a83b90333b70f3d5e077b850dee2652cf4afcb83ae14410e756dcdcc4",
+      "org/videolan/libvlc/Media.java": "9a3f1e25ca446c9b2991fd9b277c655d977212f3e3aba076200bb5656728b27f",
+      "org/videolan/libvlc/MediaDiscoverer.java": "2313c8689637104945eab45441f8fb80476921c8b7490a7bf761eee67c4df884",
+      "org/videolan/libvlc/MediaFactory.java": "4793544a54007084aee4ef4a4793629b555563aab68a9252b0b1479026ff755f",
+      "org/videolan/libvlc/MediaList.java": "e1f659fb2be7ba47a7b10d1bbb64af9ef383ad63673bd82e59c61728387cbf25",
+      "org/videolan/libvlc/MediaPlayer.java": "c5103c5407fa81ad27c07b80b510fb211c13f07f828ec358201bd01229343a99",
+      "org/videolan/libvlc/RendererItem.java": "6980dc65bf54650f5d96450d74ad7f466d075ed85ebaa28d742ac707e1d194ab",
+      "org/videolan/libvlc/VLCObject.java": "ff21f5b021a1817aa6494e47d2926e8776fdefaab2b211bb36fbe30e0969612b",
+      "org/videolan/libvlc/VideoHelper.java": "59494d87f96609c5d92d514860de1647024025f0090c977ba8d03026b9783785",
+      "org/videolan/libvlc/interfaces/AbstractVLCEvent.java": "169a9c404b13e879e8fd4b0a3387b1dfd6a4de1377a7633e3196b0e485c02614",
+      "org/videolan/libvlc/interfaces/IComponentFactory.java": "b0c96b12f43d371e94628a9b69818b699ca69403140ec8b95b37348a56fecf65",
+      "org/videolan/libvlc/interfaces/ILibVLC.java": "3f4e6108b7fdea53869a5db6b90492dc80e45a9cb976ad88f7dd63485fcf062e",
+      "org/videolan/libvlc/interfaces/ILibVLCFactory.java": "19046ed23bff06ec3099024371871e8ad9007602d48f378985d4d7f2797b9be4",
+      "org/videolan/libvlc/interfaces/IMedia.java": "5bff8fdad1e1e859ad73ce68ae9dbccbe95221dd3e39a8c9b80fe2b2a2511863",
+      "org/videolan/libvlc/interfaces/IMediaFactory.java": "cdfec0b905fa5e1ea827903c9adf217383efa10cc7fe12bb109fd8e4bcc92c02",
+      "org/videolan/libvlc/interfaces/IMediaList.java": "9777ccaff5470655b7d60110f96cc430ed9520418999d607014cd5fefdc2920c",
+      "org/videolan/libvlc/interfaces/IVLCObject.java": "55c2ce066d5480f802f966815e68c665b7999f6b5678d34a7f16c8b3720c44ff",
+      "org/videolan/libvlc/interfaces/IVLCVout.java": "0bd58f6ff94db3516afff5a239f3be62c184b07dcbe5c8b8c7b59fa40cc4cc22",
+      "org/videolan/libvlc/media/MediaPlayer.java": "7899e8bde857c63ae2d6023c1d02005ab59a869dafef2541be53f2ce91b9f9bf",
+      "org/videolan/libvlc/media/VideoView.java": "aaa259c7c0497db0d01907dc69b85fdb157ceee01caf5533978c667dae675572",
+      "org/videolan/libvlc/stubs/StubLibVLC.java": "6d3f67c99fd9114ee519d8b605d21d27428a0b38d9c6306e6992ebe4d590a73d",
+      "org/videolan/libvlc/stubs/StubLibVLCFactory.java": "c009a4277aa6486e25d3d61ef7e148b90ce397c0cbf3b8f6df2d867c1a9d799e",
+      "org/videolan/libvlc/stubs/StubMedia.java": "ee9967eb756c42eae485c867f46d6efeeaa9f822cefb5405f73a8547f741fc16",
+      "org/videolan/libvlc/stubs/StubMediaFactory.java": "49a5af8225a0afcccaf0a1d6d09f4b9bc1d0e027c27c8bee17b9451fed134387",
+      "org/videolan/libvlc/stubs/StubMediaList.java": "83ebd3802708a31384bea316141cab799a3339db99e6777689a3697ef34b19ae",
+      "org/videolan/libvlc/stubs/StubVLCObject.java": "59699e9ffa0bfd95602228270552d4a7bf4219b1bf5a022b4f2ed8e392e87a83",
+      "org/videolan/libvlc/util/AndroidUtil.java": "270dcaa6d754b39d98b6fbab4940af303e1ee085a6cf2098f0d0b2a7114ce07d",
+      "org/videolan/libvlc/util/DisplayManager.java": "6d05d9444724a2842c7f851a521ea0352dc3e851c2505746624fbc615e862eb8",
+      "org/videolan/libvlc/util/Dumper.java": "211bda58cb071330a9e6e61161c320879af76c4b2a44136da017193ce91063ba",
+      "org/videolan/libvlc/util/Extensions.java": "9a65655b3255619fd4ae26f50600b796fa9a97ba2a4439fc8f5351fa957d6f3f",
+      "org/videolan/libvlc/util/HWDecoderUtil.java": "5f769a883f97194994a7fbad730417ccd32a26401d73b07b0614ebd6716c8778",
+      "org/videolan/libvlc/util/MediaBrowser.java": "7a6fbedbedc8ebdfe2eed95937077d44d2da37acf99447d9b9804ec0f5789a90",
+      "org/videolan/libvlc/util/VLCUtil.java": "74642ae314f580539c61f40c1e9769f04a14f7a8115e7a4f2e841e091c187c2a",
+      "org/videolan/libvlc/util/VLCVideoLayout.java": "7a2c7ea22703f191f9b28e6b874c4b2ca6d23781fca99f73c558dd8fc150e56d"
+    },
+    "excludedJavaSource": "org/videolan/libvlc/RendererDiscoverer.java",
+    "excludedOptionalAssets": [
+      "lua",
+      "hrtf"
+    ],
+    "nativeLibraries": {
+      "libc++_shared.so": "0c52cfab2df0d957d8b346a2bdc5ae8d71feca2591924d77e1cd724d5bf74352",
+      "libvlc.so": "8aa30bd6ab999e0dede1e15dcb47101cc45fb64d8662df463a6f6e3a12824472",
+      "libvlcjni.so": "515c0ceada75e8593481cf7ff0b4a98cb6a304e18c94b218cdb4a99c1aefff0e"
+    },
+    "nativeRevision": "Luma-LGPL-84177b22-JNI0b8dc65e-p20-ffmpeg-portable-r2-no-renderer",
+    "patches": {
+      "ffmpegPortablePatchSha256": "9217579a71a2cc9f817034d5ecd334050be1368966745045a6cbb9e363d2e3f6",
+      "jniNoRendererPatchSha256": "7d5c0c64845a4c6865f676ec85101abb4000a25918890a096d863cd70332b950",
+      "scope": "Three GPL-granted FFmpeg optimized units and unused renderer-discovery JNI initialization excluded; existing LGPL portable C retained"
+    },
+    "approvalAuthority": "ThirdParty/libvlc/packages.json"
+  }
+}

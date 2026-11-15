@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "notices": [
+    {
+      "archive": "freetype-2.14.3.tar.xz",
+      "sourcePath": "freetype-2.14.3/docs/GPLv2.TXT",
+      "sha256": "c4120c6752c910c299e3bd9cb3a46ff262c268303ca2069b61f92f10a5656c18",
+      "notice": "Notices/supplemental/freetype-2.14.3.tar.xz/freetype-2.14.3/docs/GPLv2.TXT"
+    },
+    {
+      "archive": "freetype-2.14.3.tar.xz",
+      "sourcePath": "freetype-2.14.3/docs/FTL.TXT",
+      "sha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+      "notice": "Notices/supplemental/freetype-2.14.3.tar.xz/freetype-2.14.3/docs/FTL.TXT"
+    },
+    {
+      "archive": "jpegsrc.v10.tar.gz",
+      "sourcePath": "jpeg-10/README",
+      "sha256": "913af09f785683accdf660b85dcf27fdd567d4ad649daa95cb8771b040db79d1",
+      "notice": "Notices/supplemental/jpegsrc.v10.tar.gz/jpeg-10/README"
+    }
+  ],
+  "scope": "Explicit FreeType FTL and IJG license/attribution supplement; ordinary filename discovery is not a complete license review."
+}

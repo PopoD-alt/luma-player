@@ -37,6 +37,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
     public int Port { get; private set; }
     public int PairedDevices { get { lock (authentication) return tokenHashes.Count; } }
     public int ActiveConnections => connections.Count;
+    public int ActiveMediaStreams => connections.Values.Count(c => Volatile.Read(ref c.Streaming) != 0);
     public IReadOnlyList<string> Addresses => LocalAddresses().Select(a => new UriBuilder("http", a.ToString(), Port).Uri.GetLeftPart(UriPartial.Authority)).ToArray();
 
     public PlaylistSharingServer(string displayName, TimeProvider? timeProvider = null)
@@ -181,7 +182,10 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
             long count = length == 0 ? 0 : last - first + 1;
             string extra = "Accept-Ranges: bytes\r\n" + (partial ? $"Content-Range: bytes {first}-{last}/{length}\r\n" : "");
             await WriteHeader(output, partial ? 206 : 200, count, MimeType(item.FilePath), extra, token).ConfigureAwait(false);
-            if (head) return;
+            if (head || count == 0) return;
+            Interlocked.Exchange(ref connection.Streaming, 1);
+            try
+            {
             input.Position = first; byte[] buffer = new byte[65536];
             while (count > 0)
             {
@@ -190,6 +194,8 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
                 int read = await input.ReadAsync(buffer.AsMemory(0, (int)Math.Min(count, buffer.Length)), token).ConfigureAwait(false); if (read == 0) return;
                 await Write(output, buffer.AsMemory(0, read), token, mediaChunk: true).ConfigureAwait(false); count -= read;
             }
+            }
+            finally { Interlocked.Exchange(ref connection.Streaming, 0); }
         }
     }
     bool PairAttemptAllowed(string address)
@@ -285,18 +291,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
         return address.AddressFamily == AddressFamily.InterNetwork ? bytes[0] == 10 || bytes[0] == 172 && bytes[1] is >= 16 and <= 31 || bytes[0] == 192 && bytes[1] == 168 || bytes[0] == 169 && bytes[1] == 254
             : address.AddressFamily == AddressFamily.InterNetworkV6 && (address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || (bytes[0] & 0xfe) == 0xfc);
     }
-    public static IReadOnlyList<IPAddress> LocalAddresses()
-    {
-        var addresses = new List<IPAddress>();
-        try
-        {
-            foreach (var adapter in NetworkInterface.GetAllNetworkInterfaces().Where(n => n.OperationalStatus == OperationalStatus.Up))
-                foreach (var address in adapter.GetIPProperties().UnicastAddresses.Select(a => a.Address))
-                    if (!IPAddress.IsLoopback(address) && IsPrivateAddress(address) && !addresses.Contains(address)) addresses.Add(address);
-        }
-        catch (NetworkInformationException) { }
-        if (addresses.Count == 0) addresses.Add(IPAddress.Loopback); return addresses;
-    }
+    public static IReadOnlyList<IPAddress> LocalAddresses() => SharingNetworkInterfaces.LocalAddresses();
     public static string MimeType(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     { ".mp4" or ".m4v" => "video/mp4", ".m4a" => "audio/mp4", ".mkv" => "video/x-matroska", ".mka" => "audio/x-matroska", ".webm" => "video/webm", ".mov" => "video/quicktime", ".avi" => "video/x-msvideo", ".mp3" => "audio/mpeg", ".flac" => "audio/flac", ".wav" => "audio/wav", ".aac" => "audio/aac", ".ogg" or ".opus" => "audio/ogg", ".ts" or ".mts" => "video/mp2t", _ => "application/octet-stream" };
     static bool OpaqueId(string value) => value.Length is > 0 and <= 128 && value.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_');
@@ -319,7 +314,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
     static double SafeTime(double value) => double.IsFinite(value) ? Math.Clamp(value, 0, 31_536_000) : 0;
     static bool SamePath(string a, string b) => string.Equals(a, b, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
     sealed record PlaylistSnapshot(Dictionary<string, SharedMediaItem> Items, int TotalItems, bool Truncated);
-    sealed class Connection(TcpClient client, string address) { public TcpClient Client { get; } = client; public string Address { get; } = address; public SharedMediaItem? Item; }
+    sealed class Connection(TcpClient client, string address) { public TcpClient Client { get; } = client; public string Address { get; } = address; public SharedMediaItem? Item; public int Streaming; }
     sealed record Request(string Method, string Path, string Query, Dictionary<string, string> Headers, byte[] Body);
     sealed class BadRequest(int status) : Exception { public int Status { get; } = status; }
 }

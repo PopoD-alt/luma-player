@@ -1,0 +1,64 @@
+From: sdas <local-build-support>
+Subject: [PATCH] Omit unused renderer discovery JNI entry points
+
+The matching RendererDiscoverer Java source grants GPL2+. The local-player
+profile omits that Java class family and its unused JNI initialization and
+bindings. NsdManager-based Luma desktop discovery is independent.
+
+SPDX-License-Identifier: MIT (original build-support changes only; upstream
+source/patch context retains its own licenses).
+
+--- a/libvlc/jni/Android.mk
++++ b/libvlc/jni/Android.mk
+@@ -52,7 +52,7 @@
+ LOCAL_SRC_FILES := libvlcjni.c
+ LOCAL_SRC_FILES += libvlcjni-mediaplayer.c
+ LOCAL_SRC_FILES += libvlcjni-vlcobject.c
+-LOCAL_SRC_FILES += libvlcjni-media.c libvlcjni-medialist.c libvlcjni-mediadiscoverer.c libvlcjni-rendererdiscoverer.c
++LOCAL_SRC_FILES += libvlcjni-media.c libvlcjni-medialist.c libvlcjni-mediadiscoverer.c
+ LOCAL_SRC_FILES += libvlcjni-dialog.c
+ LOCAL_SRC_FILES += std_logger.c
+ LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include $(VLC_BUILD_DIR)/include
+--- a/libvlc/jni/libvlcjni.c
++++ b/libvlc/jni/libvlcjni.c
+@@ -193,10 +193,6 @@
+               "org/videolan/libvlc/MediaDiscoverer", true);
+     GET_CLASS(fields.MediaDiscoverer.Description.clazz,
+               "org/videolan/libvlc/MediaDiscoverer$Description", true);
+-    GET_CLASS(fields.RendererDiscoverer.clazz,
+-              "org/videolan/libvlc/RendererDiscoverer", true);
+-    GET_CLASS(fields.RendererDiscoverer.Description.clazz,
+-              "org/videolan/libvlc/RendererDiscoverer$Description", true);
+     GET_CLASS(fields.Dialog.clazz,
+               "org/videolan/libvlc/Dialog", true);
+ 
+@@ -281,20 +277,6 @@
+            "createDescriptionFromNative",
+            "(Ljava/lang/String;Ljava/lang/String;I)"
+            "Lorg/videolan/libvlc/MediaDiscoverer$Description;");
+-
+-    GET_ID(GetStaticMethodID,
+-           fields.RendererDiscoverer.createDescriptionFromNativeID,
+-           fields.RendererDiscoverer.clazz,
+-           "createDescriptionFromNative",
+-           "(Ljava/lang/String;Ljava/lang/String;)"
+-           "Lorg/videolan/libvlc/RendererDiscoverer$Description;");
+-
+-    GET_ID(GetStaticMethodID,
+-           fields.RendererDiscoverer.createItemFromNativeID,
+-           fields.RendererDiscoverer.clazz,
+-           "createItemFromNative",
+-           "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IJ)"
+-           "Lorg/videolan/libvlc/RendererItem;");
+ 
+     GET_ID(GetStaticMethodID,
+            fields.Dialog.displayErrorFromNativeID,
+@@ -367,8 +349,6 @@
+     (*env)->DeleteGlobalRef(env, fields.MediaPlayer.Equalizer.clazz);
+     (*env)->DeleteGlobalRef(env, fields.MediaDiscoverer.clazz);
+     (*env)->DeleteGlobalRef(env, fields.MediaDiscoverer.Description.clazz);
+-    (*env)->DeleteGlobalRef(env, fields.RendererDiscoverer.clazz);
+-    (*env)->DeleteGlobalRef(env, fields.RendererDiscoverer.Description.clazz);
+     (*env)->DeleteGlobalRef(env, fields.Dialog.clazz);
+ 
+     pthread_key_delete(jni_env_key);

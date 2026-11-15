@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "nativeIdentity": "version=3.0.25 Vetinari\nchangeset=Luma-LGPL-84177b22-JNI0b8dc65e-p20-ffmpeg-portable-r2-no-renderer\nidentity=passed mediaOpened=0",
+  "libraries": {
+    "libc++_shared.so": {
+      "sha256": "0c52cfab2df0d957d8b346a2bdc5ae8d71feca2591924d77e1cd724d5bf74352",
+      "bytes": 9290184,
+      "needed": [
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "loadSegments": [
+        {
+          "flags": 5,
+          "offset": 0,
+          "virtualAddress": 0,
+          "fileBytes": 1329912,
+          "memoryBytes": 1329912,
+          "alignment": 16384,
+          "normalizedLoadSha256": "2b652d5d791ed5c3a09df4d9681f562c9e510c4b7480fc8b054b0e814dd461d3"
+        },
+        {
+          "flags": 6,
+          "offset": 1329912,
+          "virtualAddress": 1346296,
+          "fileBytes": 41104,
+          "memoryBytes": 42248,
+          "alignment": 16384,
+          "normalizedLoadSha256": "d52266b803f159aa06ba7663e61882040d549d849e2ad564f34aae5a6eb1ec41"
+        },
+        {
+          "flags": 6,
+          "offset": 1371016,
+          "virtualAddress": 1403784,
+          "fileBytes": 568,
+          "memoryBytes": 32192,
+          "alignment": 16384,
+          "normalizedLoadSha256": "2b1227e50899cbb8f8df11fc749f8bc24d157fe60b4be887a7a0beb29eedc85c"
+        }
+      ]
+    },
+    "libvlc.so": {
+      "sha256": "8aa30bd6ab999e0dede1e15dcb47101cc45fb64d8662df463a6f6e3a12824472",
+      "bytes": 36994264,
+      "needed": [
+        "libEGL.so",
+        "libm.so",
+        "libGLESv2.so",
+        "liblog.so",
+        "libdl.so",
+        "libc.so",
+        "libandroid.so",
+        "libmediandk.so",
+        "libc++_shared.so"
+      ],
+      "loadSegments": [
+        {
+          "flags": 5,
+          "offset": 0,
+          "virtualAddress": 0,
+          "fileBytes": 35950400,
+          "memoryBytes": 35950400,
+          "alignment": 16384,
+          "normalizedLoadSha256": "3ae3e984edaf2123b0bb6298524f7c0222daa669abbb3a1c278ffd3530795156"
+        },
+        {
+          "flags": 6,
+          "offset": 35950400,
+          "virtualAddress": 35966784,
+          "fileBytes": 950368,
+          "memoryBytes": 950464,
+          "alignment": 16384,
+          "normalizedLoadSha256": "eee9b4182a006e45c321bbad0e6d74578bbb36b2ce7c9f5c6964d94912595435"
+        },
+        {
+          "flags": 6,
+          "offset": 36900800,
+          "virtualAddress": 36933568,
+          "fileBytes": 90872,
+          "memoryBytes": 10825384,
+          "alignment": 16384,
+          "normalizedLoadSha256": "727b9832d982aeef12a4e90e0965ea7684ef85203219c786139b4f1a4a257605"
+        }
+      ]
+    },
+    "libvlcjni.so": {
+      "sha256": "515c0ceada75e8593481cf7ff0b4a98cb6a304e18c94b218cdb4a99c1aefff0e",
+      "bytes": 83208,
+      "needed": [
+        "libvlc.so",
+        "liblog.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "loadSegments": [
+        {
+          "flags": 5,
+          "offset": 0,
+          "virtualAddress": 0,
+          "fileBytes": 78656,
+          "memoryBytes": 78656,
+          "alignment": 16384,
+          "normalizedLoadSha256": "7557ef9f291c98790bb449fb333ff984b00d7685e0eb43a8ec71bef25993ea12"
+        },
+        {
+          "flags": 6,
+          "offset": 78656,
+          "virtualAddress": 95040,
+          "fileBytes": 2184,
+          "memoryBytes": 3264,
+          "alignment": 16384,
+          "normalizedLoadSha256": "4c07d43f0895f0ecff84839fd7fba7269502bd9ab13ffdb7b5ba5eec004f1689"
+        },
+        {
+          "flags": 6,
+          "offset": 80840,
+          "virtualAddress": 113608,
+          "fileBytes": 0,
+          "memoryBytes": 424,
+          "alignment": 16384,
+          "normalizedLoadSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  },
+  "actualStaticEntryCount": 209,
+  "actualPluginEntryCount": 208,
+  "expectedPluginEntryCount": 208,
+  "coreModuleEntryPresent": true,
+  "unexpectedEntries": [],
+  "missingEntries": [],
+  "strippedMatchesUnstrippedLoadSegments": true,
+  "moduleLicenseGetterSymbolsPresent": false,
+  "limits": "Final link garbage-collects license getters. Entry-set and matching PT_LOAD proof supplements source/archive audit; no invented native getter calls. Engine creation requires real Java VM/JNI_OnLoad and must be tested in app instrumentation."
+}

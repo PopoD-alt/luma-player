@@ -17,4 +17,9 @@
     <Content Include="../THIRD_PARTY_NOTICES.md" Link="THIRD_PARTY_NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../Tests/Fixtures/Luma-MSVideo1-16.avi" Link="Demos/Luma-MSVideo1-16.avi" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup Condition="'$(LumaBundledVlcPackage)' != '' and '$(LumaBundledVlcManifestSha256)' != '' and '$(LumaBundledVlcSourceSha256)' != ''">
+    <AssemblyMetadata Include="LumaBundledVlcPackage" Value="$(LumaBundledVlcPackage)" />
+    <AssemblyMetadata Include="LumaBundledVlcManifestSha256" Value="$(LumaBundledVlcManifestSha256)" />
+    <AssemblyMetadata Include="LumaBundledVlcSourceSha256" Value="$(LumaBundledVlcSourceSha256)" />
+  </ItemGroup>
 </Project>

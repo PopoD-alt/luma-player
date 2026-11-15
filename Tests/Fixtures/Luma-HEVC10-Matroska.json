@@ -1,0 +1,13 @@
+{
+  "scope": "Original synthetic HEVC Main10 video-only Matroska regression; no private media or audio track.",
+  "generator": "Windows/Luma.Core.Tests/NativePacketFixtures.cs",
+  "source": "Tests/Fixtures/Luma-HEVC10.mov",
+  "codecId": "V_MPEGH/ISO/HEVC",
+  "width": 960,
+  "height": 540,
+  "frameRate": 30,
+  "frames": 60,
+  "bitDepth": 10,
+  "sha256": "a94a28c258ca189d8c595c2232ebb274a9695b41bae35d187bf159a303226803",
+  "bytes": 60857
+}

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using Luma.Core.Runtime;
 
 namespace Luma.WindowsApp;
 
@@ -26,6 +27,7 @@ internal sealed class VlcPlayer : HwndHost
     double volume = .7, rate = 1, subtitleDelay;
     public FrameworkElement View => this;
     public static string RuntimeVersion => VlcRuntime.Version;
+    public static string RuntimeChangeset => VlcRuntime.Changeset;
     public static string RuntimePath => VlcRuntime.Path;
     public event EventHandler? Opened;
     public event EventHandler? Ended;
@@ -243,6 +245,7 @@ internal static class VlcRuntime
     static IntPtr library, core, directoryCookie;
     public static string Path { get; private set; } = "";
     public static string Version { get; private set; } = "";
+    public static string Changeset { get; private set; } = "";
     static VlcRuntime() => NativeLibrary.SetDllImportResolver(typeof(VlcRuntime).Assembly, Resolve);
     static IntPtr Resolve(string name, Assembly assembly, DllImportSearchPath? search) => name == "Luma.LibVLC3" ? library : IntPtr.Zero;
     public static void Initialize()
@@ -252,14 +255,10 @@ internal static class VlcRuntime
             if (library != IntPtr.Zero) return;
             if (!OperatingSystem.IsWindows()) throw new DllNotFoundException("The Windows player requires a Windows libVLC3 runtime.");
             string? requested = Environment.GetEnvironmentVariable("LUMA_LIBVLC_PATH");
-            if (!string.IsNullOrWhiteSpace(requested) && (!System.IO.Path.IsPathFullyQualified(requested) || !File.Exists(requested))) throw new DllNotFoundException("LUMA_LIBVLC_PATH must name an existing absolute path to libvlc.dll.");
-            var candidates = new List<string>(); if (requested is not null) candidates.Add(requested);
-            string bundled = System.IO.Path.Combine(AppContext.BaseDirectory, "libvlc", "libvlc.dll");
-            if (File.Exists(bundled) && ApprovedBundle(System.IO.Path.GetDirectoryName(bundled)!)) candidates.Add(bundled);
-            foreach (string root in new[] { Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) }.Distinct())
-                if (!string.IsNullOrEmpty(root)) candidates.Add(System.IO.Path.Combine(root, "VideoLAN", "VLC", "libvlc.dll"));
-            string? selected = candidates.FirstOrDefault(File.Exists);
-            if (selected is null) throw new DllNotFoundException("Install the official 64-bit VLC 3 application separately, or set LUMA_LIBVLC_PATH to its libvlc.dll. This review build does not bundle an unapproved VLC runtime.");
+            string bundledFolder = System.IO.Path.Combine(AppContext.BaseDirectory, "libvlc");
+            var installedPaths = new[] { Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86) }
+                .Where(root => !string.IsNullOrEmpty(root)).Distinct().Select(root => System.IO.Path.Combine(root, "VideoLAN", "VLC", "libvlc.dll"));
+            string selected = LibVlcRuntimeManifest.ResolvePath(requested, bundledFolder, installedPaths, BundledApproval());
             string folder = System.IO.Path.GetDirectoryName(selected)!, plugins = System.IO.Path.Combine(folder, "plugins");
             if (!Directory.Exists(plugins) || !File.Exists(System.IO.Path.Combine(folder, "libvlccore.dll"))) throw new DllNotFoundException("libvlc.dll requires its matching libvlccore.dll and plugins folder.");
             if (!SetDefaultDllDirectories(0x1000)) throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -268,16 +267,20 @@ internal static class VlcRuntime
             {
                 core = NativeLibrary.Load(System.IO.Path.Combine(folder, "libvlccore.dll")); library = NativeLibrary.Load(selected);
                 Version = Marshal.PtrToStringUTF8(Marshal.GetDelegateForFunctionPointer<VersionCall>(NativeLibrary.GetExport(library, "libvlc_get_version"))()) ?? "";
+                Changeset = Marshal.PtrToStringUTF8(Marshal.GetDelegateForFunctionPointer<VersionCall>(NativeLibrary.GetExport(library, "libvlc_get_changeset"))()) ?? "";
                 if (!Version.StartsWith("3.", StringComparison.Ordinal)) throw new DllNotFoundException("This adapter requires the stable libVLC 3 C ABI; the selected runtime has another major version.");
                 Environment.SetEnvironmentVariable("VLC_PLUGIN_PATH", plugins); Path = selected;
             }
             catch { if (library != IntPtr.Zero) NativeLibrary.Free(library); if (core != IntPtr.Zero) NativeLibrary.Free(core); library = core = IntPtr.Zero; RemoveDllDirectory(directoryCookie); directoryCookie = IntPtr.Zero; throw; }
         }
     }
-    static bool ApprovedBundle(string folder)
+    static LibVlcRuntimeApproval? BundledApproval()
     {
-        try { using var json = JsonDocument.Parse(File.ReadAllText(System.IO.Path.Combine(folder, "redistribution-audit.json"))); return json.RootElement.GetProperty("approvedForRedistribution").GetBoolean(); }
-        catch (Exception error) when (error is IOException or JsonException or InvalidOperationException or KeyNotFoundException) { return false; }
+        var values = typeof(VlcRuntime).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().ToDictionary(a => a.Key, a => a.Value, StringComparer.Ordinal);
+        if (!values.TryGetValue("LumaBundledVlcPackage", out string? package) || string.IsNullOrWhiteSpace(package)
+            || !values.TryGetValue("LumaBundledVlcManifestSha256", out string? manifest) || manifest is null
+            || !values.TryGetValue("LumaBundledVlcSourceSha256", out string? source) || source is null) return null;
+        return new(package, manifest, source);
     }
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)] delegate IntPtr VersionCall();
     [DllImport("kernel32.dll", SetLastError = true)] [return: MarshalAs(UnmanagedType.Bool)] static extern bool SetDefaultDllDirectories(uint flags);

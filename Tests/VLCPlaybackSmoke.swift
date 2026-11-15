@@ -18,7 +18,7 @@ import Foundation
         let host = NSView(frame: window.contentView!.bounds); window.contentView = host
         let engine = PlaybackEngine(); engine.setVolume(0); engine.attachVideoView(host)
         defer { engine.shutdown(); window.close() }
-        for name in ["Luma-Demo.mp4", "Luma-HEVC10-AAC51.mp4", "Luma-AVC-AAC.mkv"] {
+        for name in ["Luma-Demo.mp4", "Luma-HEVC10-AAC51.mp4", "Luma-AVC-AAC.mkv", "Luma-HEVC10.mkv"] {
             engine.load(root.appendingPathComponent(name))
             try await wait(engine) { engine.isPlaying && engine.duration > 1 && (engine.vlcStatistics?.displayedVideo ?? 0) > 0 }
             if name.contains("AAC51") { try await wait(engine) { (engine.vlcStatistics?.decodedAudio ?? 0) > 0 } }

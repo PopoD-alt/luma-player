@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Net;
+using System.Net.Sockets;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -43,6 +45,7 @@ internal sealed class PlayerWindow : Window
     readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     readonly DispatcherTimer updateTimer = new() { Interval = TimeSpan.FromMinutes(1) };
     readonly CancellationTokenSource lifetimeCancellation = new();
+    readonly SharingPowerRequest sharingPower = new();
     readonly Stopwatch openingClock = new();
     static readonly HashSet<string> CaptionExtensions = new(StringComparer.OrdinalIgnoreCase) { ".srt", ".vtt", ".ass", ".ssa", ".sub", ".idx", ".sup" };
     FrameworkElement header = null!, sidebar = null!, controls = null!;
@@ -267,6 +270,7 @@ internal sealed class PlayerWindow : Window
     void Seek(double value) { if (current is null || !double.IsFinite(value) || duration <= 0) return; vlc?.Seek(Math.Clamp(value, 0, duration)); UpdateTransport(); }
     void Tick()
     {
+        sharingPower.Update(sharing?.IsRunning == true && sharing.ActiveMediaStreams > 0);
         if (closing) return;
         if (opening && openingClock.Elapsed > TimeSpan.FromSeconds(30)) Fail("libVLC took too long to open this file. Retry or choose another file.");
         if (vlc is not null && !opening)
@@ -327,8 +331,8 @@ internal sealed class PlayerWindow : Window
     void Notice(string message) => status.Text = message;
     void ShowDiagnostics()
     {
-        var details = JsonSerializer.Serialize(new { engine = "libVLC3", version = VlcPlayer.RuntimeVersion, runtime = VlcPlayer.RuntimePath, displayedPictures = vlc?.DisplayedPictures, decodedVideo = vlc?.DecodedVideo, decodedAudio = vlc?.DecodedAudio, playedAudioBuffers = vlc?.PlayedAudioBuffers,
-            audioTracks = vlc?.AudioTracks, captionTracks = vlc?.SubtitleTracks, sharing = sharing?.IsRunning == true, discovery = discovery?.Status, lastError }, new JsonSerializerOptions { WriteIndented = true });
+        var details = JsonSerializer.Serialize(new { engine = "libVLC3", version = VlcPlayer.RuntimeVersion, changeset = VlcPlayer.RuntimeChangeset, runtime = VlcPlayer.RuntimePath, displayedPictures = vlc?.DisplayedPictures, decodedVideo = vlc?.DecodedVideo, decodedAudio = vlc?.DecodedAudio, playedAudioBuffers = vlc?.PlayedAudioBuffers,
+            audioTracks = vlc?.AudioTracks, captionTracks = vlc?.SubtitleTracks, sharing = sharing?.IsRunning == true, activeSharedStreams = sharing?.ActiveMediaStreams, sharingPower = SharingPowerStatus, discovery = discovery?.Status, lastError }, new JsonSerializerOptions { WriteIndented = true });
         var text = new TextBox { Text = details, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(16) };
         new Window { Owner = this, Title = "Local playback diagnostics", Width = 760, Height = 540, Content = text, WindowStartupLocation = WindowStartupLocation.CenterOwner }.Show();
     }
@@ -342,6 +346,7 @@ internal sealed class PlayerWindow : Window
     }
     void StopSharing()
     {
+        sharingPower.Update(false);
         if (smokeDiagnostics) Console.WriteLine("INFO: StopSharing closes HTTP listener and revokes tokens");
         sharing?.Stop();
         if (smokeDiagnostics) Console.WriteLine("INFO: StopSharing queues native DNS-SD withdrawal");
@@ -364,19 +369,20 @@ internal sealed class PlayerWindow : Window
         sharingWindow.Closed += (_, _) => { sharingWindow = null; sharingState = pairingText = null; sharingAddresses = null; startSharing = stopSharing = null; };
         RefreshSharingUI(); sharingWindow.Show();
     }
+    string SharingPowerStatus => sharingPower.IsActive ? "Idle sleep prevention requested while streaming" : sharingPower.IsUnavailable ? "Sleep prevention unavailable — keep this computer awake" : "Computer must remain awake to share";
     void RefreshSharingUI()
     {
         bool active = sharing?.IsRunning == true; shareButton.Content = active ? "Sharing on" : "Share playlist";
         shareButton.SetResourceReference(BackgroundProperty, active ? "AccentBrush" : "ButtonBrush");
         if (sharingState is null) return;
-        sharingState.Text = active ? $"Active · {sharing!.PairedDevices} paired device(s) · {discovery?.Status ?? "Manual URL entry available"}" : "Sharing is off. No playlist or media is exposed.";
+        sharingState.Text = active ? $"Active · {sharing!.PairedDevices} paired device(s) · {discovery?.Status ?? "Manual URL entry available"} · {SharingPowerStatus}" : "Sharing is off. No playlist or media is exposed.";
         sharingAddresses!.Text = active ? string.Join(Environment.NewLine, sharing!.Addresses) : "Start sharing to get local connection URLs.";
         pairingText!.Text = active ? DateTimeOffset.UtcNow < sharing!.PairingExpiresAt ? "Pairing code: " + sharing.PairingCode + "  (expires " + sharing.PairingExpiresAt.LocalDateTime.ToString("t") + ")" : "Code expired — stop and restart to pair another device" : "";
         startSharing!.IsEnabled = !active; stopSharing!.IsEnabled = active;
     }
     void Shutdown()
     {
-        if (closing) return; closing = true; SaveProgress(); ++generation; timer.Stop(); updateTimer.Stop(); lifetimeCancellation.Cancel(); StopSharing(); sharingWindow?.Close(); DisposePlayer(); lifetimeCancellation.Dispose();
+        if (closing) return; closing = true; SaveProgress(); ++generation; timer.Stop(); updateTimer.Stop(); lifetimeCancellation.Cancel(); StopSharing(); sharingPower.Dispose(); sharingWindow?.Close(); DisposePlayer(); lifetimeCancellation.Dispose();
     }
     void ToggleFullscreen()
     {
@@ -457,6 +463,11 @@ internal sealed class PlayerWindow : Window
         var hevcShot = Path.Combine(output, "libvlc-hevc10-frame.png"); hevc.Snapshot(hevcShot); await Until(() => File.Exists(hevcShot) && new FileInfo(hevcShot).Length > 100, "HEVC native snapshot");
         Console.WriteLine("PASS: raw hev1 Main10/AAC5.1 local MP4 reaches libVLC decoded video/audio and native presentation without container normalization");
         var generated = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(output))!, "generated");
+        var hevcMatroska = await Open(Path.Combine(generated, "Luma-review-hevc10.mkv"));
+        await Until(() => hevcMatroska.DecodedVideo is > 0 && hevcMatroska.DisplayedPictures is > 0 && hevcMatroska.NaturalVideoWidth == 960,
+            "Direct Matroska HEVC Main10 decoded and displayed frames");
+        Check(ReferenceEquals(vlc, hevcMatroska), "Direct Matroska HEVC retained the loaded native player"); Pause();
+        Console.WriteLine("PASS: V_MPEGH/ISO/HEVC Main10 Matroska opens directly in the same libVLC player with decoded/displayed video frames; video-only fixture, no remux");
         var mkv = await Open(Path.Combine(generated, "Luma-review-text.mkv")); await Until(() => mkv.SubtitleTracks.Count(t => t.Id >= 0) >= 2, "Matroska native ASS/UTF8 tracks");
         Pause(); Seek(.75); foreach (var track in mkv.SubtitleTracks.Where(t => t.Id >= 0)) { mkv.SelectSubtitle(track.Id); Check(mkv.SubtitleTrack == track.Id, "Embedded caption track selection"); } mkv.SelectSubtitle(-1);
         foreach (string file in new[] { "Luma-MSVideo1-16.avi", "Luma-Silence.flac", "Luma-MSADPCM.wav" })
@@ -465,6 +476,9 @@ internal sealed class PlayerWindow : Window
         Unload(); var pending = library.Add([Path.Combine(fixtures, "Luma-Demo.mp4")]).FirstOrDefault() ?? library.Data.Items.First(i => i.FilePath.EndsWith("Luma-Demo.mp4"));
         await LoadEntryAsync(pending); var obsolete = vlc; await LoadEntryAsync(pending); await Until(() => !opening, "Replacement player load"); Check(!ReferenceEquals(obsolete, vlc) && lastError is null, "Native generations isolated");
         Pause(); Seek(5); await Task.Delay(250); SaveProgress(); Check(library.Data.Items.Single(i => i.Id == pending.Id).ResumeTime >= 4.5, "Saved resume position");
+        string idleSleepPrevention = "not-tested";
+        WindowsDnsSdAdvertisement? retiredByPowerProbe = null;
+        string? registrationAtPowerProbe = null;
         StartSharing(); Check(sharing?.IsRunning == true && shareButton.Content.ToString() == "Sharing on", "Sharing starts only from explicit UI action");
         using (var http = new HttpClient())
         {
@@ -472,10 +486,29 @@ internal sealed class PlayerWindow : Window
             var paired = await http.PostAsync(address + "/v1/pair", new StringContent(JsonSerializer.Serialize(new { code = sharing.PairingCode }), System.Text.Encoding.UTF8, "application/json")); paired.EnsureSuccessStatusCode();
             using var json = JsonDocument.Parse(await paired.Content.ReadAsStringAsync()); http.DefaultRequestHeaders.Authorization = new("Bearer", json.RootElement.GetProperty("token").GetString());
             var playlist = await http.GetStringAsync(address + "/v1/playlist"); Check(!playlist.Contains(fixtures, StringComparison.Ordinal), "Sharing GUI exposes no source paths");
+            string powerFile = Path.Combine(output, "original-power-backpressure.bin");
+            using (var file = File.Create(powerFile)) file.SetLength(64L * 1024 * 1024);
+            var powerEntry = library.Add([powerFile]).Single(); PushSharedPlaylist();
+            try
+            {
+                using var stalled = new TcpClient { ReceiveBufferSize = 1024 };
+                await stalled.ConnectAsync(IPAddress.Loopback, sharing!.Port);
+                string token = json.RootElement.GetProperty("token").GetString()!;
+                await stalled.GetStream().WriteAsync(System.Text.Encoding.ASCII.GetBytes("GET /v1/media/" + powerEntry.Id.ToString("N") + "?token=" + token + " HTTP/1.1\r\nHost: localhost\r\n\r\n"));
+                await Until(() => sharing!.ActiveMediaStreams == 1 && (sharingPower.IsActive || sharingPower.IsUnavailable), "Streaming-only idle sleep request");
+                bool requested = sharingPower.IsActive;
+                retiredByPowerProbe = discovery; registrationAtPowerProbe = discovery?.Status;
+                StopSharing();
+                Check(!sharingPower.IsActive, "Stopping sharing releases the idle-system-sleep request");
+                idleSleepPrevention = requested && sharingPower.LastReleaseSucceeded == true ? "system-required-handle-created-and-released" : "unavailable-keep-computer-awake";
+                Console.WriteLine("INFO: idle sleep prevention: " + idleSleepPrevention + "; forced sleep/display policy is unchanged and physical sleep behavior is not asserted");
+            }
+            finally { library.Remove(powerEntry.Id); File.Delete(powerFile); RefreshQueue(); }
+
         }
-        await Task.Delay(300); string dnsSdRegistration = discovery?.Status ?? "not attempted";
+        await Task.Delay(300); string dnsSdRegistration = registrationAtPowerProbe ?? discovery?.Status ?? "not attempted";
         Console.WriteLine("INFO: Windows DNS-SD registration: " + dnsSdRegistration + "; network discovery itself is not asserted by this hosted smoke.");
-        var retiringDiscovery = discovery;
+        var retiringDiscovery = retiredByPowerProbe ?? discovery;
         StopSharing(); Check(sharing is null && shareButton.Content.ToString() == "Share playlist", "UI stop revokes sharing");
         if (retiringDiscovery is not null)
         {
@@ -489,7 +522,7 @@ internal sealed class PlayerWindow : Window
             SetTheme(theme); await Task.Delay(100); UpdateLayout(); var image = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); image.Render(layout);
             var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(image)); using var file = File.Create(Path.Combine(output, theme ? "Luma-Windows-dark.png" : "Luma-Windows-light.png")); png.Save(file);
         }
-        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeBundled = false, dnsSdRegistration,
+        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", hevc10Matroska = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeChangeset = VlcPlayer.RuntimeChangeset, runtimeBundled = false, dnsSdRegistration, idleSleepPrevention,
             physicalAudio = endpoints == 0 ? "unverified-no-active-render-endpoint" : "system-output-requested-audibility-not-measured", activeAudioRenderEndpoints = endpoints }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine("PASS: libVLC native lifecycle/resume, opt-in sharing UI pairing/revoke, and native UI theme snapshots; physical audibility remains explicitly separate");
     }

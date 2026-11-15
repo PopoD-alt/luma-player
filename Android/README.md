@@ -1,8 +1,8 @@
 # Luma for Android — local streaming preview
 
-Native Android companion by **sdas**. Pair with Luma on your desktop over the same trusted Wi-Fi, browse its live playlist, and stream media without saving a phone download. This preview uses official VideoLAN libVLC for playback; it does not recreate its codecs or guarantee every VLC format on every Android device.
+Native Android companion by **sdas**. Pair with Luma on your desktop over the same trusted Wi-Fi, browse its live playlist, and stream media without saving a phone download. Playback uses VideoLAN libVLC; it does not recreate its codecs or guarantee every VLC format on every Android device.
 
-**Development builds only:** the pinned libVLC AAR's complete native source, module licenses, and redistribution notices are still under audit in [ThirdParty/libvlc](../ThirdParty/libvlc/README.md). A Maven license label is not clearance for every bundled component. Do not publish an APK until the repository's third-party audit gate clears. The APK contains provisional audit/license texts in `assets/third-party`; these are not a complete distribution bundle.
+The default Maven AAR is **development-only**: its native/Java payload includes GPL components and is not approved for this proprietary application. An explicit selector can instead use the reviewed, source-built **ARM64** component `android-lgpl-arm64-3.7.7-r2`. Its exact library/module/dependency/source/replacement audit is recorded in [ThirdParty/libvlc](../ThirdParty/libvlc/README.md). This component approval supports private owner review; it does not authorize publishing an APK or establish legal/patent clearance. No production signing key or public Android release is configured.
 
 ## Use
 
@@ -10,9 +10,9 @@ Native Android companion by **sdas**. Pair with Luma on your desktop over the sa
 2. Connect the phone to the same trusted Wi-Fi. Allow local-network access when Android requests it.
 3. Choose a nearby desktop, or enter the desktop's displayed `http://IP-address:port`.
 4. Enter the current six-digit code from the desktop. Select an item from its live playlist.
-5. Use play/pause, the seek slider, ±10 seconds, volume, and Full screen. Return to Playlist to choose another item.
+5. Use play/pause, the seek slider, ±10 seconds, volume, and Full screen. Fullscreen starts with playback controls hidden; tap the video to show or hide them, then choose Exit full screen. Android's own edge-swipe controls remain available. Return to Playlist to choose another item.
 
-Playback waits for a visible, sized video view. Hardware decoding stays enabled on compatible devices; if a video never creates output, the app makes one automatic software retry and remembers that choice for the item during the current connection. Audio-only playback does not trigger this retry.
+Playback waits for a visible, sized video view. Hardware decoding stays enabled on compatible devices; if a known video with received stream bytes never creates output, the app makes one automatic software retry and remembers that choice for the item during the current connection. Audio-only playback and reported network errors do not trigger this retry. Bookmark seeking waits for native Playing and the first video output rather than interrupting decoder initialization. A newer Play action keeps its intent when an older native Paused event arrives.
 
 The phone refreshes the playlist every five seconds while foregrounded. When the host bounds a large playlist, it clearly shows “Showing first N of M items” above the list. Protocol limits are 1000 returned items, 512 UTF-16 units per title, one year per duration/resume value, and 4 MiB per JSON response. Resume positions are shown from the desktop and kept in phone memory during the current session. Pausing/backgrounding stops network playback; returning can reopen the stream. Re-pair after desktop sharing restarts. The desktop URL is the only saved connection preference. Pairing tokens remain in memory and are scoped to that desktop's current sharing session.
 
@@ -33,8 +33,19 @@ The Gradle9.6.0 wrapper verifies the official distribution SHA256. AGP9.4.0 and 
 - Main development APK: `app/build/outputs/apk/debug/app-debug.apk`
 - Test APK: `app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk`
 - Debug application ID: `dev.sdas.luma.preview`
-- Android8/API26 minimum; compile/target API37. Runtime ABIs: arm64-v8a, armeabi-v7a, x86_64.
-- No production signing key or store listing is configured. Debug signing is for testing only. Release build tasks fail before packaging until the central Android native audit is approved with all four review flags, then verify the resolved AAR against the exact approved SHA256.
+- Android8/API26 minimum; compile/target API37. Default development ABIs: arm64-v8a, armeabi-v7a, x86_64. The reviewed custom runtime currently supports ARM64 only.
+- Debug signing is for testing only. The stock and arbitrary local-AAR paths fail the release gate. The approved selector verifies all four central audit flags, the complete staged inventory/source bundle/notices, and the exact AAR SHA256 before any build uses it.
+
+For private review with an already staged, approved component:
+
+```sh
+./gradlew --no-daemon -PlumaRuntimePackage=android-lgpl-arm64-3.7.7-r2 \
+  verifyReleaseRuntimeAudit assembleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug
+```
+
+This checks the release audit task but produces **debug APKs only**, under `app/build-approved-runtime/outputs/apk/`. Native library hashes are preserved; complete staged native notices and Java runtime notices are included in APK assets. Every distributed APK must also be accompanied by `Sources/CorrespondingSource.tar` from the immutable staged library package **and the matching application source/object inputs** for Java-wrapper relinking. The component source bundle carries its review-time application reference; later UI changes require their own matching application snapshot.
+
+`-PlumaDevelopmentAar=/absolute/path/to/library.aar` remains available for personal rebuilding/relinking tests, with separate outputs under `app/build-custom-native/`; this arbitrary local path always blocks release packaging. Do not combine it with `lumaRuntimePackage`. Gradle may remove stale APK outputs when switching runtime choices; copy private review evidence outside these generated directories before another build. [Android/scripts](scripts/README.md) documents the pinned NDK source build, excluded GPL implementations, Java-source AAR build and independent debug signing/replacement helper. The default stock AAR is never silently substituted into a selected reviewed build.
 
 On Android17/API37 the app requests `ACCESS_LOCAL_NETWORK`. Android16/API36 uses `NEARBY_WIFI_DEVICES` for the applicable local-network protection flow. Earlier versions need the manifest network permissions; no location access is requested. Discovery uses `_luma-player._tcp.` with a manual connection fallback. Routers that isolate Wi-Fi clients or suppress multicast can prevent discovery or streaming.
 
@@ -59,7 +70,9 @@ adb shell am instrument -w \
   dev.sdas.luma.preview.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-API36 `google_apis` x86_64 is suitable for CI. API35 is also supported and needs no runtime local-network permission. The test pairs through the actual dialog, loads the live playlist, streams AVC and synthetic HEVC Main10/AAC5.1, and asserts native decoded video/audio plus displayed-frame counters. It also checks pause, byte-range seek, volume and fullscreen transitions. Status output includes libVLC version/changeset, decoder counters and video-view/output readiness without URLs or tokens. A review PNG is captured inside the paused playback test before the activity closes, at app-private `cache/luma-android-review.png`; the harness can pull it with `adb exec-out run-as dev.sdas.luma.preview cat cache/luma-android-review.png`. It checks app files/cache for saved media downloads.
+API36 `google_apis` x86_64 is suitable for the stock development CI path; use ARM64 for the reviewed runtime. API35 is also supported and needs no runtime local-network permission. The test pairs through the actual dialog, loads the live playlist, streams AVC and synthetic HEVC Main10/AAC5.1, and asserts native decoded video/audio plus displayed-frame counters. It also checks Opening pause intent, rapid Pause→Play, native pause, byte-range seek, volume, and fullscreen with hidden chrome/settled system bars while retaining the same player/view and advancing displayed frames. An optional explicit fault argument exercises the one-time software recovery. Status output includes libVLC version/changeset, decoder counters and video-view/output readiness without URLs or tokens. Review PNGs are captured before the activity closes at app-private `cache/luma-android-review.png` and `cache/luma-android-fullscreen.png`; the harness can pull them with `adb exec-out run-as dev.sdas.luma.preview cat cache/FILENAME`. It checks app files/cache for saved media downloads. The test acknowledges only Android's standard first-use fullscreen tutorial if present; application permissions/settings are unchanged.
+
+The root [integration harness](../Scripts/run-android-integration.py) supports the actual portable Windows-Core server or native Mac server, custom app/test APK paths, separate report directories, and `--exercise-video-recovery`. Local ARM64 source-built runtime runs have passed both desktop servers, AVC/HEVC Main10/AAC5.1, normal startup, explicit recovery, and independent APK re-signing. These are bounded fixture checks rather than full VLC parity.
 
 Successful emulator output is software decoding/rendering evidence, **not proof of audible physical speaker output, surround routing, physical Wi-Fi discovery, every hardware decoder, or every VLC codec/container**. Those require real-device coverage. The synthetic AAC5.1 fixture tests channel-layout decoding, not all real-world multichannel streams. Runtime CI results are recorded by the parent workflow; do not infer a passed emulator run from compilation alone.
 

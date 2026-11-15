@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "bindingBuild": "from pinned Java/resources source, not stock bytecode",
+  "aarSha256": "5f9bdf082674119f3301f08f2261c6bce828b19a2d6b3618ee2bb360e3e2f1b8",
+  "bytes": 20303106,
+  "nativeABIs": [
+    "arm64-v8a"
+  ],
+  "nativeLibraryHashes": {
+    "jni/arm64-v8a/libc++_shared.so": "0c52cfab2df0d957d8b346a2bdc5ae8d71feca2591924d77e1cd724d5bf74352",
+    "jni/arm64-v8a/libvlc.so": "8aa30bd6ab999e0dede1e15dcb47101cc45fb64d8662df463a6f6e3a12824472",
+    "jni/arm64-v8a/libvlcjni.so": "515c0ceada75e8593481cf7ff0b4a98cb6a304e18c94b218cdb4a99c1aefff0e"
+  },
+  "GPLRendererDiscovererClassFiles": [],
+  "LuaOrHRTFAssets": [],
+  "classJarEntries": 140,
+  "sourceInventory": "source-aar-inventory.json",
+  "scope": "Exact source-built AAR check; actual source-built APK/JNI and independent re-sign test still required."
+}

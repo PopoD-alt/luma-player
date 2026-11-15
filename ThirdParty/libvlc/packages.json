@@ -205,6 +205,67 @@
         "blockers": [],
         "intendedNextStep": "Standalone private owner-review app; this component record does not authorize packaging or publishing a DMG."
       }
+    },
+    "android-lgpl-arm64-3.7.7-r2": {
+      "platform": "android-arm64-v8a",
+      "bindingVersion": "3.7.7",
+      "libraryVersion": "3.0.25 Vetinari",
+      "libraryChangeset": "Luma-LGPL-84177b22-JNI0b8dc65e-p20-ffmpeg-portable-r2-no-renderer",
+      "minimumLibraryAPI": 21,
+      "testedApplicationMinimumAPI": 26,
+      "declaredLicense": "LGPL-2.1-or-later with separately licensed permissive dependencies",
+      "kind": "tar",
+      "archivePrefix": "",
+      "noticesIncluded": true,
+      "runtimeEntry": "luma-libvlc-lgpl-arm64-3.7.7-r2.aar",
+      "runtimeSha256": "5f9bdf082674119f3301f08f2261c6bce828b19a2d6b3618ee2bb360e3e2f1b8",
+      "runtimeInventorySha256": "b6dd9a60a1a525ddedc7453e6e117d45e41eb461cf035ea349a8cd75f8b13c49",
+      "artifact": {
+        "filename": "android-lgpl-arm64-3.7.7-r2-runtime.tar.gz",
+        "sha256": "d9c1a61200659533f8922503a9d9ba087d54ac6959a771f6677b1e5037b218ee",
+        "bytes": 390380770,
+        "localBuildOnly": true,
+        "maximumBytes": 1073741824
+      },
+      "correspondingSource": {
+        "path": "Sources/CorrespondingSource.tar",
+        "sha256": "63935d4c22b7018e51203ce024a9603536e79bdde272d489a4a836ca8b9d74bf",
+        "bytes": 373975040
+      },
+      "sources": [
+        {
+          "filename": "android-lgpl-arm64-3.7.7-r2-corresponding-source.tar",
+          "sha256": "63935d4c22b7018e51203ce024a9603536e79bdde272d489a4a836ca8b9d74bf",
+          "bytes": 373975040,
+          "maximumBytes": 1073741824,
+          "localBuildOnly": true
+        }
+      ],
+      "nativeLibraries": {
+        "jni/arm64-v8a/libc++_shared.so": "0c52cfab2df0d957d8b346a2bdc5ae8d71feca2591924d77e1cd724d5bf74352",
+        "jni/arm64-v8a/libvlc.so": "8aa30bd6ab999e0dede1e15dcb47101cc45fb64d8662df463a6f6e3a12824472",
+        "jni/arm64-v8a/libvlcjni.so": "515c0ceada75e8593481cf7ff0b4a98cb6a304e18c94b218cdb4a99c1aefff0e"
+      },
+      "evidence": [
+        "Original ARM64 native build from VLC84177b22 plus20pinned JNI patches, NDK29.0.14206865 and recorded LGPL profile.",
+        "Two recorded exclusion patches remove three GPL FFmpeg AArch64 optimization units/calls and unused renderer-discovery JNI initialization. Existing generic LGPL AC3DSP/CRC retained and emulator goldens passed.",
+        "Final FFmpeg1683dependency files select zero of159GPL-marked source paths; forbidden optimized symbols absent. Actual208plugin entries pluscore exactly match source-filter selection.",
+        "Stripped/unstripped loaded ELF segments match; all3native libraries have16KiB alignment and only Android-system/libc++ dependencies.",
+        "Java/resources AAR rebuilt directly from pinned source; no stock bytecode, GPL RendererDiscoverer class, Lua/HRTF assets or other native ABIs.",
+        "Complete56contrib sources plus4upstream Java/JNI/VLC sources,20patches,2local patches,5MIT helpers, NDK/VLC/JNI/contrib notices and application relink reference are embedded. No stock native AAR, APK, private key or user media in source companion.",
+        "Actual source-built app and independently re-signed copy passed Mac AVC/HEVC Main10/AAC5.1 streaming, native clock, fullscreen and recovery. See android-custom-playback-evidence.json."
+      ],
+      "audit": {
+        "status": "approved-for-redistribution",
+        "moduleLicensesReviewed": true,
+        "dependencyLicensesReviewed": true,
+        "completeCorrespondingSources": true,
+        "replacementMechanismVerified": true,
+        "blockers": [],
+        "approvalScope": "Technical approval of this exact library component for a private owner-review app; no public APK/store delivery, physical-device matrix, patent or legal clearance claimed.",
+        "applicationSourceDelivery": "Library source includes a component-review application reference. Every future APK distribution must also provide the matching application source/object inputs for merged-DEX Java-wrapper relinking.",
+        "intendedNextStep": "Registry-backed private owner-review build; not authorization to publish an app binary."
+      }
     }
   },
   "externalTestOnly": {

@@ -29,12 +29,16 @@ public class LanPlaybackTest {
             await(app,a->{Media.Stats s=a.debugStats();return s!=null&&s.decodedVideo>0&&s.displayedPictures>0;},25000,"Actual AVC streaming decode/rendered-frame statistics");
             boolean avcSoftwareRetry=value(app,MainActivity::debugSoftwarePlayback);if(exerciseRecovery)assertTrue("Missing hardware output did not recover through one software retry",avcSoftwareRetry);
             await(app,a->a.debugSeekable()&&a.debugTime()>200,12000,"Range-seekable HTTP media");
+            long beforeRapid=value(app,MainActivity::debugTime);
+            app.onActivity(a->{a.debugToggle();a.debugToggle();assertFalse("Queued native pause overwrote newer Play intent",a.debugPauseRequested());});
+            await(app,a->a.debugPlaying()&&!a.debugPauseRequested()&&a.debugTime()>beforeRapid+200,6000,"Rapid Pause then Play retains newer intent and advances native clock");
             app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Native pause and matching button/status UI");long paused=value(app,MainActivity::debugTime);saveReviewScreenshot("luma-android-review.png");Thread.sleep(350);assertTrue("Paused clock advanced",Math.abs(value(app,MainActivity::debugTime)-paused)<350);
             app.onActivity(a->a.debugSeek(3000));app.onActivity(MainActivity::debugToggle);await(app,a->a.debugPlaying()&&a.debugTime()>=2500,10000,"Native byte-range seek/resume");
             app.onActivity(a->a.debugVolume(37));assertEquals(37,(int)value(app,MainActivity::debugVolume));
             int playerIdentity=value(app,MainActivity::debugPlayerIdentity),viewIdentity=value(app,MainActivity::debugVideoViewIdentity),displayedBefore=value(app,a->a.debugStats().displayedPictures);
             app.onActivity(a->a.debugFull(true));await(app,a->a.debugIsFull()&&!a.debugChromeVisible()&&a.getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE&&a.getWindow().getDecorView().getWidth()>a.getWindow().getDecorView().getHeight()&&(Build.VERSION.SDK_INT<30||a.getWindow().getDecorView().getRootWindowInsets()!=null&&!a.getWindow().getDecorView().getRootWindowInsets().isVisible(android.view.WindowInsets.Type.systemBars()))&&a.debugPlayerIdentity()==playerIdentity&&a.debugVideoViewIdentity()==viewIdentity&&a.debugVideoOutputs()>0&&a.debugStats()!=null&&a.debugStats().displayedPictures>displayedBefore,8000,"Video-only fullscreen retains player/view and advances displayed frames");
-            saveReviewScreenshot("luma-android-fullscreen.png");
+            Thread.sleep(1200);dismissSystemFullscreenHint();await(app,MainActivity::debugFullscreenInsetsClear,4000,"Settled fullscreen hides system bars without reserved padding");
+            saveReviewScreenshot("luma-android-fullscreen.png");assertTrue("Fullscreen bars/padding returned after capture",value(app,MainActivity::debugFullscreenInsetsClear));
             app.onActivity(MainActivity::debugTapVideo);await(app,a->a.debugChromeVisible()&&a.debugExitFullLabel(),5000,"Tap shows playback controls and explicit fullscreen exit");
             app.onActivity(MainActivity::debugTapVideo);await(app,a->!a.debugChromeVisible(),5000,"Tap hides fullscreen chrome");
             app.onActivity(a->a.debugFull(false));await(app,a->!a.debugIsFull()&&a.debugChromeVisible()&&a.debugPlayerIdentity()==playerIdentity&&a.debugVideoViewIdentity()==viewIdentity,8000,"Fullscreen exit restores controls without replacing video output");
@@ -46,6 +50,19 @@ public class LanPlaybackTest {
             assertFalse("Android persisted a media download",hasMedia(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir()));
             assertFalse("Android cached a saved movie",hasMedia(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir()));
         }
+    }
+    private static void dismissSystemFullscreenHint()throws Exception{
+        // A clean Android image may show its own first-use immersive tutorial.
+        // Acknowledge only that SystemUI prompt; leave application/OS policy intact.
+        android.app.UiAutomation automation=InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        android.accessibilityservice.AccessibilityServiceInfo service=automation.getServiceInfo();int original=service.flags;
+        service.flags|=android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;automation.setServiceInfo(service);
+        try{long deadline=System.currentTimeMillis()+1500;while(System.currentTimeMillis()<deadline){
+            for(android.view.accessibility.AccessibilityWindowInfo window:automation.getWindows()){
+                android.view.accessibility.AccessibilityNodeInfo root=window.getRoot();if(root==null||!android.text.TextUtils.equals("com.android.systemui",root.getPackageName())||root.findAccessibilityNodeInfosByText("Viewing full screen").isEmpty())continue;
+                for(android.view.accessibility.AccessibilityNodeInfo node:root.findAccessibilityNodeInfosByText("Got it"))if(android.text.TextUtils.equals("Got it",node.getText())&&node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)){Thread.sleep(250);return;}
+            }Thread.sleep(100);
+        }}finally{service.flags=original;automation.setServiceInfo(service);}
     }
     private static void saveReviewScreenshot(String name)throws Exception{
         // Text properties become observable before the next rendered frame.

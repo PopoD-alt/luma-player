@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "package": "android-lgpl-arm64-3.7.7-r2",
+  "reportedBy": "Android agent actual emulator/app instrumentation",
+  "bindingBuiltFromPinnedSource": true,
+  "sourceAarSha256": "5f9bdf082674119f3301f08f2261c6bce828b19a2d6b3618ee2bb360e3e2f1b8",
+  "nativeRevision": "Luma-LGPL-84177b22-JNI0b8dc65e-p20-ffmpeg-portable-r2-no-renderer",
+  "checks": {
+    "actualJavaJNIPlayback": "passed",
+    "MacAVCHEVCMain10AAC51Streaming": "passed",
+    "fullscreenAndInjectedSurfaceRecovery": "passed",
+    "normalOneSecondResume": "passed",
+    "independentAPKResigning": "passed",
+    "cleanDEXNoGPLRenderer": "passed",
+    "exactThreeFrozenArm64Libraries": "passed",
+    "rapidPausePlayNativeClock": "passed"
+  },
+  "replacementAPK": {
+    "path": "Android/.tools/source-runtime-r2-replacement/app-custom-debug.apk",
+    "bytes": 48001406,
+    "sha256": "608c8bdf805ec56ffb0e6652442d09b8771ec5b7deb9994bbfdae859b18ea461",
+    "scope": "Replacement-mechanism proof using the same frozen component before application-only queued-event refinement"
+  },
+  "logs": "build/android-source-aar-r2-resigned-macos-recovery/",
+  "durationSeconds": 21.4,
+  "portableFallbackGoldens": "ThirdParty/work/android-lgpl/portable-fallback-results.txt",
+  "scope": "Private owner review and technical component validation. No app publication/store signing, physical-device matrix, patent or legal clearance claimed.",
+  "latestApplicationTests": {
+    "portableNormalSeconds": 17.159,
+    "MacInjectedRecoverySeconds": 12.19,
+    "logs": [
+      "build/android-source-aar-r2-rapid-portable",
+      "build/android-source-aar-r2-rapid-macos-recovery"
+    ],
+    "sourceSnapshot": "Frozen main/project/assets after queued-Paused intent fix"
+  },
+  "finalApplicationProof": {
+    "reportedBy": "Android agent actual final independently signed source-built app",
+    "result": "passed",
+    "seconds": 20.827,
+    "log": "build/android-source-aar-r2-final-resigned/instrumentation.log",
+    "rapidPausePlayAndInjectedRecovery": true,
+    "HEVCDecoded": 64,
+    "displayedFrames": 3,
+    "decodedAACBuffers": 193,
+    "apkSha256": "962f5ba726b72cba96d80186bcf5caeb89144a161c69f4c5cce621ec2ea28975",
+    "apkBytes": 48001406,
+    "scope": "App UI may receive later independent refinements; library bytes are unchanged."
+  }
+}
