@@ -1,5 +1,9 @@
 # Luma Player
 
+> **0.7.0 rebuild in review:** Native Mac/Windows libVLC playback and an Android companion with local playlist streaming are implemented on [feature/vlc-lan-android](https://github.com/PopoD-alt/luma-player/tree/feature/vlc-lan-android). See the [preview guide](https://github.com/PopoD-alt/luma-player/blob/feature/vlc-lan-android/README.md) and [native test evidence](https://github.com/PopoD-alt/luma-player/actions/runs/43752264480). Runtime distribution checks and owner review come before new public packages.
+>
+> The downloads and support details below describe the older **Mac 0.6.1 / Windows build 3** releases. They do not contain the new playback backend, Android app or Wi-Fi sharing. No 0.7.0 installer, APK or update-feed change has been published.
+
 **A free native media player for macOS, with a Windows desktop preview.** Luma combines a saved media queue, playback controls, bookmarks and subtitles in a focused desktop interface.
 
 **macOS public alpha: 0.6.1 · macOS 14 or later · Apple Silicon**
