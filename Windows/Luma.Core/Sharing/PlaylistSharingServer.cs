@@ -188,7 +188,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
                 token.ThrowIfCancellationRequested();
                 if (!Volatile.Read(ref playlist).Items.TryGetValue(item.Id, out live) || !SamePath(live.FilePath, item.FilePath)) return;
                 int read = await input.ReadAsync(buffer.AsMemory(0, (int)Math.Min(count, buffer.Length)), token).ConfigureAwait(false); if (read == 0) return;
-                await Write(output, buffer.AsMemory(0, read), token).ConfigureAwait(false); count -= read;
+                await Write(output, buffer.AsMemory(0, read), token, mediaChunk: true).ConfigureAwait(false); count -= read;
             }
         }
     }
@@ -276,8 +276,8 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
         string header = $"HTTP/1.1 {status} {reason}\r\nContent-Length: {length}\r\nContent-Type: {type}\r\nConnection: close\r\nCache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\n" + extra + "\r\n";
         return Write(stream, Encoding.ASCII.GetBytes(header), token);
     }
-    static async Task Write(NetworkStream stream, ReadOnlyMemory<byte> data, CancellationToken token)
-    { using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token); timeout.CancelAfter(TimeSpan.FromSeconds(15)); await stream.WriteAsync(data, timeout.Token).ConfigureAwait(false); }
+    static async Task Write(NetworkStream stream, ReadOnlyMemory<byte> data, CancellationToken token, bool mediaChunk = false)
+    { using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token); timeout.CancelAfter(mediaChunk ? TimeSpan.FromMinutes(15) : TimeSpan.FromSeconds(30)); await stream.WriteAsync(data, timeout.Token).ConfigureAwait(false); }
     public static bool IsPrivateAddress(IPAddress address)
     {
         if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4(); if (IPAddress.IsLoopback(address)) return true;

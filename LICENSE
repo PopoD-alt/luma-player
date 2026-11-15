@@ -30,6 +30,17 @@ source-access or redistribution rights for the covered components. These
 permissions do not otherwise grant a general license to redistribute Luma's
 proprietary source or derivative app versions.
 
+Original libVLC build support
+
+The original files named Scripts/prepare-libvlc*, original Luma build/audit
+support under ThirdParty/libvlc, and the three Android helpers
+Android/scripts/build-lgpl-runtime.py, Android/scripts/filter-native-modules.py,
+and Android/scripts/test-native-filter.py are licensed under the MIT license in
+ThirdParty/libvlc/LUMA-BUILD-SUPPORT-LICENSE.txt. This narrow exception permits
+copying and modifying the build materials accompanying the third-party library.
+It does not apply to Luma's application code, trademarks, or upstream materials;
+upstream source, patches and notices retain their respective licenses.
+
 Warranty
 
 To the extent permitted by applicable law, the software is provided as is,

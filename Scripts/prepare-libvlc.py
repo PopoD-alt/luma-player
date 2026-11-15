@@ -17,7 +17,7 @@ import zipfile
 REPO = Path(__file__).resolve().parents[1]
 REGISTRY = REPO / "ThirdParty/libvlc/packages.json"
 MANIFEST = "luma-libvlc-runtime.json"
-ALLOWED_HOSTS = {"download.videolan.org", "api.nuget.org", "repo.maven.apache.org", "codeload.github.com"}
+ALLOWED_HOSTS = {"download.videolan.org", "api.nuget.org", "repo.maven.apache.org", "codeload.github.com", "code.videolan.org"}
 
 
 def sha256(path: Path) -> str:
@@ -53,10 +53,6 @@ def relative(name: str) -> PurePosixPath:
 def obtain(record: dict, cache: Path) -> Path:
     """A local hash is pinned evidence, not a substitute for a publisher signature."""
     from urllib.parse import urlparse
-    url = record["url"]
-    parsed = urlparse(url)
-    if parsed.scheme != "https" or parsed.hostname not in ALLOWED_HOSTS or parsed.username or parsed.password:
-        raise ValueError("Unapproved download URL")
     cache.mkdir(parents=True, exist_ok=True)
     target = cache / record["filename"]
     if target.name != record["filename"]:
@@ -65,6 +61,12 @@ def obtain(record: dict, cache: Path) -> Path:
         if sha256(target) != record["sha256"]:
             raise ValueError("Cached artifact hash differs: " + target.name)
         return target
+    if record.get("localBuildOnly") is True:
+        raise ValueError("Pinned custom build artifact is missing; follow its recorded build/reproduction instructions")
+    url = record["url"]
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname not in ALLOWED_HOSTS or parsed.username or parsed.password:
+        raise ValueError("Unapproved download URL")
     temporary = target.with_suffix(target.suffix + ".partial")
     try:
         with urllib.request.urlopen(url, timeout=60) as response, temporary.open("xb") as output:
@@ -164,6 +166,12 @@ def distribution_check(record: dict) -> None:
     if audit.get("status") != "approved-for-redistribution" or not all(audit.get(key) is True for key in (
         "moduleLicensesReviewed", "dependencyLicensesReviewed", "completeCorrespondingSources", "replacementMechanismVerified")):
         raise ValueError("Redistribution blocked: " + "; ".join(audit.get("blockers", ["No complete approved audit"])))
+    if not record.get("runtimeInventorySha256") or not record.get("correspondingSource"):
+        raise ValueError("Redistribution blocked: immutable runtime inventory and corresponding-source bundle required")
+
+
+def inventory_sha256(files: dict) -> str:
+    return hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
 def verify(runtime: Path, distribution: bool = False) -> dict:
@@ -175,16 +183,24 @@ def verify(runtime: Path, distribution: bool = False) -> dict:
             raise ValueError("A development runtime cannot enter a distributable artifact")
     if manifest.get("artifactSha256") != record["artifact"]["sha256"]:
         raise ValueError("Runtime does not match its registered artifact")
-    if inventory(runtime) != manifest.get("files"):
+    actual = inventory(runtime)
+    if actual != manifest.get("files"):
         raise ValueError("Runtime inventory differs: missing, changed or unreviewed files")
+    if record.get("runtimeInventorySha256") and inventory_sha256(actual) != record["runtimeInventorySha256"]:
+        raise ValueError("Runtime inventory differs from the centrally approved complete runtime")
+    if source := record.get("correspondingSource"):
+        source_path = runtime.joinpath(*relative(source["path"]).parts)
+        if not within(runtime, source_path) or not source_path.is_file() or sha256(source_path) != source["sha256"]:
+            raise ValueError("Required corresponding-source bundle is missing or changed")
     entry = runtime / record["runtimeEntry"]
     if not entry.is_file() or not within(runtime, entry):
         raise ValueError("Runtime entry is missing or outside its root")
     if record.get("runtimeSha256") and sha256(entry) != record["runtimeSha256"]:
         raise ValueError("Runtime entry differs from inspected upstream bytes")
+    approved = record.get("audit", {}).get("status") == "approved-for-redistribution" and manifest.get("developmentOnly") is False
     return {"package": manifest["package"], "runtimeRoot": str(runtime.resolve()), "runtimeEntry": str(entry.resolve()),
             "manifestPath": str((runtime / MANIFEST).resolve()), "developmentOnly": manifest["developmentOnly"],
-            "redistributionApproved": not manifest["developmentOnly"], "status": "verified"}
+            "redistributionApproved": approved, "status": "verified"}
 
 
 def prepare(identifier: str, destination: Path, development: bool) -> dict:
@@ -201,11 +217,15 @@ def prepare(identifier: str, destination: Path, development: bool) -> dict:
     stage = Path(tempfile.mkdtemp(prefix=".libvlc-stage-", dir=destination.parent))
     try:
         extract_archive(archive, stage, record)
-        notices = stage / "Notices"
-        notices.mkdir(exist_ok=True)
-        for filename in ("COPYING.LIB", "COPYING.GPL-2.0"):
-            shutil.copyfile(REPO / "ThirdParty/libvlc" / filename, notices / filename)
-        shutil.copyfile(REPO / "THIRD_PARTY_NOTICES.md", notices / "Luma-THIRD_PARTY_NOTICES.md")
+        if not record.get("noticesIncluded"):
+            # Development upstream candidates need the local audit notices.
+            # A curated artifact already carries its exact versioned notices;
+            # do not replace those with notices from a later Luma checkout.
+            notices = stage / "Notices"
+            notices.mkdir(exist_ok=True)
+            for filename in ("COPYING.LIB", "COPYING.GPL-2.0"):
+                shutil.copyfile(REPO / "ThirdParty/libvlc" / filename, notices / filename)
+            shutil.copyfile(REPO / "THIRD_PARTY_NOTICES.md", notices / "Luma-THIRD_PARTY_NOTICES.md")
         manifest = {"schema": 1, "package": identifier, "artifactSha256": record["artifact"]["sha256"],
                     "developmentOnly": development, "redistributionApproved": not development,
                     "auditStatus": record["audit"]["status"], "files": inventory(stage)}

@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework></PropertyGroup>
   <ItemGroup><ProjectReference Include="../Luma.Core/Luma.Core.csproj" /></ItemGroup>
+  <ItemGroup><Compile Include="../Luma.Windows/WindowsDnsSdAdvertisement.cs" Link="Native/DnsSdLifecycle.cs" /></ItemGroup>
 </Project>

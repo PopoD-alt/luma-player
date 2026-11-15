@@ -15,7 +15,8 @@ struct LocalSharingView: View {
                 TimelineView(.periodic(from: .now, by: 1)) { context in
                     VStack(alignment: .leading, spacing: 8) {
                         Text(context.date < server.pairingExpires ? server.pairingCode : "Code expired").font(.system(size: 34, weight: .medium, design: .monospaced)).textSelection(.enabled)
-                        Text("\(server.pairedDevices) paired device\(server.pairedDevices == 1 ? "" : "s") · Code expires after 10 minutes").font(.caption).foregroundStyle(.secondary)
+                        Text("\(server.pairedDevices) paired device\(server.pairedDevices == 1 ? "" : "s") · \(server.activeStreams) active stream\(server.activeStreams == 1 ? "" : "s")").font(.caption).foregroundStyle(.secondary)
+                        Text("Pairing codes expire after 10 minutes. Luma prevents idle system sleep while sending video; closing the lid or choosing Sleep still stops sharing.").font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 ForEach(server.addresses, id: \.self) { Text($0).font(.system(.body, design: .monospaced)).textSelection(.enabled) }

@@ -72,6 +72,8 @@ public final class MainActivity extends Activity {
     private boolean foreground,polling,connecting,dragging,full,wasPlaying,autoResumeApplied,destroyed;
     private int generation,mediaGeneration;private long initialResume;private LanApi.Item current;private String lastError;
     private boolean permissionAsked;
+    private final java.util.Set<String> softwareItems=new java.util.HashSet<>();
+    private boolean softwarePlayback,videoWasDisplayed,hadVideoTracks,videoOutputWasCreated;private int videoOutputs;private long nativeStartedAt;
     private Media.Stats lastStats;private SeekBar.OnSeekBarChangeListener seekListener;
     private final Runnable pulse=new Runnable(){public void run(){if(!foreground||destroyed)return;updatePlayer();main.postDelayed(this,500);}};
     private final Runnable poll=new Runnable(){public void run(){if(!foreground||destroyed)return;refresh(false);main.postDelayed(this,5000);}};
@@ -172,30 +174,58 @@ public final class MainActivity extends Activity {
         });}catch(Exception error){main.post(()->{if(stale(version))return;polling=false;status.setText(safe(error));if(error instanceof LanApi.ApiException&&((LanApi.ApiException)error).status==401){disconnect(false);status.setText("Sharing restarted or pairing expired. Connect again to pair.");}});}});
     }
     private void startMedia(LanApi.Item item){
-        if(session==null){status.setText("Pair again before streaming.");return;}stopPlayback();current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if(session==null){status.setText("Pair again before streaming.");return;}stopPlayback();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;videoOutputs=0;nativeStartedAt=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try{
             if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList("--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
             int version=generation,clip=mediaGeneration;LanApi.Session active=session;
             relay=new StreamRelay(active,item,api.connections(),failure->main.post(()->{if(stale(version)||clip!=mediaGeneration||current!=item)return;lastError=failure==StreamRelay.Failure.AUTH?"Pairing expired. Return to the playlist and pair again.":failure==StreamRelay.Failure.REMOVED?"This item was removed from the desktop.":failure==StreamRelay.Failure.UNSAFE_RESPONSE?"The desktop returned an unsafe stream response.":"Desktop offline. Keep sharing enabled and retry.";playerStatus.setText(lastError);if(player!=null)player.pause();}));
-            player=new MediaPlayer(engine);MediaPlayer activePlayer=player;player.attachViews(video,null,true,false);player.setVolume(volume.getProgress());
+            player=new MediaPlayer(engine);MediaPlayer activePlayer=player;player.setVolume(volume.getProgress());
             player.setEventListener(event->main.post(()->{
                 if(destroyed||player!=activePlayer||current!=item)return;
-                if(event.type==MediaPlayer.Event.Playing){applyResume();playerStatus.setText("Streaming from "+active.host.name);playButton.setText("Pause");}
+                if(event.type==MediaPlayer.Event.Playing){nativeStartedAt=android.os.SystemClock.uptimeMillis();hadVideoTracks|=activePlayer.getVideoTracksCount()>0;applyResume();playerStatus.setText((softwarePlayback?"Software playback · ":"Streaming · ")+active.host.name);playButton.setText("Pause");logPlayback("playing");}
+                else if(event.type==MediaPlayer.Event.Vout){videoOutputs=event.getVoutCount();videoOutputWasCreated|=videoOutputs>0;logPlayback("video-output");}
                 else if(event.type==MediaPlayer.Event.Paused)playButton.setText("Play");
                 else if(event.type==MediaPlayer.Event.Buffering&&event.getBuffering()<100)playerStatus.setText("Buffering "+Math.round(event.getBuffering())+"% · keep the desktop awake");
-                else if(event.type==MediaPlayer.Event.EncounteredError){lastError=lastError==null?"Could not play this stream. Check that the desktop is awake and sharing, then retry.":lastError;playerStatus.setText(lastError);playButton.setText("Play");}
-                else if(event.type==MediaPlayer.Event.EndReached){lastStats=stats();playerStatus.setText("Finished · choose another item from your playlist");playButton.setText("Play");}
+                else if(event.type==MediaPlayer.Event.EncounteredError){if(retrySoftware())return;lastError=lastError==null?"Could not play this stream. Check that the desktop is awake and sharing, then retry.":lastError;playerStatus.setText(lastError);playButton.setText("Play");}
+                else if(event.type==MediaPlayer.Event.EndReached){lastStats=stats();if(!videoWasDisplayed&&retrySoftware())return;logPlayback("ended");playerStatus.setText("Finished · choose another item from your playlist");playButton.setText("Play");}
             }));
-            Media media=new Media(engine,Uri.parse(relay.playbackUrl()));media.setHWDecoderEnabled(true,false);media.addOption(":network-caching=1200");media.addOption(":http-reconnect");player.setMedia(media);media.release();player.play();
+            attachWhenReady(activePlayer,item,relay.playbackUrl(),android.os.SystemClock.uptimeMillis());
         }catch(Exception|LinkageError error){lastError="Playback could not start on this device. Return to the playlist and reconnect.";playerStatus.setText(lastError);stopPlayback();}
     }
+    private void attachWhenReady(MediaPlayer activePlayer,LanApi.Item item,String localUrl,long waitingSince){
+        video.postOnAnimation(()->{
+            if(destroyed||player!=activePlayer||current!=item||!foreground)return;
+            if(!video.isAttachedToWindow()||!video.isShown()||video.getWidth()<=0||video.getHeight()<=0){
+                if(android.os.SystemClock.uptimeMillis()-waitingSince<5000){attachWhenReady(activePlayer,item,localUrl,waitingSince);return;}
+                lastError="The video view could not become ready. Return to the playlist and retry.";playerStatus.setText(lastError);logPlayback("surface-timeout");stopPlayback();return;
+            }
+            try{
+                activePlayer.attachViews(video,null,true,false);
+                Media media=new Media(engine,Uri.parse(localUrl));media.setHWDecoderEnabled(!softwarePlayback,false);
+                media.addOption(":network-caching=1200");media.addOption(":http-reconnect");activePlayer.setMedia(media);media.release();
+                logPlayback("surface-ready");activePlayer.play();
+            }catch(RuntimeException error){lastError="Playback could not initialize its video view. Return to the playlist and retry.";playerStatus.setText(lastError);logPlayback("surface-error");stopPlayback();}
+        });
+    }
+    private boolean retrySoftware(){
+        if(player==null||current==null||session==null||softwarePlayback||lastError!=null||!foreground||videoWasDisplayed||videoOutputWasCreated||!(hadVideoTracks||player.getVideoTracksCount()>0))return false;
+        LanApi.Item item=current;logPlayback("retry-software-once");softwareItems.add(item.id);localResume.put(item.id,initialResume);startMedia(item);return true;
+    }
+    private String playbackDiagnostics(){
+        Media.Stats value=stats();return "software="+softwarePlayback+", surfaceReady="+(video.isAttachedToWindow()&&video.isShown()&&video.getWidth()>0&&video.getHeight()>0)+", size="+video.getWidth()+"x"+video.getHeight()+", videoTracks="+(player==null?-1:player.getVideoTracksCount())+", outputs="+videoOutputs+", outputCreated="+videoOutputWasCreated+", decodedVideo="+(value==null?0:value.decodedVideo)+", displayed="+(value==null?0:value.displayedPictures)+", decodedAudio="+(value==null?0:value.decodedAudio)+", playing="+(player!=null&&player.isPlaying());
+    }
+    private void logPlayback(String reason){android.util.Log.i("LumaPlayback",reason+": "+playbackDiagnostics());}
     private void updatePlayer(){
         if(player==null||current==null)return;applyResume();long length=player.getLength(),time=Math.max(0,player.getTime());
         clock.setText(time(time)+" / "+time(length));if(!dragging&&length>0)seek.setProgress((int)Math.min(1000,time*1000/length));seek.setEnabled(player.isSeekable());
-        if(time>0)localResume.put(current.id,time);Media.Stats value=stats();if(value!=null)lastStats=value;
+        if(time>0)localResume.put(current.id,time);Media.Stats value=stats();if(value!=null){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}
+        if(nativeStartedAt>0&&player.isPlaying()&&!videoWasDisplayed&&videoOutputs==0&&(hadVideoTracks||player.getVideoTracksCount()>0)&&android.os.SystemClock.uptimeMillis()-nativeStartedAt>3500){
+            if(retrySoftware())return;
+            if(softwarePlayback&&lastError==null){lastError="This device could not create video output, including software playback. Retry or try another device.";playerStatus.setText(lastError);logPlayback("video-unavailable");player.pause();}
+        }
     }
     private void applyResume(){if(player!=null&&!autoResumeApplied&&(initialResume<=0||player.isSeekable()&&player.getLength()>0)){autoResumeApplied=true;if(initialResume>0)player.setTime(Math.min(initialResume,Math.max(0,player.getLength()-1000)),false);}}
-    private Media.Stats stats(){if(player==null)return lastStats;IMedia media=player.getMedia();if(media==null)return lastStats;try{Media.Stats value=media.getStats();if(value!=null&&(value.decodedVideo>0||value.decodedAudio>0))lastStats=value;return lastStats==null?value:lastStats;}finally{media.release();}}
+    private Media.Stats stats(){if(player==null)return lastStats;IMedia media=player.getMedia();if(media==null)return lastStats;try{Media.Stats value=media.getStats();if(value!=null&&(value.decodedVideo>0||value.decodedAudio>0)){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}return lastStats==null?value:lastStats;}finally{media.release();}}
     private void togglePlay(){if(player==null){if(current!=null)startMedia(current);return;}if(player.isPlaying())player.pause();else if(lastError!=null)startMedia(current);else player.play();}
     private void jump(long amount){if(player!=null&&player.isSeekable())player.setTime(Math.max(0,Math.min(player.getLength(),player.getTime()+amount)),false);}
     private void stopPlayback(){
@@ -207,7 +237,7 @@ public final class MainActivity extends Activity {
     private static Media.Stats statsOf(MediaPlayer player){IMedia media=player.getMedia();if(media==null)return null;try{return media.getStats();}finally{media.release();}}
     private void leavePlayer(){updatePlayer();stopPlayback();current=null;playback.setVisibility(View.GONE);home.setVisibility(View.VISIBLE);setFull(false);}
     private void setFull(boolean value){full=value;if(Build.VERSION.SDK_INT>=30){WindowInsetsController controller=getWindow().getInsetsController();if(controller!=null){if(value){controller.hide(WindowInsets.Type.systemBars());controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);}else controller.show(WindowInsets.Type.systemBars());}}else getWindow().getDecorView().setSystemUiVisibility(value?View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY:0);setRequestedOrientation(value?ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);}
-    private void disconnect(boolean clearUrl){generation++;polling=false;connecting=false;session=null;localResume.clear();items=Collections.emptyList();if(playlistInfo!=null)playlistInfo.setText("Pair with a desktop to see its current playlist.");if(list!=null)((BaseAdapter)list.getAdapter()).notifyDataSetChanged();if(pairDialog!=null){pairDialog.dismiss();pairDialog=null;}if(current!=null)leavePlayer();if(clearUrl)getPreferences(MODE_PRIVATE).edit().remove("desktopUrl").apply();}
+    private void disconnect(boolean clearUrl){generation++;polling=false;connecting=false;session=null;localResume.clear();softwareItems.clear();items=Collections.emptyList();if(playlistInfo!=null)playlistInfo.setText("Pair with a desktop to see its current playlist.");if(list!=null)((BaseAdapter)list.getAdapter()).notifyDataSetChanged();if(pairDialog!=null){pairDialog.dismiss();pairDialog=null;}if(current!=null)leavePlayer();if(clearUrl)getPreferences(MODE_PRIVATE).edit().remove("desktopUrl").apply();}
     private void execute(Runnable action){try{work.execute(action);}catch(java.util.concurrent.RejectedExecutionException error){status.setText("Please wait for the current desktop request to finish.");polling=false;connecting=false;connect.setEnabled(true);}}
     private boolean stale(int version){return destroyed||version!=generation;}
     private String permission(){return Build.VERSION.SDK_INT>=37?Manifest.permission.ACCESS_LOCAL_NETWORK:Build.VERSION.SDK_INT==36?Manifest.permission.NEARBY_WIFI_DEVICES:null;}
@@ -253,6 +283,7 @@ public final class MainActivity extends Activity {
     public Media.Stats debugStats(){return BuildConfig.DEBUG?stats():null;}
     public String debugEngineVersion(){return engine==null?"not started":LibVLC.version()+" changeset="+LibVLC.changeset();}
     public String debugError(){return lastError;}
+    public String debugDiagnostics(){return BuildConfig.DEBUG?playbackDiagnostics():"";}
     public void debugLeave(){if(!BuildConfig.DEBUG)throw new IllegalStateException();leavePlayer();}
     public void debugFull(boolean value){if(!BuildConfig.DEBUG)throw new IllegalStateException();setFull(value);}
     public boolean debugIsFull(){return BuildConfig.DEBUG&&full;}

@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "scope": "Actual static archives from macOS14rebuild; unversioned assembly objects may have no deployment load command",
+  "archives": [
+    {
+      "archive": "libBasicUsageEnvironment.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libFLAC.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libUsageEnvironment.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libaom.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libarchive.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libass.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libavcodec.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libavformat.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libavutil.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libdav1d.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libdsm.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libdvbpsi.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libebml.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libebur128.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libfreetype.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libfribidi.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libgcrypt.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libgpg-error.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libgroupsock.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libgsm.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libharfbuzz-subset.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libharfbuzz.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libixml.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libliveMedia.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libmatroska.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libmodplug.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libmp3lame.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libmpg123.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libmysofa.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libnfs.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libogg.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libopenjp2.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libopus.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libout123.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libplacebo.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libpng.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libpng16.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libprotobuf-lite.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libprotobuf.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libshout.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libsmb2.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libsoxr.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libspatialaudio.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libspeex.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libspeexdsp.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libssh2.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libswscale.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libsyn123.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libtag.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libtasn1.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libtheora.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libtheoradec.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libtheoraenc.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libupnp.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libvorbis.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libvorbisenc.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libvorbisfile.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libvpx.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libxml2.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libz.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    },
+    {
+      "archive": "libzvbi.a",
+      "minimumOSVersions": [
+        "14.0"
+      ]
+    }
+  ]
+}

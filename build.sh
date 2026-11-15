@@ -13,6 +13,10 @@ xcrun swiftc -swift-version 5 -target arm64-apple-macos14.0 -O -parse-as-library
 python3 Scripts/configure-bundle.py "$APP/Contents/Info.plist"
 mkdir -p "$APP/Contents/Resources/Licenses"
 RUNTIME_ROOT="${LUMA_LIBVLC_RUNTIME_ROOT:-}"
+if [[ -z "$RUNTIME_ROOT" ]]; then
+  STAGED_RUNTIME="$(python3 -c 'import json; print("ThirdParty/runtime/" + json.load(open("ReleaseConfig.json")).get("libvlcPackage", "not-configured"))')"
+  if [[ -f "$STAGED_RUNTIME/luma-libvlc-runtime.json" ]]; then RUNTIME_ROOT="$PWD/$STAGED_RUNTIME"; fi
+fi
 if [[ "${LUMA_DISTRIBUTION_BUILD:-0}" == "1" && -z "$RUNTIME_ROOT" ]]; then
   echo "Distribution needs an explicitly audited libVLC runtime root." >&2
   exit 1

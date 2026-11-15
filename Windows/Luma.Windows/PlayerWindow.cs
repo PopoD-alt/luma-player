@@ -59,7 +59,7 @@ internal sealed class PlayerWindow : Window
     string? lastError;
     int currentBuild = 1, generation, repeatMode;
     double duration, rate = 1, pendingResume, subtitleDelay;
-    bool playing, opening, dragging, refreshingQueue, updatingSlider, fullscreen, dark = true, checkingUpdate, closing, dummyAudioForSmoke;
+    bool playing, opening, dragging, refreshingQueue, updatingSlider, fullscreen, dark = true, checkingUpdate, closing, dummyAudioForSmoke, smokeDiagnostics;
     Rect normalBounds; WindowState previousState; bool previousTopmost;
     DateTime lastSave = DateTime.UtcNow;
 
@@ -340,7 +340,15 @@ internal sealed class PlayerWindow : Window
         catch (Exception error) { sharing?.Stop(); discovery?.Dispose(); sharing = null; discovery = null; Notice("Sharing could not start: " + error.Message); }
         RefreshSharingUI();
     }
-    void StopSharing() { sharing?.Stop(); discovery?.Dispose(); sharing = null; discovery = null; RefreshSharingUI(); Notice("Sharing stopped; paired devices were revoked"); }
+    void StopSharing()
+    {
+        if (smokeDiagnostics) Console.WriteLine("INFO: StopSharing closes HTTP listener and revokes tokens");
+        sharing?.Stop();
+        if (smokeDiagnostics) Console.WriteLine("INFO: StopSharing queues native DNS-SD withdrawal");
+        discovery?.Dispose(); sharing = null; discovery = null;
+        if (smokeDiagnostics) Console.WriteLine("INFO: StopSharing native withdrawal returned to UI");
+        RefreshSharingUI(); Notice("Sharing stopped; paired devices were revoked");
+    }
     void ShowSharing()
     {
         if (sharingWindow is not null) { sharingWindow.Activate(); return; }
@@ -426,6 +434,7 @@ internal sealed class PlayerWindow : Window
         void Check(bool value, string label) { if (!value) throw new InvalidOperationException(label); }
         async Task Until(Func<bool> condition, string label, int milliseconds = 20000)
         { var end = DateTime.UtcNow.AddMilliseconds(milliseconds); while (!condition()) { if (DateTime.UtcNow >= end) throw new TimeoutException(label + ": " + lastError); await Task.Delay(40); } }
+        smokeDiagnostics = true;
         var endpoints = NativeAudio.ActiveRenderEndpoints(); dummyAudioForSmoke = endpoints == 0;
         Console.WriteLine("INFO: active audio endpoints: " + (endpoints?.ToString() ?? "unknown") + "; audio mode: " + (dummyAudioForSmoke ? "explicit test-only dummy output" : "system output"));
         async Task<VlcPlayer> Open(string path)
@@ -466,7 +475,15 @@ internal sealed class PlayerWindow : Window
         }
         await Task.Delay(300); string dnsSdRegistration = discovery?.Status ?? "not attempted";
         Console.WriteLine("INFO: Windows DNS-SD registration: " + dnsSdRegistration + "; network discovery itself is not asserted by this hosted smoke.");
+        var retiringDiscovery = discovery;
         StopSharing(); Check(sharing is null && shareButton.Content.ToString() == "Share playlist", "UI stop revokes sharing");
+        if (retiringDiscovery is not null)
+        {
+            try { await retiringDiscovery.CompletionTask.WaitAsync(TimeSpan.FromSeconds(5)); }
+            catch (TimeoutException) { Console.WriteLine("INFO: DNS-SD withdrawal callback remains pending; listener is closed and tokens are revoked"); }
+            Console.WriteLine("INFO: DNS-SD withdrawal status: " + retiringDiscovery.Status);
+        }
+        Console.WriteLine("PASS: StopSharing returned, HTTP access revoked; DNS-SD withdrawal status is recorded separately");
         foreach (bool theme in new[] { true, false })
         {
             SetTheme(theme); await Task.Delay(100); UpdateLayout(); var image = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); image.Render(layout);

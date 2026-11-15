@@ -51,6 +51,13 @@ import Darwin
         // are not copied into Luma or assumed to be LGPL-only redistributable.
         candidates += ["/Applications/VLC.app/Contents/MacOS/lib/libvlc.5.dylib",
                        FileManager.default.homeDirectoryForCurrentUser.path + "/Applications/VLC.app/Contents/MacOS/lib/libvlc.5.dylib"]
+        if let override = environment["LUMA_LIBVLC_PATH"], !override.isEmpty {
+            guard override.hasPrefix("/"), FileManager.default.fileExists(atPath: override) else { throw Failure.message("LUMA_LIBVLC_PATH must name an existing absolute libVLC 3 library path.") }
+            candidates = [override]
+        } else {
+            let bundled = candidates.filter { $0.hasPrefix(Bundle.main.bundlePath + "/") && FileManager.default.fileExists(atPath: $0) }
+            if !bundled.isEmpty { candidates = bundled }
+        }
         var loaded: (String, Pointer)?; var loadError: String?
         for candidate in candidates where FileManager.default.fileExists(atPath: candidate) {
             let core = URL(fileURLWithPath: candidate).deletingLastPathComponent().appendingPathComponent("libvlccore.dylib").path

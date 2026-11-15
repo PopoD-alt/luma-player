@@ -76,7 +76,10 @@ public static class SharingTests
             server.SetPlaylist([new("large", large, "Original synthetic sparse file")]);
             using var active = new TcpClient { ReceiveBufferSize = 1024 }; await active.ConnectAsync(IPAddress.Loopback, server.Port);
             await active.GetStream().WriteAsync(Encoding.ASCII.GetBytes("GET /v1/media/large?token=" + token + " HTTP/1.1\r\nHost: local\r\n\r\n"));
-            await Until(() => server.ActiveConnections > 0); server.SetPlaylist([]); await Until(() => server.ActiveConnections == 0);
+            await Until(() => server.ActiveConnections > 0);
+            await Task.Delay(TimeSpan.FromSeconds(16));
+            Check(server.ActiveConnections > 0, "Authenticated media backpressure survives a phone pause beyond the old fifteen-second write limit");
+            server.SetPlaylist([]); await Until(() => server.ActiveConnections == 0);
             using var hanging = new TcpClient(); await hanging.ConnectAsync(IPAddress.Loopback, server.Port); await hanging.GetStream().WriteAsync("GET /v1/info HTTP/1.1\r\n"u8.ToArray()); await Until(() => server.ActiveConnections > 0);
             int stoppedPort = server.Port; server.Stop(); await Until(() => server.ActiveConnections == 0);
             Check(!server.IsRunning && server.PairedDevices == 0 && server.PairingCode.Length == 0, "Stop cancels active connections and revokes tokens/code");

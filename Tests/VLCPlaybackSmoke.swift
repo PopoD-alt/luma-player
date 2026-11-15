@@ -44,6 +44,10 @@ import Foundation
         }
         engine.stop(); guard engine.state == "stopped", !engine.isPlaying else { throw Failure.check("Stop state") }
         engine.unload(); guard !engine.hasMedia else { throw Failure.check("Unload state") }
+        if ProcessInfo.processInfo.environment["LUMA_REQUIRE_BUNDLED_RUNTIME"] == "1" {
+            guard let root = Bundle.main.resourcePath, engine.vlcRuntimePath?.hasPrefix(root + "/libvlc-runtime/") == true else { throw Failure.check("App used an external fallback instead of its bundled runtime") }
+            print("PASS: self-contained app bundle loaded its own approved libVLC runtime, without an installed VLC fallback")
+        }
         print("PASS: libVLC production engine stop/unload; runtime \(engine.vlcRuntimePath ?? "unknown")")
         print("SCOPE: synthetic tested files only, not all VLC formats or physical speaker output")
     }

@@ -6,6 +6,6 @@
   "publicEdKey": "YH+uGK0yetBErOtSgO2Q8YJW64qVcwcXJWLZ8Hjkh2o=",
   "keychainAccount": "sdas-luma-updates",
   "engineDistribution": "libvlc",
-  "libvlcPackage": "macos-vlckit-3.7.3",
+  "libvlcPackage": "macos-lgpl-arm64-3.0.23-r1",
   "licenseChoice": "proprietary-source"
 }

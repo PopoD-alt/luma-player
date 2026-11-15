@@ -11,8 +11,9 @@ replace third-party license obligations.
 
 Luma has an optional dynamically loaded libVLC backend. The current package audit
 is recorded in [ThirdParty/libvlc/packages.json](ThirdParty/libvlc/packages.json).
-**A development candidate is not approved for redistribution.** At present the
-registry blocks bundling its candidate runtimes in public release artifacts.
+**A development candidate is not approved for redistribution.** The registry
+blocks unreviewed stock candidates in public release artifacts. A separately
+rebuilt, curated component must have its own exact approval record.
 Separately installed VLC may be used for local development; its application,
 plugins and dependencies are not thereby incorporated into Luma's license.
 
@@ -42,6 +43,29 @@ Candidate versions under inspection:
   The APK additionally needs a verified replacement/relinking route, dependency
   notices and corresponding native build materials before release approval.
 
+## Curated macOS library
+
+The original arm64 shared-library build uses VLC base `79128878` with the 47
+VLCKit `319ed2c0` patches and targets macOS 14 or later. Contributed dependencies
+are built with GPL, GNUv3 and nonfree profiles disabled. Each retained dynamic
+plugin must have inspected LGPL2.1+ metadata and an expanded source/header
+inventory; GPL-marked or uncertain modules are excluded conservatively. This is
+a different binary from the stock framework above, with different coverage.
+The exact module decisions, binary hashes and deployment targets are recorded
+with that component's provenance. A successful playback test alone is not an
+approval.
+
+An approved curated runtime includes verbatim upstream/dependency notices and
+`Sources/CorrespondingSource.tar`: the two pinned upstream source snapshots,
+all 47 upstream patches, all 45 selected dependency source archives, exact
+recipes and the original build/curation scripts. See the included
+`audit/REBUILD.md` for reproduction. No codec implementation is claimed as Luma's
+own. LGPL requirements and the applicable permissive notices remain in force;
+the source aggregate can contain uncompiled GPL files with their own licenses.
+Luma's original library preparation/build/audit scripts are separately permitted
+under the included `LUMA-BUILD-SUPPORT-LICENSE.txt` (MIT); this exception does not
+open-license the application itself.
+
 Exact download URLs, SHA256 values, audit gaps and source archive completeness
 are in the registry. Hashes identify the inspected bytes; they are not a legal
 clearance or a substitute for a publisher signature. Native codec coverage,
@@ -62,8 +86,9 @@ cryptographic allowlisting in the playback loader. The preparation gate verifies
 our reviewed distribution inputs; it is not a restriction on a user's modified
 compatible runtime.
 
-The current `Scripts/prepare-libvlc.py` command stages development candidates and
-records every file. Its `verify --distribution` mode rejects incomplete audits.
+The `Scripts/prepare-libvlc.py` command stages pinned candidates and records every
+file. Its `verify --distribution` mode rejects incomplete audits and binds the
+complete approved runtime inventory, including the corresponding-source bundle.
 It does not automatically approve a package because it plays media, has a known
 hash, carries an LGPL POM label, or appears in an upstream download directory.
 

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "package": "macos-lgpl-arm64-3.0.23-r1",
+  "runtimeEntry": "ThirdParty/work/macos-lgpl-arm64-3.0.23-r1/lib/libvlc.5.dylib",
+  "actualProductionPlaybackEngine": true,
+  "fallbackAllowed": false,
+  "reportedBy": "Parent agent native macOS test runner",
+  "log": "build/vlc-mac-lgpl-smoke.log",
+  "logSha256": "88cbb7b6a58446976028ff2f20dcdf626241026b850cfde1440a5ba0b65bf072",
+  "checks": {
+    "H264WithSRT": "passed",
+    "subtitleParseSelectDelayOff": "passed",
+    "hostReparent": "passed",
+    "HEVChev1Main10WithAAC51": {
+      "result": "passed",
+      "decodedVideo": 25,
+      "displayedPictures": 8,
+      "decodedAudio": 166,
+      "privateMediaPath": "omitted"
+    },
+    "AVCAACMatroska": "passed",
+    "seekPauseResumeNativeRateStopUnload": "passed"
+  },
+  "scope": "Actual production backend using the relocated custom libVLC component. Not notarization, legal clearance, patent clearance, or validation on every macOS release.",
+  "replacementCheck": {
+    "result": "passed",
+    "runtimeEntry": "build/LibVLC replacement runtime/lib/libvlc.5.dylib",
+    "pathContainsSpaces": true,
+    "centralHashGateAppliedToUserReplacement": false,
+    "log": "build/vlc-mac-relocation-smoke.log",
+    "logSha256": "732781109bf92a227025e427c95c8fa92b2da2569f1743f7d2f51987607888ea",
+    "checks": "Production H264/SRT/transport/reparent, HEVC Main10/AAC5.1 decode/render, AVC/AAC Matroska, stop/unload passed.",
+    "scope": "Compatible external copy in current ad-hoc/native test context; no claim about hardened notarized app signing."
+  }
+}

@@ -71,6 +71,7 @@ func clockLabel(_ time: Double) -> String {
     @Published var loopMode = 0
     @Published var notice: String?
     private var timer: AnyCancellable?
+    private var sharingLibraryObserver: AnyCancellable?
     private var pendingResume: Double?
     private var handledEnd = false
     private var noticeDeadline: Date = .distantPast
@@ -79,6 +80,11 @@ func clockLabel(_ time: Double) -> String {
     init(library: LibraryStore? = nil) {
         self.engine = PlaybackEngine()
         self.library = library ?? LibraryStore()
+        sharingLibraryObserver = self.library.$items.dropFirst().sink { [weak self] _ in
+            // Published emits before the store is changed; validate on the next
+            // main-actor turn so removed items cancel even a paused TCP send.
+            Task { @MainActor [weak self] in self?.sharing.playlistDidChange() }
+        }
         for (name, fullscreen) in [(NSWindow.didEnterFullScreenNotification, true), (NSWindow.didExitFullScreenNotification, false)] {
             fullscreenObservers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { self?.isVideoFullscreen = fullscreen }
@@ -240,7 +246,7 @@ func clockLabel(_ time: Double) -> String {
             }
         }
     }
-    func shutdown() { sharing.stop(); saveProgress(); engine.shutdown() }
+    func shutdown() { sharingLibraryObserver?.cancel(); sharing.stop(); saveProgress(); engine.shutdown() }
 }
 
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate {

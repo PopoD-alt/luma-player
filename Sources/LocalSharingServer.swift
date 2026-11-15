@@ -10,6 +10,7 @@ import Darwin
     @Published private(set) var addresses: [String] = []
     @Published private(set) var pairingCode = ""
     @Published private(set) var pairedDevices = 0
+    @Published private(set) var activeStreams = 0
     @Published private(set) var error: String?
     private(set) var pairingExpires = Date.distantPast
     private(set) var port: UInt16 = 0
@@ -21,6 +22,8 @@ import Darwin
     private var provider: () -> [SharedMedia] = { [] }
     private let instanceID = UUID().uuidString.lowercased()
     private var epoch = UUID()
+    private var streamIDs = Set<UUID>()
+    private var awakeActivity: NSObjectProtocol?
     var name = "Luma on " + (Host.current().localizedName ?? "Mac")
 
     func start(provider: @escaping () -> [SharedMedia]) {
@@ -62,6 +65,8 @@ import Darwin
         epoch = UUID(); listener?.cancel(); listener = nil
         let connections = Array(clients.values); clients.removeAll(); connections.forEach { $0.close() }
         tokens.removeAll(); pairedDevices = 0; pairingCode = ""; pairingExpires = .distantPast
+        streamIDs.removeAll(); activeStreams = 0
+        if let awakeActivity { ProcessInfo.processInfo.endActivity(awakeActivity); self.awakeActivity = nil }
         addresses = []; port = 0; isSharing = false; status = "Sharing is off"; attempts = []; provider = { [] }
     }
     func renewPairingCode() throws {
@@ -71,7 +76,15 @@ import Darwin
         } while random >= UInt32.max - UInt32.max % 1_000_000
         pairingCode = String(format: "%06u", random % 1_000_000); pairingExpires = Date().addingTimeInterval(600)
     }
-    fileprivate func finished(_ id: UUID) { clients.removeValue(forKey: id) }
+    func playlistDidChange() { Array(clients.values).forEach { $0.validateLiveItem() } }
+    fileprivate func finished(_ id: UUID) {
+        clients.removeValue(forKey: id); streamIDs.remove(id); activeStreams = streamIDs.count
+        if streamIDs.isEmpty, let awakeActivity { ProcessInfo.processInfo.endActivity(awakeActivity); self.awakeActivity = nil }
+    }
+    fileprivate func beganStream(_ id: UUID) {
+        streamIDs.insert(id); activeStreams = streamIDs.count
+        if awakeActivity == nil { awakeActivity = ProcessInfo.processInfo.beginActivity(options: [.idleSystemSleepDisabled], reason: "Streaming your playlist to a paired Luma device") }
+    }
     fileprivate func allowsStream(id: String, url: URL) -> Bool {
         isSharing && provider().contains { $0.id == id && $0.url.standardizedFileURL == url.standardizedFileURL }
             && FileManager.default.fileExists(atPath: url.path)
@@ -206,6 +219,7 @@ import Darwin
         if ProcessInfo.processInfo.environment["LUMA_SHARING_TRACE"] == "1" { print("Sharing stream: \(status), start=\(start), length=\(length), head=\(head)") }
         self.file = file
         self.itemID = itemID; itemURL = url
+        if !head, length > 0 { server?.beganStream(id) }
         send(header(status, headers: headers, length: length)) { [weak self] in
             guard let self else { return }
             if head || length == 0 { self.close() } else { self.next(offset: start, remaining: length) }
@@ -228,7 +242,11 @@ import Darwin
     private func send(_ data: Data, completion: @escaping @MainActor () -> Void) {
         guard !closed else { return }
         deadline?.cancel()
-        deadline = Task { [weak self] in try? await Task.sleep(for: .seconds(30)); guard !Task.isCancelled else { return }; self?.close() }
+        // A paired media client can pause while its TCP buffers fill. Keep
+        // request/header timeouts short; media still cancels immediately when
+        // the owner stops sharing or removes the item.
+        let timeout: Double = file == nil ? 30 : 15 * 60
+        deadline = Task { [weak self] in try? await Task.sleep(for: .seconds(timeout)); guard !Task.isCancelled else { return }; self?.close() }
         connection.send(content: data, completion: .contentProcessed { [weak self] error in
             Task { @MainActor in
                 guard let self, !self.closed else { return }
@@ -236,6 +254,9 @@ import Darwin
                 if error != nil { self.close() } else { completion() }
             }
         })
+    }
+    func validateLiveItem() {
+        if let itemID, let itemURL, server?.allowsStream(id: itemID, url: itemURL) != true { close() }
     }
     func close() {
         guard !closed else { return }; closed = true; deadline?.cancel(); deadline = nil

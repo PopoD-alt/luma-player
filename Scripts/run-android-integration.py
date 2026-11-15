@@ -46,14 +46,26 @@ def main():
                        '-e', 'demoId', parameters['ids']['demo'],
                        '-e', 'hevcId', parameters['ids']['hevc10'],
                        'dev.sdas.luma.preview.test/androidx.test.runner.AndroidJUnitRunner']
-            result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=240)
+            try:
+                result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=240)
+            except subprocess.TimeoutExpired as failure:
+                output = failure.stdout or b''
+                if isinstance(output, bytes):
+                    output = output.decode('utf-8', errors='replace')
+                (reports / 'instrumentation.log').write_text(output.replace(parameters['code'], '[temporary pairing code]'))
+                raise RuntimeError('Android instrumentation exceeded its bounded test deadline; see instrumentation.log.') from None
             # Never retain the temporary pairing code in the saved evidence.
             output = result.stdout.replace(parameters['code'], '[temporary pairing code]')
             (reports / 'instrumentation.log').write_text(output)
             print(output, end='')
             if result.returncode or 'OK (1 test)' not in output or any(marker in output for marker in ('FAILURES!!!', 'INSTRUMENTATION_FAILED', 'Process crashed')):
                 raise RuntimeError('Android end-to-end playback checks did not pass.')
-            shot = subprocess.run(['adb', 'exec-out', 'screencap', '-p'], stdout=subprocess.PIPE, check=True)
+            # Instrumentation captures playback before ActivityScenario closes;
+            # a screenshot here would show the launcher instead of the app.
+            shot = subprocess.run(['adb', 'exec-out', 'run-as', 'dev.sdas.luma.preview',
+                                   'cat', 'cache/luma-android-review.png'], stdout=subprocess.PIPE, check=True)
+            if not shot.stdout.startswith(b'\x89PNG\r\n\x1a\n'):
+                raise RuntimeError('The in-app Android review capture is not a PNG.')
             (reports / 'Luma-Android-review.png').write_bytes(shot.stdout)
             print('PASS: Android actual desktop pairing/list/range streaming, native AVC/HEVC decode/render, transport and no saved media download')
             print('SCOPE: emulator/manual-address path; physical Wi-Fi discovery, phone hardware and physical sound still need device review')

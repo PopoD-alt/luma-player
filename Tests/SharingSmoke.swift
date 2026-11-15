@@ -63,7 +63,7 @@ import Foundation
         let (largeTail, largeResponse) = try await request(largePath, range: "bytes=-8")
         try check(largeResponse.statusCode == 206 && largeTail == Data("LUMA-END".utf8), "Sparse >4GiB streaming offset")
         let removal = RemovedStreamProbe()
-        let delivered = try await removal.run(url: URL(string: largePath, relativeTo: base)!.absoluteURL) { items.removeAll { $0.id == largeID } }
+        let delivered = try await removal.run(url: URL(string: largePath, relativeTo: base)!.absoluteURL) { items.removeAll { $0.id == largeID }; server.playlistDidChange() }
         try check(delivered > 0 && delivered < 16 * 1024 * 1024, "Removing an active item did not promptly stop its stream")
         let (_, traversal) = try await request("/v1/media/%2e%2e%2fprivate?token=" + token); try check(traversal.statusCode == 404, "Arbitrary filesystem path")
         print("PASS: actual Mac listener pairing/auth, opaque live playlist, exact GET/HEAD/suffix/clamped/invalid ranges, sparse 5GiB reads and removed-active-stream cancellation")
@@ -99,6 +99,7 @@ import Foundation
         var revokedRequest = URLRequest(url: URL(string: "http://127.0.0.1:\(server.port)/v1/playlist")!); revokedRequest.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
         let (_, revoked) = try await session.data(for: revokedRequest); try check((revoked as! HTTPURLResponse).statusCode == 401, "Token survived stop/restart")
         server.stop()
+        try check(server.activeStreams == 0, "Stop retained a streaming power activity")
         for host in ["127.0.0.1", "192.168.1.2", "10.1.2.3", "172.16.0.1", "172.31.255.254", "169.254.2.3", "::1", "fd00::1", "fe80::1%en0", "::ffff:192.168.1.2"] { try check(SharingHTTP.privateAddress(host), "Private address rejected") }
         for host in ["8.8.8.8", "172.15.1.1", "172.32.1.1", "0.0.0.0", "2001:4860:4860::8888", "example.com", "::ffff:8.8.8.8"] { try check(!SharingHTTP.privateAddress(host), "Public/hostname address accepted") }
         for raw in ["GET / HTTP/1.1\r\nContent-Length: 1\r\n\r\nx", "POST /v1/pair HTTP/1.1\r\nContent-Length: 1\r\nContent-Length: 1\r\n\r\nx", "POST /v1/pair HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n", "GET http://example.com HTTP/1.1\r\n\r\n"] {

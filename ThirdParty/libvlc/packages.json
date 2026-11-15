@@ -39,7 +39,7 @@
         "Source VLCKit319ed2c0 has47patches and base79128878; exact buildMobileVLCKit.sh passes --disable-gpl --disable-gnuv3 --enable-ad-clauses to contrib bootstrap.",
         "Framework dynamically links only system libraries; codec dependencies are within replaceable framework.",
         "Actual --list-verbose module inventory is macos-runtime-modules.txt. Exact source files logger/syslog.c,control/dummy.c,audio_filter/channel_mixer/mono.c,video_filter/rotate.c explicitly declare VLC_MODULE_LICENSE_GPL_2_PLUS.",
-        "All45selected contrib source archives fetched and verified against exact patched recipe SHA512SUMS; see macos-source-inventory.json. Full native rebuild has not yet succeeded."
+        "All45selected contrib source archives verified against exact patched recipe SHA512SUMS;138notice files inventoried. A separate original dynamicCbuild is being curated; this stock staticframework remains GPLcontaminated."
       ],
       "audit": {
         "status": "development-only",
@@ -49,7 +49,7 @@
         "replacementMechanismVerified": true,
         "blockers": [
           "Actual static runtime includes GPL2+ modules (confirmed syslog, dummy interface, mono and rotate); proprietary LGPL-only distribution requires a rebuilt library excluding GPL modules, not relabeling this binary.",
-          "Complete contributed-dependency source archives and exact notices not yet inventoried.",
+          "Complete sources/notices collected, but this monolithic stockframework stillcontainsGPLmodules and cannotbeproprietaryLGPL-only.",
           "Actual included-module license mapping and exclusion evidence incomplete."
         ]
       }
@@ -92,7 +92,7 @@
     "android-libvlc-all-3.7.7": {
       "platform": "android-arm64-v8a-armeabi-v7a-x86-x86_64",
       "declaredLicense": "LGPL-2.1",
-      "libraryVersion": "3.x, native changeset pending inspection",
+      "libraryVersion": "3.0.25 Vetinari",
       "kind": "aar",
       "runtimeEntry": "libvlc-all-3.7.7.aar",
       "artifact": {
@@ -109,13 +109,34 @@
           "sha256": "a6ba4732437f1f5359ea4cf44e65a283e245d2fc41b77a1c9784d565b288c407",
           "bytes": 75388,
           "maximumBytes": 268435456
+        },
+        {
+          "filename": "vlc-android-7a7c8f14.tar.gz",
+          "url": "https://code.videolan.org/videolan/vlc-android/-/archive/7a7c8f14be6759f9bb1b9a934fd086259473e20e/vlc-android-7a7c8f14be6759f9bb1b9a934fd086259473e20e.tar.gz",
+          "sha256": "24d76042da326dbea96592e565ad4a280df6a43e242e364986b69acf610dfa96",
+          "bytes": 8117009,
+          "maximumBytes": 268435456
+        },
+        {
+          "filename": "libvlcjni-0b8dc65e.tar.gz",
+          "url": "https://code.videolan.org/videolan/libvlcjni/-/archive/0b8dc65efb203c86a0476bc337ddd99ecf1c0ef6/libvlcjni-0b8dc65efb203c86a0476bc337ddd99ecf1c0ef6.tar.gz",
+          "sha256": "bafba3f63830d7a049d753f8ffe6fecdcf0abcfed8e449355e87205da18854ec",
+          "bytes": 260901,
+          "maximumBytes": 268435456
+        },
+        {
+          "filename": "vlc-84177b22.tar.gz",
+          "url": "https://codeload.github.com/videolan/vlc/tar.gz/84177b2273abc5c4300234e6e18b55a4d2dd5a03",
+          "sha256": "aeb337f3487011d5f826b360b47c32c28fa3dbca737ac638b91f8ce31147ad20",
+          "bytes": 34457526,
+          "maximumBytes": 268435456
         }
       ],
       "evidence": [
         "Official POM declares LGPL2.1 and VideoLAN SCM.",
         "AAR contains libvlc.so,libvlcjni.so,libc++_shared.so for four ABIs.",
         "Published sources.jar contains49Java-related entries and no native C/C++ sources.",
-        "Current upstream development build defaults GPL contrib profile; --license a selects LGPL2.1/noGNUv3. Published release profile still requires evidence."
+        "Exactrelease taglibvlc-3.7.7 is7a7c8f14, pinsJNI0b8dc65e andVLC84177b22+20patches. ReleaseCI invokescompile.sh without --license override; defaultcontribprofileg isGPL. --license a alonealso doesnotexcludeGPLVLCmodules."
       ],
       "audit": {
         "status": "development-only",
@@ -124,10 +145,65 @@
         "completeCorrespondingSources": false,
         "replacementMechanismVerified": false,
         "blockers": [
-          "Published native VLC/JNI/contrib build revisions and license profile not yet verified.",
+          "Exactrelease sourceprofiledefaultsGPLcontrib and staticVLCmodules; no proprietaryLGPL-onlyapproval for stockAAR. Custom --license a build plusmodule/sourceexclusionaudit required.",
           "Complete native/dependency sources and notices missing from Java sources.jar.",
           "APK library replacement/relink procedure and required NDK/runtime notices pending."
         ]
+      },
+      "libraryChangeset": "3.0.24-35-gc7e5d68ee5"
+    },
+    "macos-lgpl-arm64-3.0.23-r1": {
+      "platform": "macos-arm64",
+      "minimumOSTarget": "14.0",
+      "kind": "tar",
+      "archivePrefix": "",
+      "noticesIncluded": true,
+      "declaredLicense": "LGPL-2.1-or-later with permissive dependency licenses",
+      "libraryVersion": "3.0.23 Vetinari",
+      "libraryChangeset": "Luma-LGPL-79128878-VLCKit319ed2c0-p47",
+      "runtimeEntry": "lib/libvlc.5.dylib",
+      "runtimeSha256": "e7d981c081da794ecaee258148060d476316bb6b713085f56c9252ed0d8e7a4f",
+      "runtimeInventorySha256": "05286eda31ab4b9e9572f546ab4502d223e5609965519192a9839abb9a391d7f",
+      "artifact": {
+        "filename": "macos-lgpl-arm64-3.0.23-r1-runtime.tar.gz",
+        "sha256": "3a7f17ad950b0b4dfbe4f1f9a81415af01271a1117a518d2c1bce5dab8a40d57",
+        "bytes": 238649200,
+        "localBuildOnly": true,
+        "maximumBytes": 536870912
+      },
+      "correspondingSource": {
+        "path": "Sources/CorrespondingSource.tar",
+        "sha256": "46a214db3dfcd05909286f037ae3532cc45ef4e18e1d416014394733fbfa9bbe",
+        "bytes": 201779200
+      },
+      "sources": [
+        {
+          "filename": "macos-lgpl-arm64-3.0.23-r1-corresponding-source.tar",
+          "sha256": "46a214db3dfcd05909286f037ae3532cc45ef4e18e1d416014394733fbfa9bbe",
+          "bytes": 201779200,
+          "maximumBytes": 536870912,
+          "localBuildOnly": true
+        }
+      ],
+      "evidence": [
+        "Original direct shared C build of VLC base79128878 with47VLCKit319ed2c0 patches, using project-local tools and Command Line Tools. This is a different binary from the stock VLCKit framework.",
+        "Contrib disables GPL and GNUv3 profiles. FFmpeg GPL/nonfree/version3/GPLv3 flags are all0;1460actual dependency files select none of111GPL-marked source/header paths.",
+        "245retained/25excluded plugins: inspected LGPL2.1+ metadata and expanded source, linked helper-library and quoted-header review. Exact LGPL grants with stale GPL receipt sentences are documented.",
+        "All61static archives and retained dylibs target macOS14.0; arm64 only. Relocated dependencies refer to internal core libraries or system libraries.",
+        "Verbatim dependency notices and exact2upstream/45contrib source archives,47patches, recipes and build scripts are embedded. The complete runtime inventory and source hash are centrally bound.",
+        "Isolated dlopen/libvlc_new/release passed with all8app options; canonical version/changeset confirmed.",
+        "Production PlaybackEngine with this exact path and no fallback passed H264/SRT, HEVC hev1 Main10/AAC5.1, AVC/AAC Matroska, subtitle controls, host reparent, seek, native rate, pause/resume, stop and unload. See macos-custom-playback-evidence.json.",
+        "Compatible relocated copy at a path containing spaces passed the same production decode/render/transport/subtitle checks; user replacement is not cryptographically allowlisted. Hardened/notarized application signing remains separate."
+      ],
+      "audit": {
+        "status": "approved-for-redistribution",
+        "moduleLicensesReviewed": true,
+        "dependencyLicensesReviewed": true,
+        "completeCorrespondingSources": true,
+        "replacementMechanismVerified": true,
+        "approvalScope": "Technical component/source/replacement review of exact suppliedbytes; no patent or legal clearance and no claim that hardened production signing/notarization is complete.",
+        "blockers": [],
+        "intendedNextStep": "Standalone private owner-review app; this component record does not authorize packaging or publishing a DMG."
       }
     }
   },

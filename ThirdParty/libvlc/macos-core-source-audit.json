@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "sourceBase": "79128878",
+  "patches": "VLCKit319ed2c0:47",
+  "filesScanned": 418,
+  "gplMarkedSourceFiles": [
+    {
+      "path": "src/win32/mta_holder.h",
+      "sha256": "5c4d8e00aa06d4d853e513a2695edcae822c941ae485b771deaff46ac9b3550f"
+    }
+  ],
+  "DarwinFinding": "OnlyGPLnoticehit is Windows-onlysrc/win32/mta_holder.h; referenced by modules/access/dshow/dshow.cpp and not selected for Darwin. No additional concreteDarwincoreGPLnotice found.",
+  "scope": "Source/license notice sanity check, not a warranty or full legal review; exactsources andrecipes included."
+}

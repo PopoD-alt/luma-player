@@ -1,0 +1,18 @@
+{
+  "version": "3.0.23 Vetinari",
+  "changeset": "Luma-LGPL-79128878-VLCKit319ed2c0-p47",
+  "compiler": "InstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+  "entry": "lib/libvlc.5.dylib",
+  "initialization": "passed",
+  "options": [
+    "--ignore-config",
+    "--no-video-title-show",
+    "--no-osd",
+    "--no-lua",
+    "--no-metadata-network-access",
+    "--no-sub-autodetect-file",
+    "--no-snapshot-preview",
+    "--quiet"
+  ],
+  "scope": "Original curated runtime with relocated dylibs; no separately installed VLC loaded or media opened."
+}

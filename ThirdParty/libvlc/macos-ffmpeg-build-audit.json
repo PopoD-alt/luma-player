@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "source": "Exact selected FFmpeg contributed archive in macos-source-inventory.json",
+  "flags": {
+    "CONFIG_GPL": 0,
+    "CONFIG_NONFREE": 0,
+    "CONFIG_VERSION3": 0,
+    "CONFIG_GPLV3": 0
+  },
+  "dependencyFilesChecked": 1460,
+  "gplMarkedSourceHeaderPaths": 111,
+  "selectedGplPathHits": [],
+  "scope": "Actual final staticFFmpeg build configuration plus source/header-dependency crosscheck. Not general legal clearance."
+}
