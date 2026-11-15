@@ -2,7 +2,9 @@
 
 Native Android companion by **sdas**. Pair with Luma on your desktop over the same trusted Wi-Fi, browse its live playlist, and stream media without saving a phone download. Playback uses VideoLAN libVLC; it does not recreate its codecs or guarantee every VLC format on every Android device.
 
-The default Maven AAR is **development-only**: its native/Java payload includes GPL components and is not approved for this proprietary application. An explicit selector can instead use the reviewed, source-built **ARM64** component `android-lgpl-arm64-3.7.7-r2`. Its exact library/module/dependency/source/replacement audit is recorded in [ThirdParty/libvlc](../ThirdParty/libvlc/README.md). This component approval supports private owner review; it does not authorize publishing an APK or establish legal/patent clearance. No production signing key or public Android release is configured.
+The [public ARM64 preview APK](https://github.com/PopoD-alt/luma-player/releases/download/v0.7.0-preview.1/Luma-0.7.0-Android-arm64-preview.apk) is the owner-tested **0.1.0-preview companion** distributed with desktop 0.7.0. It uses the reviewed, source-built component `android-lgpl-arm64-3.7.7-r2`. Download its [matching source/license companion](https://github.com/PopoD-alt/luma-player/releases/download/v0.7.0-preview.1/Luma-0.7.0-Android-arm64-source-and-notices.zip) for complete app/native sources, notices and replacement instructions. The APK remains debug-signed; production signing, Play Store distribution and automatic updates are not configured. See [INSTALL.md](../INSTALL.md#android).
+
+The default Maven AAR remains **development-only**: its native/Java payload includes GPL components and is not the public APK's runtime. An explicit build selector chooses the reviewed ARM64 component. Its exact library/module/dependency/source/replacement audit is recorded in [ThirdParty/libvlc](../ThirdParty/libvlc/README.md). Technical component checks and the owner's successful test do not establish legal/patent clearance or every device/format combination.
 
 ## Use
 

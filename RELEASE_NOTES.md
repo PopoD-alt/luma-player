@@ -1,4 +1,6 @@
-# Luma Player 0.7.0 — unreleased review preview
+# Luma Player 0.7.0 — owner-tested preview
+
+The owner tested the supplied copies and reported that they work as expected. The [0.7.0 preview release](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) provides an Apple Silicon Mac DMG, Windows x64 portable ZIP and Android ARM64 debug APK with matching source/notices. [INSTALL.md](INSTALL.md) and the [README](README.md) explain installation, controls, Wi-Fi pairing and troubleshooting. Android's internal app version remains 0.1.0-preview. These packages preserve the reviewed app binaries; production signing and automatic-update feeds are separate.
 
 This branch adds direct libVLC playback on Mac/Windows, fixes Mac Space play/pause in normal and fullscreen views, and implements paired local playlist streaming to a new Android companion. Files stay on the desktop; the phone buffers streamed bytes without a saved media download. Sharing is opt-in, follows the live playlist and revokes access when stopped.
 
@@ -10,7 +12,7 @@ Android now handles the stale Wi-Fi binding diagnosed in fresh emulator tests. N
 
 Known test limitation: [current x64 CI](https://github.com/PopoD-alt/luma-player/actions/runs/43773929495) passes an initial associated-Wi-Fi precondition, then the emulator loses Wi-Fi and uses cellular. The app correctly refuses the stream with no upstream connection. This run remains a failure and does not establish HEVC/stress success; its later network change is not explained. The approved ARM64 local proofs pass, while physical phone Wi-Fi continuity remains an owner-review task.
 
-Mac and Windows request idle-sleep prevention only during active media streams. The host must remain on with Luma open and sharing enabled; forced sleep and lid closure still interrupt playback. Native evidence and remaining limits are in the [README](README.md), [roadmap](ROADMAP.md), and platform guides. Component approval is not legal/patent clearance. No production package or live update feed has been published for 0.7.0; owner review remains required before production packaging/publication. The older downloads below do not contain this rebuild.
+Mac and Windows request idle-sleep prevention only during active media streams. The host must remain on with Luma open and sharing enabled; forced sleep and lid closure still interrupt playback. Native evidence and remaining limits are in the [README](README.md), [roadmap](ROADMAP.md), and platform guides. Component approval is not legal/patent clearance. The preview does not change the live stable update feed. The older downloads below do not contain this rebuild.
 
 ---
 

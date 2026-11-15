@@ -1,51 +1,51 @@
 {
-  "as_of": "2026-11-15T23:26:00+00:00",
-  "branch": "feature/vlc-lan-android \u00b7 app08e746d \u00b7 CI harness5b4ff1a \u00b7 current x64 CI43773929495 failed after emulator Wi-Fi loss",
+  "as_of": "2026-11-15T23:42:00+00:00",
+  "branch": "main · v0.7.0-preview.1 · owner reports tested copies working · app08e746d / CI harness5b4ff1a",
   "platforms": [
     {
-      "name": "Mac \u00b7 Apple Silicon",
+      "name": "Mac · Apple Silicon",
       "playback": "PASS: self-contained approved runtime; AVC, HEVC Main10 MP4/MKV, AAC5.1, captions and transport. Space and fullscreen pass actual key events.",
       "sharing": "PASS: actual Mac listener and Android app interoperability; pairing, original-file AVC/HEVC streaming, range seeking and revocation. Native Mac server checks include sparse5GiB reads.",
-      "distribution": "Custom LGPL-profile runtime technically approved; local ad-hoc app ready for owner review. No new DMG published.",
+      "distribution": "Owner-tested preview: ad-hoc signed Apple Silicon Mac DMG with approved runtime and complete source/notices. Not Apple-notarized; stable update feed remains0.6.1.",
       "evidence": "build/mac-final-bundled-runtime-native.log"
     },
     {
-      "name": "Windows \u00b7 x64",
+      "name": "Windows · x64",
       "playback": "PASS: actual app-local Windows CI43765447494, including HEVC Main10 MP4/MKV, AAC, AVC, captions, transport, fullscreen and lifecycle/resume. Current Windows CI43773929495 also passes.",
       "sharing": "PASS: production listener, pairing/ranges/revocation, DNS-SD shutdown and real SystemRequired power handle create/release. Physical discovery and speakers remain unverified.",
-      "distribution": "READY FOR OWNER REVIEW: approved bundled runtime and complete source/notices; native app-local Windows43765447494 passes without an installed VLC fallback. Local self-contained folder has397files, per-file hashes, exact Microsoft notices and matching app/library sources. No installer or public package.",
+      "distribution": "Owner-tested preview: portable x64 ZIP with app-local runtime, complete native/application sources and notices. EXE cross-built on Mac; same application/runtime passed native Windows CI. Public package instructions supersede preserved historical review metadata.",
       "evidence": "build/windows-bundled-review-evidence/smoke/smoke-results.json"
     },
     {
-      "name": "Android \u00b7 API26+",
+      "name": "Android · API26+",
       "playback": "PASS current approved ARM64: cold Mac25.033s, independently re-signed cold Mac recovery31.495s, and portable-server ten-switch stress46.396s. Actual native clock/precise seek, surfaces, fullscreen and AVC/HEVC Main10/AAC5.1 pass;29 unit tests and lint pass.",
       "sharing": "Wi-Fi route repair passes actual public-info revalidation before credentials. Fresh x64 CI initially had Wi-Fi, then lost it and activated cellular; the app correctly refused the stream before any upstream connection. That run failed and its later network change remains unexplained. Physical phone Wi-Fi/discovery needs review.",
-      "distribution": "READY FOR PRIVATE OWNER REVIEW: approved ARM64 APK f3289333,584 exact Git source files,208notices,29 JVM tests/lint and independent re-sign proof. All266 payload files match the independently verified closed inventory. Nine CI-only guard/parser tests pass. Current x64 fixture limitation is documented; no production APK/store release.",
+      "distribution": "Owner-tested preview: exact approved ARM64 APK f3289333, complete matching source/notices companion and independent re-sign proof. Current x64 emulator Wi-Fi failure remains documented; debug signing and manual updates.",
       "evidence": "build/owner-review/android-arm64-08e746d/private-debug-manifest.json"
     }
   ],
   "next": [
-    "Owner reviews the Mac app, Windows portable folder and Android ARM64 APK.",
-    "Verify physical Wi-Fi discovery/continuity, firewall prompts, speakers/surround and A/V synchronization on target devices.",
-    "Investigate the x64 emulator's later Wi-Fi loss separately; its failed run is not current Android playback proof.",
-    "After owner review, configure production signing/packages and platform update feeds."
+    "Collect feedback on the owner-tested Mac, Windows and Android preview downloads.",
+    "Expand physical Wi-Fi discovery/continuity, firewall, audio/surround and A/V synchronization coverage; the owner did not supply a device matrix.",
+    "Investigate the x64 emulator Wi-Fi loss without treating failed CI as playback success.",
+    "Prepare production signing/installers and distinct platform update feeds when ready for a stable release."
   ],
   "previews": [
     {
       "id": "macos",
-      "name": "Mac \u00b7 dark appearance",
+      "name": "Mac · dark appearance",
       "path": "build/review/mac/Luma-dark.png",
       "caption": "Native Mac review interface. The rebuilt app is available locally in build/Luma Player.app; the library is empty in this isolated capture."
     },
     {
       "id": "windows",
-      "name": "Windows \u00b7 native WPF",
+      "name": "Windows · native WPF",
       "path": "build/windows-bundled-review-evidence/smoke/Luma-Windows-dark.png",
       "caption": "Actual native Windows app with its approved app-local runtime and no installed VLC fallback. This WPF capture omits its separate native video child; AVC/HEVC snapshot content and native displayed-frame counters passed separately."
     },
     {
       "id": "android",
-      "name": "Android \u00b7 streaming playback",
+      "name": "Android · streaming playback",
       "path": "build/owner-review/android-arm64-08e746d/Review/Fullscreen.png",
       "caption": "Actual current ARM64 owner-review app with the Wi-Fi route repair. The normal interface includes native pause/play, seeking and volume; fullscreen hides its chrome. Physical phones and actual Wi-Fi discovery remain a separate review."
     }

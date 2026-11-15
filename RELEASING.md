@@ -4,6 +4,27 @@ The source and downloads belong to `PopoD-alt/luma-player`. Official downloads
 are free; the source retains the proprietary LICENSE. The first alpha is an
 explicitly unnotarized preview for macOS 14+ on Apple Silicon.
 
+## Owner-tested 0.7.0 preview
+
+The owner reported that the tested version works as expected; the exact
+device/platform matrix was not supplied. `v0.7.0-preview.1` packages those reviewed binaries without rebuilding
+their playback code: an unnotarized/ad-hoc Mac DMG, unsigned Windows portable ZIP
+and debug-signed Android ARM64 APK with a complete matching source/license
+companion. The Android app's internal version is 0.1.0-preview.
+
+Preserve the immutable owner-review folders. Package from copies, retain complete
+library sources/notices and application inputs, and verify binary/native hashes
+against the reviewed copies. Document any package-only instruction/provenance
+changes and generate an accurate public file inventory. Verify the DMG and its
+mounted signature, ZIP contents, APK signature, source companions and asset
+checksums before publishing the GitHub prerelease.
+
+This preview publication does not replace `Updates/manifest.json`, generate new
+trust keys, or configure Windows/Android automatic updates. Keep the existing
+stable feed at 0.6.1 until a deliberate stable update is published through the
+signed process below. The current x64 emulator Wi-Fi failure remains recorded;
+owner feedback is not a replacement for the separate CI evidence/device matrix.
+
 ## Signing keys and configuration
 
 `ReleaseConfig.json` contains public settings only: repository, stable HTTPS

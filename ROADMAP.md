@@ -1,6 +1,6 @@
 # Luma Player roadmap
 
-The active `feature/vlc-lan-android` branch rebuilds playback around libVLC 3 while retaining Luma's native interfaces and proprietary original code. It adds local desktop-to-Android playlist streaming. Published Mac 0.6.1 and Windows build 3 remain older versions; this preview has not replaced them.
+The 0.7.0 preview uses libVLC 3 for native Mac/Windows playback and adds an Android Wi-Fi streaming companion. The owner tested the delivered copies and reported them working as expected. Current source and usage documentation are on `main`; the earlier Mac 0.6.1 and Windows build 3 remain older engines.
 
 ## Current work
 
@@ -8,9 +8,9 @@ The active `feature/vlc-lan-android` branch rebuilds playback around libVLC 3 wh
 - **Windows:** approved source-built x64 component, complete matching sources/notices, direct libVLC playback and local sharing. [Actual app-local native verification](https://github.com/PopoD-alt/luma-player/actions/runs/43765447494) passes AVC/HEVC Main10 MP4/MKV, snapshots, subtitles, transport, fullscreen/lifecycle, sharing and active-stream power management without an installed VLC fallback. The portable local owner-review folder is complete.
 - **Android:** reviewed source-built ARM64 component and debug owner copy with matching application/native sources and notices. Cold quiet startup, actual native clock/precise seeking, pause/play, surface restoration, fullscreen and AVC/HEVC/AAC streaming pass against both desktop implementations, including independent re-signing and ten video switches. [Current x64 CI](https://github.com/PopoD-alt/luma-player/actions/runs/43773929495) fails after losing emulator Wi-Fi despite passing its initial Wi-Fi precondition. Physical-phone network continuity needs review. This remains a desktop-streaming companion without a standalone local-file picker.
 
-## Before review packaging
+## Preview distribution
 
-Local owner-review apps and complete corresponding source/notices are prepared. Review the interfaces and test target devices before production packaging/publication. Matching Android application inputs accompany its library source. No production APK/EXE/DMG or update-feed change is part of the evidence workflow.
+Owner review is complete for the supplied copies. The [0.7.0 preview release](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) provides a Mac DMG, Windows portable ZIP and Android APK with matching sources/notices. These remain ad-hoc/unsigned/debug-signed previews. The evidence workflow does not publish app downloads, and the stable update feeds are unchanged. Broader physical-device testing and production signing remain separate work.
 
 ## Real-device testing
 
@@ -26,7 +26,7 @@ The original Luma decoder/demux implementations remain reference work and retain
 
 ## Distribution and updates
 
-Retain the proprietary updater and configure distinct platform feeds only after artifact review. The Mac signed feed still points to 0.6.1; Windows has no live feed, and Android publishing is not configured. Signed Windows installers, DeveloperID/notarized Mac packages, Android production signing and release automation remain distribution work. Free public download is the intended model; third-party license obligations still apply.
+Retain the proprietary updater and configure distinct platform feeds only after artifact review. The Mac signed feed still points to 0.6.1; Windows has no live feed, and Android store publishing and automatic updates are not configured. Signed Windows installers, DeveloperID/notarized Mac packages, Android production signing and release automation remain distribution work. Free public download is the intended model; third-party license obligations still apply.
 
 ## Platforms
 

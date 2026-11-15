@@ -1,19 +1,29 @@
-# Luma Player for Windows — libVLC review
+# Luma Player for Windows — 0.7.0 preview
 
 Luma keeps its native WPF interface, queue, bookmarks, resume positions, themes and fullscreen controls. Playback now goes directly to **libVLC 3** for local media. The app no longer makes a whole-file Matroska remux or an HEVC compatibility copy before playing a file, and that former 512 MiB gate does not apply to playback.
 
-This branch is **0.7.0 Windows review build 4**, targeting Windows 11 x64 and .NET 10. Windows on ARM, other Windows versions, every codec/profile and physical audio output are not implied by a successful build. Read the native results for the exact commit before treating a path as verified. No production Windows release is published by the build script.
+This is **0.7.0 Windows preview build 4**, targeting Windows 11 x64 and .NET 10. The owner tested the supplied copies and reported that they work as expected. Windows on ARM, other Windows versions, every codec/profile and every physical output device are outside that general confirmation. No installer or production-signed Windows build is included.
 
-## Runtime requirement
+## Download and run
 
-Install the official **64-bit VLC 3** application separately, or set `LUMA_LIBVLC_PATH` to an absolute path to its `libvlc.dll`. The matching `libvlccore.dll` and `plugins` folder must remain beside it. For example:
+1. Download [Luma-0.7.0-Windows-x64-preview.zip](https://github.com/PopoD-alt/luma-player/releases/download/v0.7.0-preview.1/Luma-0.7.0-Windows-x64-preview.zip).
+2. Extract the entire ZIP to a normal writable folder.
+3. Open **Luma-Player-Windows-x64**, then run **Luma Player.exe**.
+
+The public preview includes the reviewed app-local libVLC runtime and the .NET runtime. **No separate VLC or .NET installation is needed.** Keep the whole folder together, including `libvlc/`, sources and notices. Do not run the EXE inside the ZIP. The app is unsigned and portable, without a setup wizard or uninstaller. See [INSTALL.md](../INSTALL.md#windows).
+
+The EXE was cross-built on macOS. Matching Windows application source and the approved app-local component passed [native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43765447494); the exact downloadable EXE bytes were not separately run in the automated Windows validation recorded here. The owner confirmation does not supply a detailed device matrix.
+
+## External runtime for development or personal replacement
+
+For a development build without the approved app-local component, install the official **64-bit VLC 3** application separately, or set `LUMA_LIBVLC_PATH` to an absolute path to its `libvlc.dll`. A compatible personal runtime replacement can also use that explicit override. The matching `libvlccore.dll` and `plugins` folder must remain beside it. For example:
 
 ```powershell
 $env:LUMA_LIBVLC_PATH = 'C:\Program Files\VideoLAN\VLC\libvlc.dll'
 & '.\Luma Player.exe'
 ```
 
-The adapter checks the libVLC major version. An optional `<app>/libvlc/` runtime is considered only with a redistribution audit approval manifest. **The current review package does not bundle stock VLC or its plugins.** Runtime redistribution remains subject to the owner's package, dependency and source audit. A separately installed stock runtime used by development tests is not permission to redistribute it with Luma. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The adapter checks the libVLC major version. The shipped `<app>/libvlc/` component has exact package, manifest and source pins. Stock VLC packages remain development-only; a separately installed runtime used by tests is not permission to redistribute it. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the bundled library's source/notices.
 
 Keep all files from the Luma review folder together. The Windows review executable is unsigned and has no established trusted publisher reputation. Use the provenance and your local policy to decide whether to run it; do not disable system protection globally.
 
@@ -23,7 +33,7 @@ Open or drop local media, then use the queue, seek bar, volume, speed and bookma
 
 **More → Audio tracks** and **More → Caption tracks** use libVLC's actual track list. Audio and captions can be turned off explicitly. The Captions button adds an external subtitle file; caption timing controls adjust the native subtitle delay. Embedded and external captions are rendered by libVLC, including the styling supported by the selected runtime. Selecting a track does not remux the file or silently choose a different audio track after an error.
 
-The breadth of formats comes from the separately installed runtime and its modules. DRM, malformed media, every codec profile, interactive disc menus and every output device are not guaranteed. **More → Playback diagnostics** shows local runtime/version, native decoded/displayed counters and track state. It does not upload the report or media. WPF UI snapshots do not capture the native video child; native libVLC snapshots and displayed-picture counters are separate evidence.
+The breadth of formats comes from the selected runtime and its modules. DRM, malformed media, every codec profile, interactive disc menus and every output device are not guaranteed. **More → Playback diagnostics** shows local runtime/version, native decoded/displayed counters and track state. It does not upload the report or media. WPF UI snapshots do not capture the native video child; native libVLC snapshots and displayed-picture counters are separate evidence.
 
 ## Share the current playlist locally
 
@@ -84,4 +94,4 @@ It exposes only the generated Demo and HEVC/AAC fixtures, writes private ready J
 
 The existing local library location and schema are preserved. The old original decoders, demuxers and remux tests remain in `Luma.Core` as independent reference work; they are not the Windows GUI's active playback backend. See [FORMAT_SUPPORT.md](FORMAT_SUPPORT.md) and [CodecSupport.json](CodecSupport.json) for that distinction.
 
-Windows retains its separate ECDSA-P256/SHA-256 updater. Its initial feed and key are blank, so no live Windows update service is claimed. It must not consume the Mac Ed25519/DMG feed. Review folders are replaced manually after quitting Luma. Signed publishing, installer distribution and a bundled runtime require separate owner review before production release.
+Windows retains its separate ECDSA-P256/SHA-256 updater. Its initial feed and key are blank, so no live Windows update service is claimed. It must not consume the Mac Ed25519/DMG feed. Quit Luma and replace the complete portable folder to update this preview. Production signing, an installer and a public Windows update feed remain future distribution work; the reviewed runtime is already included in this preview.
