@@ -1,0 +1,128 @@
+name: Custom Windows runtime review
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/vlc-lan-android]
+    paths:
+      - 'Scripts/prepare-libvlc-windows*'
+      - 'Scripts/prepare-libvlc-pe-audit.py'
+      - 'Tests/test_windows_runtime_helpers.py'
+      - '.github/workflows/windows-native-component-review.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: luma-custom-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  component:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    container:
+      image: registry.videolan.org/vlc-debian-llvm-ucrt@sha256:a0f9255792ee12da494efebdd203e8d11d769b7d938d5191920f76754d29f6e1
+      options: --user 0
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check source-audit regressions
+        run: python3 -m unittest discover -s Tests -p test_windows_runtime_helpers.py -v
+      - name: Build and audit the native component from pinned sources
+        env:
+          LUMA_WINDOWS_JOBS: '4'
+        run: |
+          mkdir -p build
+          bash Scripts/prepare-libvlc-windows.sh \
+            "$PWD/ThirdParty/work/windows-ci-lgpl" \
+            "$PWD/ThirdParty/work/windows-ci-lgpl/curated-component" \
+            2>&1 | tee build/windows-native-source-build.log
+      - name: Carry component with its complete sources and notices
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-Windows-native-component-development-${{ github.sha }}
+          path: ThirdParty/work/windows-ci-lgpl/curated-component/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+      - name: Preserve build evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-Windows-native-source-evidence-${{ github.sha }}
+          path: |
+            build/windows-native-source-build.log
+            ThirdParty/work/windows-ci-lgpl/logs/
+            ThirdParty/work/windows-ci-lgpl/audit/
+            ThirdParty/work/windows-ci-lgpl/source-evidence/source-inventory.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  native-windows:
+    needs: component
+    runs-on: windows-latest
+    timeout-minutes: 35
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.404'
+      - uses: actions/download-artifact@v8
+        with:
+          name: Luma-Windows-native-component-development-${{ github.sha }}
+          path: ThirdParty/work/windows-native-ci-component
+          digest-mismatch: error
+      - name: Verify every component byte and load its actual Windows identity
+        shell: pwsh
+        run: |
+          $root = [IO.Path]::GetFullPath((Join-Path $PWD 'ThirdParty/work/windows-native-ci-component'))
+          $manifest = Get-Content -Raw -LiteralPath (Join-Path $root 'luma-libvlc-runtime.json') | ConvertFrom-Json -AsHashtable
+          if ($manifest.package -ne 'windows-lgpl-x64-3.0.24-r1' -or $manifest.developmentOnly -ne $true -or $manifest.redistributionApproved -ne $false) { throw 'Expected an unapproved development component, not a release.' }
+          foreach ($relative in $manifest.files.Keys) {
+            $path = [IO.Path]::GetFullPath((Join-Path $root $relative))
+            if (-not $path.StartsWith($root + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Component path escapes its root.' }
+            $file = Get-Item -LiteralPath $path
+            if ($file.PSIsContainer -or $file.Length -ne $manifest.files[$relative].bytes -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $manifest.files[$relative].sha256) { throw "Component inventory mismatch: $relative" }
+          }
+          foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse) {
+            $relative = [IO.Path]::GetRelativePath($root, $file.FullName).Replace('\', '/')
+            if ($relative -ne 'luma-libvlc-runtime.json' -and -not $manifest.files.ContainsKey($relative)) { throw 'Uninventoried component file.' }
+          }
+          Add-Type 'using System; using System.Runtime.InteropServices; [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate IntPtr LumaNativeText();'
+          $core = [Runtime.InteropServices.NativeLibrary]::Load((Join-Path $root 'libvlccore.dll'))
+          $library = [Runtime.InteropServices.NativeLibrary]::Load((Join-Path $root 'libvlc.dll'))
+          $address = [Runtime.InteropServices.NativeLibrary]::GetExport($library, 'libvlc_get_changeset')
+          $getter = [Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer($address, [LumaNativeText])
+          $changeset = [Runtime.InteropServices.Marshal]::PtrToStringUTF8($getter.Invoke())
+          if ($changeset -cne 'Luma-LGPL-Windows-6de05adcba-r1') { throw 'The loaded runtime has another source identity.' }
+          New-Item -ItemType Directory -Path build -Force | Out-Null
+          @{ changeset = $changeset; package = $manifest.package; sourceBundleSha256 = $manifest.files['Sources/CorrespondingSource.tar'].sha256; scope = 'Custom component identity and immutable inputs; no release approval or physical sound claim.' } | ConvertTo-Json | Set-Content build/windows-native-identity.json -Encoding utf8
+      - name: Exercise the actual custom runtime in Luma
+        shell: pwsh
+        run: |
+          $env:LUMA_LIBVLC_PATH = [IO.Path]::GetFullPath((Join-Path $PWD 'ThirdParty/work/windows-native-ci-component/libvlc.dll'))
+          ./Windows/build.ps1 -Configuration Release -SmokeTimeoutSeconds 600
+      - name: Preserve native test evidence only
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-Windows-custom-native-evidence-${{ github.sha }}
+          path: |
+            build/windows-native-identity.json
+            Windows/artifacts/review/
+          if-no-files-found: warn
+          retention-days: 14
+
+# The inter-job artifact is the native library component with complete matching
+# sources/notices. It stays marked development-only. No Luma EXE, APK, installer,
+# tag, release, production approval, signing key or update feed is published.
