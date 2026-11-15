@@ -1,0 +1,4321 @@
+{
+  "schema": 1,
+  "scope": "Independent exact component/source/notices/PE checks; no native execution, approval, legal or patent clearance.",
+  "componentFileCount": 354,
+  "runtimeInventorySha256": "158a8d07f9a905d7b4fd3647d5a5c97aa356e7ce9654e7a3ff8fc41f9634b6a8",
+  "sourceSha256": "e91fb216496cd8e7c90b3ddef9efd386c05817aed9203801538fcf038049a689",
+  "sourceBytes": 124190720,
+  "version": "3.0.24 Vetinari",
+  "changeset": "Luma-LGPL-Windows-6de05adcba-r1",
+  "retainedPlugins": 235,
+  "excludedPlugins": 61,
+  "vlcSelectedSourcesChecked": 1006,
+  "vlcGeneratedSourcePaths": [
+    "build-luma-windows/compat/dummy.c",
+    "build-luma-windows/config.h",
+    "build-luma-windows/src/fourcc_tables.h",
+    "src/revision.c"
+  ],
+  "ffmpegSelectedSourcesChecked": 2352,
+  "ffmpegGeneratedSourcePaths": [
+    "vlc_build/config.asm",
+    "vlc_build/config.h",
+    "vlc_build/config_components.asm",
+    "vlc_build/config_components.h",
+    "vlc_build/libavcodec/bsf_list.c",
+    "vlc_build/libavcodec/codec_list.c",
+    "vlc_build/libavcodec/parser_list.c",
+    "vlc_build/libavcodec/x86/aacpsdsp.o",
+    "vlc_build/libavcodec/x86/ac3dsp.o",
+    "vlc_build/libavcodec/x86/ac3dsp_downmix.o",
+    "vlc_build/libavcodec/x86/alacdsp.o",
+    "vlc_build/libavcodec/x86/apv_dsp.o",
+    "vlc_build/libavcodec/x86/audiodsp.o",
+    "vlc_build/libavcodec/x86/blockdsp.o",
+    "vlc_build/libavcodec/x86/bswapdsp.o",
+    "vlc_build/libavcodec/x86/cavs_qpel.o",
+    "vlc_build/libavcodec/x86/cavsidct.o",
+    "vlc_build/libavcodec/x86/cfhddsp.o",
+    "vlc_build/libavcodec/x86/dcadsp.o",
+    "vlc_build/libavcodec/x86/dct32.o",
+    "vlc_build/libavcodec/x86/dirac_dwt.o",
+    "vlc_build/libavcodec/x86/diracdsp.o",
+    "vlc_build/libavcodec/x86/exrdsp.o",
+    "vlc_build/libavcodec/x86/flacdsp.o",
+    "vlc_build/libavcodec/x86/fmtconvert.o",
+    "vlc_build/libavcodec/x86/fpel.o",
+    "vlc_build/libavcodec/x86/g722dsp.o",
+    "vlc_build/libavcodec/x86/h263_loopfilter.o",
+    "vlc_build/libavcodec/x86/h264_chromamc.o",
+    "vlc_build/libavcodec/x86/h264_chromamc_10bit.o",
+    "vlc_build/libavcodec/x86/h264_deblock.o",
+    "vlc_build/libavcodec/x86/h264_deblock_10bit.o",
+    "vlc_build/libavcodec/x86/h264_idct.o",
+    "vlc_build/libavcodec/x86/h264_idct_10bit.o",
+    "vlc_build/libavcodec/x86/h264_intrapred.o",
+    "vlc_build/libavcodec/x86/h264_intrapred_10bit.o",
+    "vlc_build/libavcodec/x86/h264_qpel_10bit.o",
+    "vlc_build/libavcodec/x86/h264_qpel_8bit.o",
+    "vlc_build/libavcodec/x86/h264_weight.o",
+    "vlc_build/libavcodec/x86/h264_weight_10bit.o",
+    "vlc_build/libavcodec/x86/h26x/h2656_inter.o",
+    "vlc_build/libavcodec/x86/hevc/add_res.o",
+    "vlc_build/libavcodec/x86/hevc/deblock.o",
+    "vlc_build/libavcodec/x86/hevc/dequant.o",
+    "vlc_build/libavcodec/x86/hevc/idct.o",
+    "vlc_build/libavcodec/x86/hevc/mc.o",
+    "vlc_build/libavcodec/x86/hevc/sao.o",
+    "vlc_build/libavcodec/x86/hevc/sao_10bit.o",
+    "vlc_build/libavcodec/x86/hpeldsp.o",
+    "vlc_build/libavcodec/x86/huffyuvdsp.o",
+    "vlc_build/libavcodec/x86/idctdsp.o",
+    "vlc_build/libavcodec/x86/imdct36.o",
+    "vlc_build/libavcodec/x86/jpeg2000dsp.o",
+    "vlc_build/libavcodec/x86/lossless_audiodsp.o",
+    "vlc_build/libavcodec/x86/lossless_videodsp.o",
+    "vlc_build/libavcodec/x86/me_cmp.o",
+    "vlc_build/libavcodec/x86/mlpdsp.o",
+    "vlc_build/libavcodec/x86/mpegvideoencdsp.o",
+    "vlc_build/libavcodec/x86/pngdsp.o",
+    "vlc_build/libavcodec/x86/proresdsp.o",
+    "vlc_build/libavcodec/x86/qpel.o",
+    "vlc_build/libavcodec/x86/qpeldsp.o",
+    "vlc_build/libavcodec/x86/rv34dsp.o",
+    "vlc_build/libavcodec/x86/rv40dsp.o",
+    "vlc_build/libavcodec/x86/sbrdsp.o",
+    "vlc_build/libavcodec/x86/simple_idct10.o",
+    "vlc_build/libavcodec/x86/synth_filter.o",
+    "vlc_build/libavcodec/x86/takdsp.o",
+    "vlc_build/libavcodec/x86/ttadsp.o",
+    "vlc_build/libavcodec/x86/utvideodsp.o",
+    "vlc_build/libavcodec/x86/v210.o",
+    "vlc_build/libavcodec/x86/vc1dsp_loopfilter.o",
+    "vlc_build/libavcodec/x86/vc1dsp_mc.o",
+    "vlc_build/libavcodec/x86/videodsp.o",
+    "vlc_build/libavcodec/x86/vorbisdsp.o",
+    "vlc_build/libavcodec/x86/vp3dsp.o",
+    "vlc_build/libavcodec/x86/vp6dsp.o",
+    "vlc_build/libavcodec/x86/vp8dsp.o",
+    "vlc_build/libavcodec/x86/vp8dsp_loopfilter.o",
+    "vlc_build/libavcodec/x86/vp9intrapred.o",
+    "vlc_build/libavcodec/x86/vp9intrapred_16bpp.o",
+    "vlc_build/libavcodec/x86/vp9itxfm.o",
+    "vlc_build/libavcodec/x86/vp9itxfm_16bpp.o",
+    "vlc_build/libavcodec/x86/vp9itxfm_16bpp_avx512.o",
+    "vlc_build/libavcodec/x86/vp9itxfm_avx2.o",
+    "vlc_build/libavcodec/x86/vp9itxfm_avx512.o",
+    "vlc_build/libavcodec/x86/vp9lpf.o",
+    "vlc_build/libavcodec/x86/vp9lpf_16bpp.o",
+    "vlc_build/libavcodec/x86/vp9mc.o",
+    "vlc_build/libavcodec/x86/vp9mc_16bpp.o",
+    "vlc_build/libavcodec/x86/vvc/alf.o",
+    "vlc_build/libavcodec/x86/vvc/dmvr.o",
+    "vlc_build/libavcodec/x86/vvc/mc.o",
+    "vlc_build/libavcodec/x86/vvc/of.o",
+    "vlc_build/libavcodec/x86/vvc/sad.o",
+    "vlc_build/libavcodec/x86/vvc/sao.o",
+    "vlc_build/libavcodec/x86/vvc/sao_10bit.o",
+    "vlc_build/libavcodec/x86/xvididct.o",
+    "vlc_build/libavformat/demuxer_list.c",
+    "vlc_build/libavformat/muxer_list.c",
+    "vlc_build/libavformat/protocol_list.c",
+    "vlc_build/libavutil/avconfig.h",
+    "vlc_build/libavutil/ffversion.h",
+    "vlc_build/libavutil/x86/aes.o",
+    "vlc_build/libavutil/x86/cpuid.o",
+    "vlc_build/libavutil/x86/crc.o",
+    "vlc_build/libavutil/x86/fixed_dsp.o",
+    "vlc_build/libavutil/x86/float_dsp.o",
+    "vlc_build/libavutil/x86/imgutils.o",
+    "vlc_build/libavutil/x86/lls.o",
+    "vlc_build/libavutil/x86/tx_float.o",
+    "vlc_build/libswscale/x86/input.o",
+    "vlc_build/libswscale/x86/ops_float.o",
+    "vlc_build/libswscale/x86/ops_int.o",
+    "vlc_build/libswscale/x86/output.o",
+    "vlc_build/libswscale/x86/range_convert.o",
+    "vlc_build/libswscale/x86/rgb_2_rgb.o",
+    "vlc_build/libswscale/x86/scale.o",
+    "vlc_build/libswscale/x86/scale_avx2.o",
+    "vlc_build/libswscale/x86/yuv2yuvX.o",
+    "vlc_build/libswscale/x86/yuv_2_rgb.o"
+  ],
+  "noticesChecked": 73,
+  "supplementalNoticesChecked": 3,
+  "coreImageEncoderFrameworkEnabled": true,
+  "disabledFfmpegEncoderComponents": 275,
+  "streamingOutputModulesExcluded": true,
+  "archives": [
+    {
+      "filename": "AMF-1.5.2.tar.gz",
+      "sha256": "d3c12eb324edf05e214608b6a395a51dd95770ed9d45520185d6c3a206811c99",
+      "bytes": 83716
+    },
+    {
+      "filename": "libass-0.17.5.tar.xz",
+      "sha256": "2dca25c0e0c837ddf00b52011b3f82cac1e4ddd3ad018227806b0c2288864acc",
+      "bytes": 460148
+    },
+    {
+      "filename": "dav1d-1.5.4.tar.xz",
+      "sha256": "686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5",
+      "bytes": 1038852
+    },
+    {
+      "filename": "libebml-1.4.6.tar.xz",
+      "sha256": "d06cf1d5ad89390389eeb1eb7d50f70b55ac7538b19aeac8859eed3f2a9908dc",
+      "bytes": 52424
+    },
+    {
+      "filename": "ffmpeg-8.1.2.tar.xz",
+      "sha256": "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c",
+      "bytes": 11710924
+    },
+    {
+      "filename": "flac-1.4.2.tar.xz",
+      "sha256": "e322d58a1f48d23d9dd38f432672865f6f79e73a6f9cc5a5f57fcaa83eb5a8e4",
+      "bytes": 1013700
+    },
+    {
+      "filename": "fontconfig-2.12.3.tar.gz",
+      "sha256": "ffc3cbf6dd9fcd516ee42f48306a715e66698b238933d6fa7cef02ea8b3b818e",
+      "bytes": 1903035
+    },
+    {
+      "filename": "freetype-2.14.3.tar.xz",
+      "sha256": "36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f",
+      "bytes": 2670220
+    },
+    {
+      "filename": "fribidi-1.0.12.tar.xz",
+      "sha256": "0cd233f97fc8c67bb3ac27ce8440def5d3ffacf516765b91c2cc654498293495",
+      "bytes": 1154912
+    },
+    {
+      "filename": "libgsm_1.0.13.tar.gz",
+      "sha256": "52c518244d428c2e56c543b98c9135f4a76ff780c32455580b793f60a0a092ad",
+      "bytes": 65318
+    },
+    {
+      "filename": "harfbuzz-14.2.1.tar.xz",
+      "sha256": "a54a5d8e9380a41fbb762ce367bcbf7704792dfca0d93f1bbca86c5a57902e0e",
+      "bytes": 19559952
+    },
+    {
+      "filename": "libiconv-1.17.tar.gz",
+      "sha256": "8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313",
+      "bytes": 5413283
+    },
+    {
+      "filename": "jpegsrc.v10.tar.gz",
+      "sha256": "8b9eaa13242690ebd03e1728ab1edf97a81a78ed6e83624d493655f31ac95ab5",
+      "bytes": 1099508
+    },
+    {
+      "filename": "libarchive-3.8.9.tar.xz",
+      "sha256": "888c934f9d95648ecb9163dc8e23ab80a476ecb81a8f1154704a227b5b676dde",
+      "bytes": 6617696
+    },
+    {
+      "filename": "libxml2-2.15.3.tar.xz",
+      "sha256": "78262a6e7ac170d6528ebfe2efccdf220191a5af6a6cd61ea4a9a9a5042c7a07",
+      "bytes": 3152452
+    },
+    {
+      "filename": "libmatroska-1.7.2.tar.xz",
+      "sha256": "f3e4d406daf7f1399962c43940e4a87de089474d5bcfbf2e6ca516e98bb87cfc",
+      "bytes": 63016
+    },
+    {
+      "filename": "mingw-w64-v14.0.0.tar.bz2",
+      "sha256": "6eaf921d9eb987d3820b364ea9775bc19b965ec81490b6fdd716526c28e1995c",
+      "bytes": 11163292
+    },
+    {
+      "filename": "mpg123-1.33.6.tar.bz2",
+      "sha256": "929a7c18ba662b8927aed4de229ad9ae8ab2b4806dd0f30b90113eb1b4e2195a",
+      "bytes": 1123797
+    },
+    {
+      "filename": "libogg-1.3.6.tar.xz",
+      "sha256": "5c8253428e181840cd20d41f3ca16557a9cc04bad4a3d04cce84808677fa1061",
+      "bytes": 439952
+    },
+    {
+      "filename": "openjpeg-2.5.4.tar.gz",
+      "sha256": "a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a",
+      "bytes": 2157028
+    },
+    {
+      "filename": "opus-1.6.1.tar.gz",
+      "sha256": "6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1",
+      "bytes": 10472813
+    },
+    {
+      "filename": "libpng-1.6.58.tar.xz",
+      "sha256": "28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775",
+      "bytes": 1070096
+    },
+    {
+      "filename": "utfcpp-3.2.5.tar.gz",
+      "sha256": "14fd1b3c466814cb4c40771b7f207b61d2c7a0aa6a5e620ca05c00df27f25afd",
+      "bytes": 28865
+    },
+    {
+      "filename": "zlib-1.3.2.tar.xz",
+      "sha256": "d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3",
+      "bytes": 1320064
+    }
+  ],
+  "binaries": [
+    {
+      "path": "libvlc.dll",
+      "sha256": "db96cae6326f03d75ef24e4b6751ba3494f9660df992958cc52647bf5bd0769d",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": null
+    },
+    {
+      "path": "libvlccore.dll",
+      "sha256": "a12551d86c7e3117dd7ebaea5e670c0f93e62da41d1f0d45912cd1d3b7f5c771",
+      "imports": [
+        "advapi32.dll",
+        "ws2_32.dll",
+        "iphlpapi.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "shell32.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": null
+    },
+    {
+      "path": "plugins/access/libaccess_concat_plugin.dll",
+      "sha256": "0f786f874e8c071afed61af029ebdc6575af3922601dc32d678004322cce5083",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libaccess_imem_plugin.dll",
+      "sha256": "9b427d83227c14749f13d95987a1358b1754ffd82f1b85b464585b4d520646f2",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libaccess_mms_plugin.dll",
+      "sha256": "90739fdb88d47a6c6f687bddf0c28e5593a2f065b98278ffa830c00c4808bd92",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libaccess_wasapi_plugin.dll",
+      "sha256": "7401fc6a4c77cbeecb418897490a9adb7bdb31d9362404447534f7eb9b70f85c",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libattachment_plugin.dll",
+      "sha256": "74d808b224f7343ce7e8fe1f3bf2c9034db9973c7627440e836a81bfc3786c41",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libfilesystem_plugin.dll",
+      "sha256": "f4995be5c9622a36837190ac1522e285b907bb2429c806281d69d53c93cc7397",
+      "imports": [
+        "libvlccore.dll",
+        "shlwapi.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libftp_plugin.dll",
+      "sha256": "34d8961cff8e8d5809892c5d7efe9246e34295a54720cda20f6616ab9797ce89",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libhttp_plugin.dll",
+      "sha256": "576296f8f3eb53df04e28978275e75deadcd5fc85331d771763fb4ac10af884a",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libhttps_plugin.dll",
+      "sha256": "d7c715ac07c6bb63351d119cd7fc72829112fd2b4ecea31f1044e1359d21958b",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libidummy_plugin.dll",
+      "sha256": "2cdb96a6b8f6c9c652a86171c74a83c0232fd37e6968a5cc75175967f167bab6",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libimem_plugin.dll",
+      "sha256": "1bd92fd4f4549149ac7e4beb158cbff05abf1934fe9d4099734eb7b6e49842fe",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/librtp_plugin.dll",
+      "sha256": "484f2c0b7cde6e454a134292f762c73890cc04b32e02c90894777ac14079ea73",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libsatip_plugin.dll",
+      "sha256": "29c7c96f587aabe09c5fee96862cb36d9ef7eb0f1f75620cf1bc7391fc60a02f",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libscreen_plugin.dll",
+      "sha256": "4144258cfe93403e8e5a900a5ef955813097e3117f8ae4dda9cd9c160e40301e",
+      "imports": [
+        "libvlccore.dll",
+        "gdi32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libsdp_plugin.dll",
+      "sha256": "056decccd6ad29af5110bfcad3d7210a3bc36583388e40182290139beebaf9d6",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libshm_plugin.dll",
+      "sha256": "3d628ef62e7e6cd281079c9a95ba2de724588e5e9285dc516b6abb8a189e579f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libsmb_plugin.dll",
+      "sha256": "ce5f173dc79cc05ccbd616124d45f1309b4645f7684354172d0bc902df287fc8",
+      "imports": [
+        "libvlccore.dll",
+        "mpr.dll",
+        "netapi32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libtcp_plugin.dll",
+      "sha256": "16c1f71e6511e7a639b2b65930cc1a0811789d9c3f81ce023cbcdf7a1b502273",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libtimecode_plugin.dll",
+      "sha256": "31770e2e74dcacd547f4d051f45f02e1b7b2d2a9f0233d108108478225de511b",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libudp_plugin.dll",
+      "sha256": "b0d2ea4e8532c9367d3674a568ea686feb22814d4d0fa97cd67eb9b52d5c7118",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/access/libvdr_plugin.dll",
+      "sha256": "38df745bb80f04325f701cb276f5165dbff98764dd4f1d6e02e70a054840b0a2",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libaudio_format_plugin.dll",
+      "sha256": "2d8e418547f793b85c77ba8e8e61be18de85c45f3bedb5a9aac08a8a99817184",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libaudiobargraph_a_plugin.dll",
+      "sha256": "df6aad6f5f1253418d4912c6b069e8778986920d9534f50a9ef8643f93e6f1bf",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libchorus_flanger_plugin.dll",
+      "sha256": "7903b4e9655762c332db0f5b47ee9f6d61909e1845abb272b058a9d3e561b193",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libcompressor_plugin.dll",
+      "sha256": "1d4871642797547f2c165a699bfec634cfd2085231554e7e0301bfb481210c8f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libequalizer_plugin.dll",
+      "sha256": "678b7955c184287184e2c367c78003203b7517241f7b3fb1d551d6ea82acdeda",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libgain_plugin.dll",
+      "sha256": "09c8e21e00a2eba8167d513cea8fa71baf177e6269d870e5f4f10a0e234d59ac",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libkaraoke_plugin.dll",
+      "sha256": "0ad2afcbc6be504ca3d4b7ccc44c8b745eb3348d2e3a970265c3834e0769e8e0",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libnormvol_plugin.dll",
+      "sha256": "56a0c6c955da41d4d51b37cc83a659886b3cf116d18abc0d0dbec7647f940957",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libparam_eq_plugin.dll",
+      "sha256": "821441804e1c9565a09294301648d3863cfd8b1e26778fc50ad442de993e6b41",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libremap_plugin.dll",
+      "sha256": "17f45676c05e60e927e096c3e825e7db9ba85e500422d91e2b381422479cc085",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libscaletempo_pitch_plugin.dll",
+      "sha256": "9d8c3c97cc4668ba1f5cab968378e99f028bd868b1a163466e142ca81924ae50",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libscaletempo_plugin.dll",
+      "sha256": "c2f4c2b9336d7bacc3e5a61940a8129d395e0ed4b37e5a3f3f6447d8b24ab0d8",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libsimple_channel_mixer_plugin.dll",
+      "sha256": "cfc8fea50631df672b6ba08e84c06935d6814db8caa7de2910ae36a16bbdd469",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libspatializer_plugin.dll",
+      "sha256": "4a95d9358d9a7c8cc68979774466af9396e595e83ab98386d98f77f705ef133b",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libstereo_widen_plugin.dll",
+      "sha256": "8dc2121efa7ecdcdd968c7ee58fa5f268f46e48ee638b927fe9d3f743ae7c54a",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libtospdif_plugin.dll",
+      "sha256": "824d924de41d6d4b42f3eb60c4dcad8277755ff5d516eaec299fd7b74f993740",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libtrivial_channel_mixer_plugin.dll",
+      "sha256": "8d0d7b63392c4660ac2d79e0ea156e7fb0ab4bc462ea507e5b1a39f7485efe72",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_filter/libugly_resampler_plugin.dll",
+      "sha256": "f820e6aa1e8a658b7659a751285ee0221ed94dfb31c28869691509cb31d9c6ed",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_mixer/libfloat_mixer_plugin.dll",
+      "sha256": "3cd5c6e82f279050169d0c1cbc31624f73cfb1a88c3b77294e054dce6f9b15cd",
+      "imports": [
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_mixer/libinteger_mixer_plugin.dll",
+      "sha256": "d6bf96c04a40b540b8cb4d347ae57bbd1856d87c3849f32eab28aff75d012694",
+      "imports": [
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_output/libadummy_plugin.dll",
+      "sha256": "1d25c8c6da3d41bea00f7ceeae9ef033076675f08a68dee1e507952948e852c2",
+      "imports": [
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_output/libafile_plugin.dll",
+      "sha256": "64c55191aa6f55265a17c6b4baff1642524c63e8115c312f12c564c98c2f706b",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_output/libamem_plugin.dll",
+      "sha256": "9f27ceb4b096a7374d3b9df78374a7315e09226a5620db0487c2443ab7186281",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_output/libdirectsound_plugin.dll",
+      "sha256": "16c4bbdb8844dfe8dbf9d445fa4de9db6a248e568ef8cdfa3ae5835a896a7e60",
+      "imports": [
+        "libvlccore.dll",
+        "dsound.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_output/libmmdevice_plugin.dll",
+      "sha256": "9b8f87aaf2919aa9cdf0858a1c7600e0fa8afd7c335b28f3b54b6065fb440229",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_output/libwasapi_plugin.dll",
+      "sha256": "8b9f929ec90bb124c6c446f4b20e74f9fa83342f59b6bd876b5e45f709935dc1",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/audio_output/libwaveout_plugin.dll",
+      "sha256": "fd564efac0455c0f1a5d4d8c158b5e4c9e47d3098ddde4d93c54b64a260b28a1",
+      "imports": [
+        "libvlccore.dll",
+        "winmm.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libadpcm_plugin.dll",
+      "sha256": "2ed4d8aac7c73e730a8d31d6b00af7678501527efb75fd1944a5e6f4d905abe1",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libaes3_plugin.dll",
+      "sha256": "9008b2e29ffbccb0db55c654e4f929c832f0dc26ab6c774ec1bba15695b8f5d0",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libaraw_plugin.dll",
+      "sha256": "be6d82d233f270eb1dae6c30340823c3b79606a7b62856a4b5d97f4c4f14a75c",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libavcodec_plugin.dll",
+      "sha256": "02d7e9f0150a7dce5147245da883995d3a646e6d34a01b97569c24988f5caa73",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "ws2_32.dll",
+        "user32.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "ole32.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libcc_plugin.dll",
+      "sha256": "c2528fd9f734ac2bb25e506ce55e213c3a633d200b2bbe381f47045d8fe66278",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libcdg_plugin.dll",
+      "sha256": "781fe064e65ac538f5f043e310257ff6a44fc40ff96b443293b1dd2d693e38fc",
+      "imports": [
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libcvdsub_plugin.dll",
+      "sha256": "00380748663d7fee9c91914affd7d3ebe56943b511dffda25f1c981223cb82de",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libd3d11va_plugin.dll",
+      "sha256": "eb39070f74a691c0608492fbefc5bff45edac9e993e2c1c09e898b1e924203b2",
+      "imports": [
+        "libvlccore.dll",
+        "advapi32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libdav1d_plugin.dll",
+      "sha256": "560c6106120f433183aa3831df50e0725d0e6e2fce3e9f9bcd7ed8830e57bd35",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libddummy_plugin.dll",
+      "sha256": "31f7def87a88bfb74534ad2ac969bfa5445f6202dbd3b1944ac625a1268b0c12",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libdmo_plugin.dll",
+      "sha256": "007b64a37c08deedda77634087f9aad19a07f14828bf97bf06679ce04fe033f0",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libdvbsub_plugin.dll",
+      "sha256": "c9065f77fe1cc7a9fb04d2a795ab1ad7be0b47b62b02b531ca7d16fbfb264294",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libdxva2_plugin.dll",
+      "sha256": "b959490cf738f6cd8a6d93dde63ed7d49fadc55d844e7d5585d8d995ea648319",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libedummy_plugin.dll",
+      "sha256": "f5c0f5493dbe453f4e1a592f758088a4d3acba4fc7caefc0cee79b6b60ebee6b",
+      "imports": [
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libflac_plugin.dll",
+      "sha256": "b602bd66df462e4e5eb7e4a6ec2e870131ed1ebf6ac39473a0acf2f21befea56",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libg711_plugin.dll",
+      "sha256": "eeef6aa71a45cdc332beaad65d02c64b8463653fa26f705e5ec300f538a5a825",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libjpeg_plugin.dll",
+      "sha256": "b925ce25afeadb44f630d1dc9a9f799e7dadfe8cb8c15af074a7e15038705d09",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/liblibass_plugin.dll",
+      "sha256": "1ee808eecf1509b37a1af3f2015f8aa9d1a5c9620f76d5b223ff1f88561f178f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "gdi32.dll",
+        "user32.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "shell32.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/liblpcm_plugin.dll",
+      "sha256": "5fffc8721d18daac7c1a7d1c3c54c58af9bc2e820969a43ebd104d2ec341806c",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libmft_plugin.dll",
+      "sha256": "0f8b13200b08f3c7d990c621be5a03cd7020dad5171fcbf3ac9da5e66570b665",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "mfplat.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libmpg123_plugin.dll",
+      "sha256": "e054ab675f13351eef9b81859e4b400cd3b1330c0aa6cdd77cb5f8be8e46a10f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "shlwapi.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/liboggspots_plugin.dll",
+      "sha256": "d55b80406faece05bf1e1da05a2f6d4e3b544b51c2a8542af726a423e3e1af3e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libopus_plugin.dll",
+      "sha256": "3ff065508511cbb44e8475a88c943d6cb6f9a450145b2f3d69fd4dfa3a71ffec",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libpng_plugin.dll",
+      "sha256": "f8adb957f9b5170e1aaef5ab240108f53691574cd8c5d0f51cd722bb0ff43d45",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/librawvideo_plugin.dll",
+      "sha256": "1d0094affd6b2e929aba7ff7f36043abf9260e5a693f2fbb4f9229992e85c2e6",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/librtpvideo_plugin.dll",
+      "sha256": "217ee19a831e235e7e9f377cf1c0afbc3b3c164298dc4b9322183811f87f2977",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libscte18_plugin.dll",
+      "sha256": "43a2c3390fb7332bba6fd676e941fb74900d396269229016b7cc19e003476386",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libscte27_plugin.dll",
+      "sha256": "f4458fb48de07795c64e819af8092f4c7159f27c3f84d0c7638fb9c8bff0aebf",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libspdif_plugin.dll",
+      "sha256": "ec33bab95bd124f76cb02c2e22ee3c055b9b7543e906ae9919bdc1e2c52efa8d",
+      "imports": [
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libspudec_plugin.dll",
+      "sha256": "ca6c19550808cf01583fe1a59f2da3e76ea1d936f9e0972c054e4cf74bd251b2",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libstl_plugin.dll",
+      "sha256": "654e6ded0a879221e971bddc61105957a1b1787e17b76bbfd252a6996f25fc37",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libsubsdec_plugin.dll",
+      "sha256": "56211fdc1acf74f0d8f667a466aef37723c8df2465ae7aeb740f824094cd8982",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libsubstx3g_plugin.dll",
+      "sha256": "a29b6efe9daac078aa07db9ba215d5899e099cc28172ac9b96290a0c7f0376d0",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libsubsusf_plugin.dll",
+      "sha256": "2a7b9fd0ffad9d7b185bfcd53550f006daff399dcc4a4ef84975ed8625b132e8",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libsvcdsub_plugin.dll",
+      "sha256": "865e8435f3e85db88d7e83fbfd00b1439f1e8bcd79eac222745695bfd9beb110",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libtelx_plugin.dll",
+      "sha256": "f28e6e193312d1c2a8800767e8d47aa21699c53e10e2c0f5cecd6291f8b73870",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libtextst_plugin.dll",
+      "sha256": "05ebd3b08547f302f6b867e1b0274d05973c67da4e33ca8dd0ce984a5f20e424",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libttml_plugin.dll",
+      "sha256": "77606b756ab2735bce7432f3a1548803375db605dc0b5b56c0d96e11f6514533",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libuleaddvaudio_plugin.dll",
+      "sha256": "ff5f49e28272b591ec5609ebc69cbfaae828de50ff1e620b9fecbcf2263cbf30",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/codec/libwebvtt_plugin.dll",
+      "sha256": "72856b67223724693d08da4a47577d7e5a4392d321ac127dc68d44daa02758aa",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/d3d11/libdirect3d11_filters_plugin.dll",
+      "sha256": "cfd4a4aa4455710f9152a5fe63ae78a6e473fa69ccf0b57e5eae160d506f6b7a",
+      "imports": [
+        "libvlccore.dll",
+        "advapi32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/d3d9/libdirect3d9_filters_plugin.dll",
+      "sha256": "206d41161c0464eb65adb2049cc564cab83b405bd60d93d2eb08ba60c4e788b4",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libadaptive_plugin.dll",
+      "sha256": "dd0c85bc539980b6efa6e14dbda1dfa4dcb433c5cb9fd2a3402290be7de9e044",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-multibyte-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libaiff_plugin.dll",
+      "sha256": "b5bc768cbbec7aa5bc5ec9d944bae573574ae948c64d0ea4c89f3c2672dd200e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libasf_plugin.dll",
+      "sha256": "c02a74a5df6cf8b63dbd575ce662ac30d2fec282c542c6925624f371f6ffb105",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libau_plugin.dll",
+      "sha256": "d6aa07108f2824b9d51d321b6f7a4e7c5c0c97a955514a15e0272ae342be917a",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libavi_plugin.dll",
+      "sha256": "886b23fefc71abc3501928ab4372fd87bb1a6d5874c0837e7fc49dd78dd63662",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libcaf_plugin.dll",
+      "sha256": "f3184306d20466c62b80fe16ffc56d08178f94f8405dc4b3388fc7b6217c866a",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libdemux_cdg_plugin.dll",
+      "sha256": "df2c2b4be3656e07e67b982c1efdf7f3370ca9da9648f15ba9293d330523b490",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libdemux_stl_plugin.dll",
+      "sha256": "100a699e873d8f64df52f33f83e490e67873908ffd2560b00fbec5d8ec2c1bf6",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libdemuxdump_plugin.dll",
+      "sha256": "d83edad953b0b26ccde2f9dca9678d6cdbf4f1055ac8d37d7428a88b750789a3",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libdiracsys_plugin.dll",
+      "sha256": "a451edc006fc42d1038e540c88b1fbb9aac67826771eb55a3b80bdbc413b619e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libdirectory_demux_plugin.dll",
+      "sha256": "277e9e21333519e357cdb693cebdec1daa56b4bd8c63c562e17e07273d5cff00",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libdmxmus_plugin.dll",
+      "sha256": "5f6c7751e0bb62639518ed190ae237a5519a93211a55355a930beacc94dd2787",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libes_plugin.dll",
+      "sha256": "329746b2338c4a2c47aa743729e927f2e25c9ca7a335c6a6d3f379d857723a14",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libflacsys_plugin.dll",
+      "sha256": "003554eb00b11a3485108a418c945837e44531463f9ddb0bac42ae145ec68a25",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libh26x_plugin.dll",
+      "sha256": "b6f8e2484c8480df2cdb54d79f6781cb9b639d83ac579c81458eea4f4e2aae2f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libimage_plugin.dll",
+      "sha256": "cbdec7d8c22c66391ca0f6edd2c1dc066ad49a00cd2d2ec534ae9288e1dd7699",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libmjpeg_plugin.dll",
+      "sha256": "e90426edb9acb0a6232c430bc9e7a098d9c15f673d1fb12ea40d9b266be800e9",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libmkv_plugin.dll",
+      "sha256": "7c0ec497a1541aa1c7e3762b954003c7eef3b4fabaa01603834a5fe02ee3d2f2",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-multibyte-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libmp4_plugin.dll",
+      "sha256": "c68de4280509281a95718a5dd8e14d0fbb33313caa2370eca5ba10fda254cf75",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libmpgv_plugin.dll",
+      "sha256": "8e91323e202290c41a052b384feb2c0a5402b12212a25d2ffda96a95eb75c3af",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libnoseek_plugin.dll",
+      "sha256": "d1ccb20fa3f8e7f2202f55ea1b36ffadfd2a8a7552202320e9806d283bbdfd3b",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libnsc_plugin.dll",
+      "sha256": "af500a1aef7343cc97ee2426a46e37418f0d389199dbffbf052b9a5dcd1ec789",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libnsv_plugin.dll",
+      "sha256": "f7d49503dda40a06668a259f091b0988826f9872055427120514c1f939a0a254",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libnuv_plugin.dll",
+      "sha256": "aecd96092394bf3b920f2db4350351c0244fcc44d9cd37edc7d6e9b3604cdbed",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libogg_plugin.dll",
+      "sha256": "6241ad58be66a0d89614d7dff7485b88d27ee1e6a0a59f82c9e6c0945e253d1f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libplaylist_plugin.dll",
+      "sha256": "cd7fe6de75bc01136e8c7702307edebf523532d3493b39a04878b880bf0e797f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libps_plugin.dll",
+      "sha256": "83611ac419da3a0eb8dfb8a9257b0951d27d76219ee4b3985fb2869093d4f437",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libpva_plugin.dll",
+      "sha256": "26fadd1c23445d6a6e78119aaf1e27ee5f2228b7f82a3efd35d5742f292c54f1",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/librawaud_plugin.dll",
+      "sha256": "1bd63d669108bfb55bc4146cc0e9b7095688b9b26c5b1685d57a7dec84c81fa4",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/librawdv_plugin.dll",
+      "sha256": "8a1bc137d417f475a4d43151511d2eba340c1df65fabdd8a95a711ba82676689",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/librawvid_plugin.dll",
+      "sha256": "d60049e7fe29d986d057933fad38c439e85f746fe8e5dae3be6bb6f8367aa6b8",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libsmf_plugin.dll",
+      "sha256": "3c393118925168bfc3c7dc4da9ce80f12844266b437f391d48ff188e13873001",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libsubtitle_plugin.dll",
+      "sha256": "4af44e0efb128e67060a4db4decc40a94955373dae838dd28f4dc1e6c128553e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libtta_plugin.dll",
+      "sha256": "8fd822ba6cff4c791d22b69b9a99ebdf187676769ededb7f86db88a25c5cb1fb",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libty_plugin.dll",
+      "sha256": "f50be8a14d1a97b3ee0d4393b5d3420f6476c464c54e98b8104658042c4cee61",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libvc1_plugin.dll",
+      "sha256": "7b722d4f4bb9ea6765c3c32669ebd5358c7d64a07afc1e33d8ec44376eab6c38",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libvobsub_plugin.dll",
+      "sha256": "b1d84355e28d227f49ed9403a9465152bdae79ecf17524ae7097b469308dd12e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libvoc_plugin.dll",
+      "sha256": "56f008f26183547690a43597736938bbf97c35407c9e8d4a43db8016cadf0a84",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libwav_plugin.dll",
+      "sha256": "6dbc21c63b7652d66402b6713254983bbe21939304e3a53254ab51df1d2a66a9",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/demux/libxa_plugin.dll",
+      "sha256": "f07b02918555a10a942b8bfed5a642e9a6e4bccda9f3fc72c0c8c0d0c3ad41a7",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/keystore/libfile_keystore_plugin.dll",
+      "sha256": "d15f08137352d893acfc13dc28dd814df88a6b6cb73857e8886935a678c0f0d7",
+      "imports": [
+        "libvlccore.dll",
+        "crypt32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/keystore/libmemory_keystore_plugin.dll",
+      "sha256": "a3c0058215741733ea4d7a9f5d574b33ebc1aa3b099e929cf5ac81a029659538",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/logger/libconsole_logger_plugin.dll",
+      "sha256": "cf34221093e69bfd27f9d097216bc3ad33207dcb32f8141e8e59b820bf5b54de",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/meta_engine/libfolder_plugin.dll",
+      "sha256": "50fba55b811735bd45ebe174c30e565ca7a2ce63fbb9abac961ab4cbe4f6282f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/misc/libfingerprinter_plugin.dll",
+      "sha256": "d8d9de99f7083b4bde36241bf0fe1c43e2c24860c11127f6a99979f434432d54",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/misc/libxml_plugin.dll",
+      "sha256": "31a9ff9de6b66099f88dcfa0dcbed05e5aa06e2d9f27ad36ed50111edfde8ff8",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "bcrypt.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_a52_plugin.dll",
+      "sha256": "52c282f9acdb1a49058a160f337e7c82270129130fa546d4230cabb3997295db",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_av1_plugin.dll",
+      "sha256": "5d6330beb9479dd09b6a132470c06a87cb1fed0335aa434815606c2ae2a393af",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_copy_plugin.dll",
+      "sha256": "3fa388a053e840a0c87aac1d0499a1ca86920bd0b5565ffffc5a003a4873afaf",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_dirac_plugin.dll",
+      "sha256": "205ba53f789afed70fbe722fbb526ab407ef185964a1f28ebff4759d21a72a9c",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_dts_plugin.dll",
+      "sha256": "08eaa68ea17343fe156b1ca4d22d78de10a36850c6229b266f833ffbd09f3233",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_flac_plugin.dll",
+      "sha256": "7c3510b6881642c9ef509d87c2e17c49dd738cf7681ff2abb3e457bd204b4816",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_h264_plugin.dll",
+      "sha256": "561c229b00be2b8f12128874c820b3da77cc653295c7e2031a7108cc9df0a03b",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_hevc_plugin.dll",
+      "sha256": "cfc62c785d289b62d54a905a44bc563894e2f66b96c7f06adb4b9483e837d94f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_mlp_plugin.dll",
+      "sha256": "24baa5db5de17e87ff2908beaf334e05de38d7d9a5faf7f504f669155037c72f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_mpeg4audio_plugin.dll",
+      "sha256": "de51a83e4cedd84ff2a73ec04bce1e423fc81dc31eb7a965a67c63dae35d8bf7",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_mpeg4video_plugin.dll",
+      "sha256": "63bf7583f95b5e750f53e467cf264828929ff93fa4a55ef370ca5d574d77d490",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_mpegaudio_plugin.dll",
+      "sha256": "401c79a9e7d494aba401cdee094f4365a30a26450dffb3e55e78d616e958bb4a",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_mpegvideo_plugin.dll",
+      "sha256": "d83298f6d1ef570b347839da5059645611a6428822d76f4daa779d9b2be44e78",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/packetizer/libpacketizer_vc1_plugin.dll",
+      "sha256": "cbbf3fd9591be99edc4f3dd3e6b5cc49c74875c600feaeecc9c12c9ea8013747",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/services_discovery/libwindrive_plugin.dll",
+      "sha256": "7ebbcf8af495956c75d73fd5e3907815f3324f88f85edde6e23862cd1ba1bb22",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/spu/libaudiobargraph_v_plugin.dll",
+      "sha256": "a9b56d982d8cce3fb30dba8b0827652c17153d1da28c333a5fec16e6ec10ef12",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/spu/liblogo_plugin.dll",
+      "sha256": "5dd4ec0cadda3da0caff00582de07fc3e08cf504c50bd66d629a931aae801fcc",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/spu/libmarq_plugin.dll",
+      "sha256": "ffe0edf9404a66dc87091fc2e0e16e7840e0fc94d7b6786066f85dc1bca53a54",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/spu/libmosaic_plugin.dll",
+      "sha256": "0bd904246ba3e60e812b02a72bb108ab6da55062550c4fd83ca1c7610c0c9e1d",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/spu/librss_plugin.dll",
+      "sha256": "b2f811241c9b3a93b83624970c92c226b17097d7482d2c9a7ece4d76f79dbfdc",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/spu/libsubsdelay_plugin.dll",
+      "sha256": "afe68ec4796004e451d58061972416e1052c37d2dc19d07090dee4ec0a1f2a59",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_extractor/libarchive_plugin.dll",
+      "sha256": "796acc5d4be296263c210f20ba1b8edbabe88630f18db4adb4b3011d8c0271b9",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "bcrypt.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "xmllite.dll",
+        "api-ms-win-crt-time-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_filter/libadf_plugin.dll",
+      "sha256": "59c78166353930834d9f9b018cdc4762a23ff16a4ced979e34568b1605d11b9c",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_filter/libcache_block_plugin.dll",
+      "sha256": "4eb444019fa73522f15e0b5beb5dcdb6ed8ab98d492e4cf81c7ee99a8a7a3248",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_filter/libcache_read_plugin.dll",
+      "sha256": "75f94672c5c0a516b3ff941be1cd9e736d23d4dcb95b0b9b4e152110abb778e3",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_filter/libhds_plugin.dll",
+      "sha256": "facd24d3fdf0df16f2ccd50e1ffebfda6f32e08159e30bd322a1479f93490497",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_filter/libinflate_plugin.dll",
+      "sha256": "f28167042de3905d531fdb99d443db8a7d270a9fa56d12898844eb2d6b09da95",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_filter/libprefetch_plugin.dll",
+      "sha256": "b0595b9a9e49b1481c144b938e40602415a6eeb84870a8a55b20e76e0273d95b",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/stream_filter/libskiptags_plugin.dll",
+      "sha256": "3276744cf4111dde787d50b6b6e8f82aa13b2db5360bcd421742898d6f1de41e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/text_renderer/libfreetype_plugin.dll",
+      "sha256": "1b48ae375b52a471790c82ec81cd56d70736db2fc7b0cc23c653e6e4169059c3",
+      "imports": [
+        "libvlccore.dll",
+        "advapi32.dll",
+        "usp10.dll",
+        "gdi32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "shell32.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-multibyte-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/text_renderer/libsapi_plugin.dll",
+      "sha256": "989103d5ed0dfc1fc21bb3c4d677dfac380b08d279ca295da65570026551d060",
+      "imports": [
+        "libvlccore.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/text_renderer/libtdummy_plugin.dll",
+      "sha256": "91400ffddff0809fd10913944710a471d62a5d3e457c68c866033a80fdd9e675",
+      "imports": [
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libchain_plugin.dll",
+      "sha256": "66858a8ca39db8f6c0a18bdf4f0d1e5db9681c62b31399445b9c578c281af3fc",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libgrey_yuv_plugin.dll",
+      "sha256": "ddbbaa58b03309c90f81e22f9b1c7ab93b48481ef8eeece7db70c064d577b750",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi420_10_p010_plugin.dll",
+      "sha256": "16665a9eddd3015c2afbe274097e6e6cb965573b11cb877c6d9811740de62392",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi420_nv12_plugin.dll",
+      "sha256": "61a4c8023d9563d47dd8c48bf244875c7e41a28fd294bc4f23f22499537f9c2a",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi420_rgb_plugin.dll",
+      "sha256": "8b0d4edf120afdad608f6ba50f025478283f707139a5af1c0aff445861e8b904",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi420_yuy2_mmx_plugin.dll",
+      "sha256": "af99fbc7a501d1efbe56bc4fa208bd2aa4fa8f07bf4ac9f8640d8174ddda3ab4",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi420_yuy2_plugin.dll",
+      "sha256": "da3d786d835ad23aa61e5534a96be450a807388ef44f41b2051c08b9356b8b21",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi420_yuy2_sse2_plugin.dll",
+      "sha256": "d9cc3216ad1a635284bd59f10fbc97048a44dc9820abdbe8f28f421bf8d96989",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi422_i420_plugin.dll",
+      "sha256": "e41a6fd20f34d6c6a9e4114e8130cc07fd3c52d5be82b2969f75373b89aede36",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi422_yuy2_mmx_plugin.dll",
+      "sha256": "9e0ea32e6eef48292438ceacfc5508a7dcf9dc6151a1fe0b46aca65a5899d93f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi422_yuy2_plugin.dll",
+      "sha256": "629cefe2d5acc8f1a0e57d654c207e7c18f48f5bc47931933be5d9024d32095a",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libi422_yuy2_sse2_plugin.dll",
+      "sha256": "d9aeb3546222fdb6b895d16e24b6705e7d68c5c9005d3d44269ef25f53296b90",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/librv32_plugin.dll",
+      "sha256": "7062cd43aee09491a22317cbca787eb899ed4ba2ddfa0d77d8d9fec0d3838d27",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libswscale_plugin.dll",
+      "sha256": "657381bb6964fe80fecbb5831cbc8882447cc1574b5729a143c7461415137937",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-time-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "user32.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libyuvp_plugin.dll",
+      "sha256": "3f0aa478fecda45439af3f67e3e14d7d672e83aca256bbef67225d15c7ebd6d6",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libyuy2_i420_plugin.dll",
+      "sha256": "d67db44745447d6829996e470545e15cf784f292f2f6edd05fdb67af4f0baeda",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_chroma/libyuy2_i422_plugin.dll",
+      "sha256": "e5a26059ee657060a5894d20e2442f183fac6f53d091ff40582b4c804906c39e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libadjust_plugin.dll",
+      "sha256": "e689d8cbf2ccc5f49dad9ef57f110bc6faf30739ccabaebf418a405e35b39a83",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libalphamask_plugin.dll",
+      "sha256": "de3fde63fb6e3a6de14636b0eee3f54d1e32d7eaba160ec5e415b74b30d25f31",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libanaglyph_plugin.dll",
+      "sha256": "71c570154ab0e42c4a8457fffcca92cecc76cb93eb329d47a8058c7252afb68f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libantiflicker_plugin.dll",
+      "sha256": "cb28d617a4065ab6046a1feb1456b10b20eb0170a58848bbc8c38a37c5eda69e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libball_plugin.dll",
+      "sha256": "0ce001d1d7adb8e66be751a7babd37ad78529115e1f9e954a435f873e2878321",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libblend_plugin.dll",
+      "sha256": "2c09805aa8e436eca30664572c28de39ed8fce46582c9668a888298af813dd26",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libblendbench_plugin.dll",
+      "sha256": "b72fa2f19ab48356b13f8accce7cbb0e5040c4191b65a7e6e853e348b117bed9",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libbluescreen_plugin.dll",
+      "sha256": "f5993d2d64ae85a8c7deb08eee3232dd276a68b8f1a3b7927082884b70d962f4",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libcanvas_plugin.dll",
+      "sha256": "8c85c8e481fc9dff4200a0f582889ecedab304d0497819f65155fca90e685baf",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libcolorthres_plugin.dll",
+      "sha256": "edb0c0f796421b5463f2adc973dc15a7cd8c93511d2fadb2528ec04ee36349f2",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libcroppadd_plugin.dll",
+      "sha256": "bd9711c4d5d97a534ded825905e9cd686a60eeb5d67662346c03f83f6d8405eb",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libedgedetection_plugin.dll",
+      "sha256": "e4eaa7c154c3aee1010bd3c3e945bf944a525edb49ab1f16d09a2e5c5ceed05b",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/liberase_plugin.dll",
+      "sha256": "7a2255e368f8dec1d4cfd62fa6748f2a27094078559a0aeb5c2fbe9dde1a1ea9",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libextract_plugin.dll",
+      "sha256": "bff80482d259df56761f84441e66d5f0e01589930e503ca99540766faf0508a4",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libfps_plugin.dll",
+      "sha256": "532d065689200e002e71ede0c09115a7dec59d65e15889bada4ec971b57a80fb",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libfreeze_plugin.dll",
+      "sha256": "7fdb73a0f615a1f4c7078c9e0a9acc00cd9f2c4106af2a7816709b59851e9f79",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libgaussianblur_plugin.dll",
+      "sha256": "b5733becf17438eaf44e8356de9a185d65ad846792aa324a16ac88a09bc43843",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libgradfun_plugin.dll",
+      "sha256": "0dd6f6eb4b037b0100b108f1f5fc614d81fd2ca44c9b9bef1b5d7facaaddfbdc",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libgradient_plugin.dll",
+      "sha256": "ea0a911ca41220d53d67befe26a15909f2584a69d0e6e3b30b0c79c049ff3cb6",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libgrain_plugin.dll",
+      "sha256": "3c07631ca4e71b4d5439e5c239ba374a9f23b0d84bd0749bbf558105fcec27f8",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libinvert_plugin.dll",
+      "sha256": "b1e7fa7cda6fd6f87202db3ba45a4375c59d174f04cc4fb14f05f20341fb25e0",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libmagnify_plugin.dll",
+      "sha256": "efbe8cbc6d46748d74fe9b8213888ed25cd6bb38a20462165d3dd348083ffe89",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libmirror_plugin.dll",
+      "sha256": "177aac843f39887656aeeaf38268b89eb43d72fa943af0b2a91d29ce1dfb0cf3",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libmotionblur_plugin.dll",
+      "sha256": "0f92a2da1473f470e3bcd07d8040ecacde323342a484549c7b52099833ad1ecf",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libmotiondetect_plugin.dll",
+      "sha256": "92e702f489e2802cb2d9d91e64af72bf12840f6d2c9124bc3128ca719dc0c6ad",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/liboldmovie_plugin.dll",
+      "sha256": "4fdc26d981f94558affb632eaa72302de736c58acfba2c9423b06442463e0102",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libposterize_plugin.dll",
+      "sha256": "95ddc38856ba5e91bc4cc7188dcacefadde4ac8a2adabfa3d5a6cbd41c0af704",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libpsychedelic_plugin.dll",
+      "sha256": "a30d1ee335c763c80139e895174b5e3d421334ffdfeed3e7fcf28faed62b92cd",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libpuzzle_plugin.dll",
+      "sha256": "2e063b0373a6c693c40f6e96ad43af2b665938094267446b931e98f76985e011",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libripple_plugin.dll",
+      "sha256": "81611b71723069e18ad474d1b92c52621c52023730a675ac1c75882a3aaa47c6",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libscale_plugin.dll",
+      "sha256": "d31ca5caa59597fc5a110884d99dc977b5ec021e3d8b057f04041203903dd51e",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libscene_plugin.dll",
+      "sha256": "b623278cfe241583de69a696657134a999cbf0c980415383ca214b0e284303fc",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libsepia_plugin.dll",
+      "sha256": "1af17dd870b6ee99cbddaae4339c41994111d437a2361160e6d10d714ed805f9",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libsharpen_plugin.dll",
+      "sha256": "b4ab104ea2dcec49d8064d12d06fab359793ce3b2f8e872e3fd77e8a0d8323be",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libtransform_plugin.dll",
+      "sha256": "e2ab1c9626e9b7c7bf44a063c975fa8282e2f7fa50beb8531e4c64b1f1741fa2",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libvhs_plugin.dll",
+      "sha256": "31c6cd55e1416e4ac5e73b92c052214226a65f1baaa2b91635f012044b7d2fbe",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_filter/libwave_plugin.dll",
+      "sha256": "447f867134668c8132c3f172e6b85c5ced2e0b994ccdcd22c9b89e35e3289647",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libdirect3d11_plugin.dll",
+      "sha256": "19670a4168d7f09b7089b18461201a2ebd6ea8e3253554398208ed40d77b848d",
+      "imports": [
+        "libvlccore.dll",
+        "advapi32.dll",
+        "ole32.dll",
+        "gdi32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "shell32.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libdirect3d9_plugin.dll",
+      "sha256": "d4490dcc8a76806b0080b08e86f3c244b7b268758e7231cb55caa7f85bf06c14",
+      "imports": [
+        "libvlccore.dll",
+        "gdi32.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "shell32.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libdirectdraw_plugin.dll",
+      "sha256": "bf87fb9ef502d1d925d991172d438363bb7782aa054751d62053f0f56612dd93",
+      "imports": [
+        "libvlccore.dll",
+        "user32.dll",
+        "gdi32.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "shell32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libdrawable_plugin.dll",
+      "sha256": "8ae617b4cba28e4b34601d2c54d8068b889b7b6a4fdcd793dd593f11db05ad6c",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libflaschen_plugin.dll",
+      "sha256": "2c6df96b5fecb33b7875cdc92b5aa4cf222014749ec4c2c8b2dde0722a2bdc8a",
+      "imports": [
+        "libvlccore.dll",
+        "ws2_32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libvdummy_plugin.dll",
+      "sha256": "db46bf3038da8de74905713a04dc93895db6b44751750d73501913551e0c18e8",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libvmem_plugin.dll",
+      "sha256": "e1dd32aa351ebab6cdb86b99453126647cfde02401321de3849e837889ffe7f5",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libwingdi_plugin.dll",
+      "sha256": "d429df50c76d3cd3a013a585de9393d99bfb92f5b8c0c3e04915881e96a68bc4",
+      "imports": [
+        "libvlccore.dll",
+        "gdi32.dll",
+        "ole32.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "shell32.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-environment-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libwinhibit_plugin.dll",
+      "sha256": "fff4a735fe4e035d23e9caf6cd2733887917233e1b0d87fbcb5f7c8cd6abbf22",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_output/libyuv_plugin.dll",
+      "sha256": "9d4ab60f3eb022e7f5e97a5d219634cce40bfb1b19bbca2f69ea4157f216f86d",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-filesystem-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_splitter/libclone_plugin.dll",
+      "sha256": "a34a162f4a08c7f4c5943965ff835cb35637af4dda5ebfdde9210352b332f44f",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_splitter/libpanoramix_plugin.dll",
+      "sha256": "2ff4f8d72eb6e0ab09a76ae63f551397225561a150538c7e3b38eb7d8ba87300",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-math-l1-1-0.dll",
+        "user32.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    },
+    {
+      "path": "plugins/video_splitter/libwall_plugin.dll",
+      "sha256": "6b3316c5db6e6f8ccc6a64c1c9584338a0624124b5e1eb460b2aee318754b454",
+      "imports": [
+        "libvlccore.dll",
+        "api-ms-win-core-synch-l1-2-0.dll",
+        "api-ms-win-crt-runtime-l1-1-0.dll",
+        "api-ms-win-crt-convert-l1-1-0.dll",
+        "api-ms-win-crt-heap-l1-1-0.dll",
+        "api-ms-win-crt-private-l1-1-0.dll",
+        "kernel32.dll",
+        "api-ms-win-crt-stdio-l1-1-0.dll",
+        "api-ms-win-crt-string-l1-1-0.dll",
+        "api-ms-win-crt-utility-l1-1-0.dll",
+        "api-ms-win-crt-locale-l1-1-0.dll"
+      ],
+      "licenseExport": "Licensed under the terms of the GNU Lesser General Public License, version 2.1 or later."
+    }
+  ]
+}

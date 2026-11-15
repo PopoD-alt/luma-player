@@ -266,6 +266,59 @@
         "applicationSourceDelivery": "Library source includes a component-review application reference. Every future APK distribution must also provide the matching application source/object inputs for merged-DEX Java-wrapper relinking.",
         "intendedNextStep": "Registry-backed private owner-review build; not authorization to publish an app binary."
       }
+    },
+    "windows-lgpl-x64-3.0.24-r1": {
+      "platform": "win-x64",
+      "reviewTarget": "Windows 11 x64; native CI on Windows Server 2025",
+      "kind": "tar",
+      "archivePrefix": "",
+      "noticesIncluded": true,
+      "declaredLicense": "LGPL-2.1-or-later core/modules with individually licensed permissive dependencies",
+      "libraryVersion": "3.0.24 Vetinari",
+      "libraryChangeset": "Luma-LGPL-Windows-6de05adcba-r1",
+      "runtimeEntry": "libvlc.dll",
+      "runtimeSha256": "db96cae6326f03d75ef24e4b6751ba3494f9660df992958cc52647bf5bd0769d",
+      "runtimeInventorySha256": "158a8d07f9a905d7b4fd3647d5a5c97aa356e7ce9654e7a3ff8fc41f9634b6a8",
+      "artifact": {
+        "filename": "windows-lgpl-x64-3.0.24-r1-runtime.tar",
+        "sha256": "e24175f0689c890ac8bc95980cce41a75d6f5bc2f7de025b758b53b4f8906a37",
+        "bytes": 180326400,
+        "localBuildOnly": true,
+        "maximumBytes": 536870912
+      },
+      "correspondingSource": {
+        "path": "Sources/CorrespondingSource.tar",
+        "sha256": "e91fb216496cd8e7c90b3ddef9efd386c05817aed9203801538fcf038049a689",
+        "bytes": 124190720
+      },
+      "sources": [
+        {
+          "filename": "vlc-6de05adcba-research.tar.gz",
+          "url": "https://codeload.github.com/videolan/vlc/tar.gz/6de05adcba",
+          "sha256": "48e0bf127711d829bcd49d35195b5e1b590f93d1bdd4263266dc4fd367641106",
+          "bytes": 34446815,
+          "maximumBytes": 268435456
+        }
+      ],
+      "evidence": [
+        "Actual Linux source build and native Windows app smoke both passed workflow 43762909502 at 1f554373cd0b6d106a39d236cd463a3d9d1de096; exact canonical getter and source hash matched.",
+        "Independent exact transport ZIP CRC/path/hash,354-file inventory, 235 retained/61 excluded plugin selection,237 x64 PE import/license checks,1006 VLC and 2352 FFmpeg source/header files; no selected GPL header candidates. Known generated files are recorded separately.",
+        "All 24 contributed source archives independently match 25 selected recipe packages and exact upstream SHA512, with 73 verbatim notices + 3 FreeType/IJG supplements and acknowledgements; 13 build/audit helpers exactly match CI Git source.",
+        "Core image framework/PNG source closure enabled while all 275 FFmpeg encoder components remain disabled; access_output/mux/stream_out/record modules excluded. All actual BuildInputs hashes and the recorded single-line libtool patch replay verified.",
+        "Actual custom Windows playback passed AVC/HEVC Main10 AAC5.1, direct HEVC Main10 Matroska, native PNG snapshots, seek/rate/pause/fullscreen, captions, lifecycle and sharing/power-request checks; physical audibility remains unverified with 0 active render endpoints.",
+        "Explicit absolute LUMA_LIBVLC_PATH selected the relocated custom runtime before app-local pins; actual native playback and relative matching core/plugin discovery passed. No separate stock VLC installation was selected.",
+        "See windows-custom-independent-audit.json and windows-custom-playback-evidence.json; canonical uncompressed PAX archive preserves every component/source/notice byte and excludes only the original development manifest."
+      ],
+      "audit": {
+        "status": "approved-for-redistribution",
+        "moduleLicensesReviewed": true,
+        "dependencyLicensesReviewed": true,
+        "completeCorrespondingSources": true,
+        "replacementMechanismVerified": true,
+        "blockers": [],
+        "approvalScope": "Technical approval of this exact library component for a private owner-review app; no public EXE/installer/update publication, physical-device matrix, patent or legal clearance claimed.",
+        "intendedNextStep": "Centrally prepare the exact component and build/native-test the pinned app-local owner-review folder. This component record does not authorize production packaging or publication."
+      }
     }
   },
   "externalTestOnly": {

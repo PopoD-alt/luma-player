@@ -1,4 +1,6 @@
-# Rebuilding the curated macOS arm64 component
+# Rebuilding curated libVLC components
+
+## macOS arm64
 
 This is a technical reproduction recipe, not legal or patent clearance. The
 stock VLCKit framework is not the curated runtime. Do not copy its static binary
@@ -74,3 +76,92 @@ User replacements are permitted: the app loader accepts an explicit absolute
 gate must not be applied to a user's replacement runtime. On macOS, modified app
 bundles may need local ad-hoc re-signing; this does not grant rights beyond the
 app's license and the applicable third-party licenses.
+
+## Windows x64
+
+The Windows component is built from VLC commit
+`6de05adcbaf2e8b85fe86aad4169393098628119` in the pinned Linux amd64
+VideoLAN build image. The helper downloads a hash-pinned LLVM-MinGW toolchain,
+verifies the exact VLC archive and contributed-source recipe checksums, builds
+the DLLs, audits their source/module/import selection and stages the curated
+component. It does not build a Luma application, approve the resulting bytes or
+publish anything.
+
+From a Luma checkout, with Docker available:
+
+```sh
+docker run --rm --platform linux/amd64 \
+  -v "$PWD:/luma" -w /luma \
+  registry.videolan.org/vlc-debian-llvm-ucrt@sha256:a0f9255792ee12da494efebdd203e8d11d769b7d938d5191920f76754d29f6e1 \
+  bash Scripts/prepare-libvlc-windows.sh \
+    /luma/ThirdParty/work/windows-lgpl-rebuild \
+    /luma/ThirdParty/work/windows-lgpl-rebuild-output
+```
+
+Use new absolute, space-free work/output paths. The helper preserves toolchain
+and configuration evidence, including the narrow upstream-equivalent libtool
+macro correction that retains Clang's compiler-runtime archive in C++ DLL
+links. Large-stack C/C++ direct and libtool link probes run before media
+dependencies are built. These probes do not execute Windows code.
+
+The contributed-library build keeps `--disable-gpl --disable-gnuv3
+--disable-sout`; all FFmpeg encoder components must remain disabled. The VLC
+core separately enables its upstream image-encoder framework so PNG snapshots
+work. That framework and `modules/codec/png.c` have LGPL2.1+ grants. The audit
+records the actual core/FFmpeg configuration and requires the PNG source
+closure. Curated output excludes `access_output`, `mux`, `stream_out` and the
+internal stream-recording module, in addition to every GPL-restricted or
+unclassified module. This does not add a Luma transcoder or streaming-output UI.
+Luma's own HTTP playlist server serves original files and does not need those
+libVLC output modules.
+
+The staged component carries `Sources/CorrespondingSource.tar`, complete
+source/notices inventories, upstream acknowledgements and `Audit/BuildInputs`.
+The source archive contains the exact VLC archive, all contributed-library
+source archives and original patches/recipes, matching build/audit helpers,
+configuration snapshots and the recorded local build-tool correction. Starting
+with that source archive, extract it into an empty directory and use the same
+container command above. Its helpers are sufficient for a component build;
+building the Luma interface additionally requires the matching application
+source checkout and the Windows/.NET build described in `Windows/README.md`.
+
+To reuse the supplied source archives rather than download them again, seed
+the new work directory before running the builder: copy `upstream/vlc-6de05adcba-research.tar.gz`
+into its `downloads/`, unpack that verified archive at the work directory root
+(beside `downloads/`), and write its SHA256 alone to `source-input.sha256` at
+that root. Copy the supplied `contrib/` archives to
+`vlc-6de05adcba/contrib/tarballs/` within that work directory. The helper still
+verifies the pinned VLC hash and every selected contributed-source checksum.
+Build tools and the pinned compiler may require network access.
+
+Source rebuilds are not claimed to produce identical native bytes. A rebuilt
+component remains development-only until its complete inventory, source and
+license profile, native Windows playback/snapshots and replacement route have
+been independently reviewed. Never copy the unfiltered install tree into an
+app or reuse an older runtime's approval for different bytes. Physical speaker
+output, every Windows/device version and universal media compatibility are
+separate from these checks.
+
+For an exact inventoried CI component, the transport archive can be recreated
+without rebuilding or altering any DLL, notice or embedded source byte:
+
+```sh
+python3 Scripts/prepare-libvlc-windows-archive.py \
+  --component /absolute/path/to/raw-ci-component \
+  --output /absolute/new/path/windows-lgpl-x64-3.0.24-r1-runtime.tar
+```
+
+The helper verifies the original development manifest and rejects changed,
+missing, extra, linked or case-colliding files. It emits sorted regular-file
+PAX entries with fixed permissions, zero timestamps/IDs and no host names,
+excluding only that original root manifest. This creates transport bytes, not
+approval. Only the central `prepare-libvlc.py` gate can prepare a distributable
+stage using an independently reviewed registry record and the exact archive,
+inventory and source hashes.
+
+Windows user replacements remain separate from that packaging gate. Set
+`LUMA_LIBVLC_PATH` to the absolute path of a compatible x64 `libvlc.dll`, with
+its matching `libvlccore.dll` and `plugins/` alongside it. The application checks
+the libVLC 3 ABI and loads that explicit user selection before its pinned
+app-local runtime. It does not apply the publisher's component hash to a user's
+replacement. Modified libraries retain their own applicable license obligations.

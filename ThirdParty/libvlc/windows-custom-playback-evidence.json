@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "package": "windows-lgpl-x64-3.0.24-r1",
+  "workflowRun": "https://github.com/PopoD-alt/luma-player/actions/runs/43762909502",
+  "buildCommit": "1f554373cd0b6d106a39d236cd463a3d9d1de096",
+  "componentJob": 132961482169,
+  "nativeWindowsJob": 132964791810,
+  "bothJobs": "success",
+  "transport": {
+    "artifactID": 14181109837,
+    "bytes": 180228349,
+    "sha256": "26146f07736c07dcf30ffb44deaf7d66583dadeaef7710936eec63a863a0056a",
+    "zipCRCPathAndExactManifest": "independently-passed"
+  },
+  "nativeEvidenceTransport": {
+    "artifactID": 14181313300,
+    "bytes": 10202475,
+    "sha256": "511972ac3daa024c0ecffc91cc6c096cb9d7e10a0a2dd32218552128394a8292",
+    "zipCRCAndPaths": "independently-passed"
+  },
+  "canonicalArchive": {
+    "filename": "windows-lgpl-x64-3.0.24-r1-runtime.tar",
+    "bytes": 180326400,
+    "sha256": "e24175f0689c890ac8bc95980cce41a75d6f5bc2f7de025b758b53b4f8906a37",
+    "recipeHelper": "Scripts/prepare-libvlc-windows-archive.py",
+    "recipeHelperSha256": "49c30ea61e393fd1791dc4c92f398b256c979c44cf5caeb12755cf0229ba7ac1",
+    "regularFiles": 354,
+    "allMembersHashAndMetadataVerified": true
+  },
+  "source": {
+    "sha256": "e91fb216496cd8e7c90b3ddef9efd386c05817aed9203801538fcf038049a689",
+    "bytes": 124190720
+  },
+  "sourceRecipePackages": 25,
+  "sourceArchives": 24,
+  "sourceArchivesSHA512": "independently-matched-to-exact-upstream-recipes",
+  "noticeFiles": 73,
+  "supplementalNoticeFiles": 3,
+  "imageEncodingProfile": {
+    "coreImageEncoderFrameworkEnabled": true,
+    "ffmpegEncodersEnabled": false,
+    "ffmpegEncoderComponentCount": 275,
+    "enabledFfmpegEncoderComponents": [],
+    "requiredImageModule": "codec/libpng_plugin.dll",
+    "excludedModuleCategories": [
+      "access_output",
+      "mux",
+      "stream_out"
+    ],
+    "excludedRecordingModule": "stream_filter/librecord_plugin.dll",
+    "scope": "Retain the upstream PNG snapshot path; no Luma transcoder or streaming-output feature. Actual module/source/import and native snapshot checks remain required.",
+    "configurationHashes": {
+      "vlcConfiguration": "3062186e37792d24f2448e412e1a1853f6c7a928590962dafa4639f5758bc98a",
+      "ffmpegConfiguration": "a4854213217f829f9347cc708238a6b25e2afca4854ceee86db0e3a836e2fdda",
+      "ffmpegComponents": "6b6c67e9b9c05e3dab2c6f3cd66041476022e3f0a7cea96c025dc3166c2ecf2f"
+    }
+  },
+  "nativeChecks": {
+    "libvlcPlayback": "passed",
+    "hevc10Aac51": "passed",
+    "hevc10Matroska": "passed",
+    "subtitleSelection": "passed",
+    "lifecycleRecovery": "passed",
+    "sharingUi": "passed",
+    "runtimeVersion": "3.0.24 Vetinari",
+    "runtimeChangeset": "Luma-LGPL-Windows-6de05adcba-r1",
+    "runtimeBundled": false,
+    "dnsSdRegistration": "Starting Bonjour discovery\u2026",
+    "idleSleepPrevention": "system-required-handle-created-and-released",
+    "physicalAudio": "unverified-no-active-render-endpoint",
+    "activeAudioRenderEndpoints": 0
+  },
+  "nativeSnapshots": [
+    {
+      "path": "libvlc-avc-frame.png",
+      "width": 960,
+      "height": 540,
+      "distinctRGBColors": 7605,
+      "distinctChannelValues": 255,
+      "crcAndDecodedContentVerified": true,
+      "sha256": "7409926420348123aa954c231651651a1814ea644ca64cae37ac6b20872e4455"
+    },
+    {
+      "path": "libvlc-hevc10-frame.png",
+      "width": 1920,
+      "height": 804,
+      "distinctRGBColors": 221,
+      "distinctChannelValues": 221,
+      "crcAndDecodedContentVerified": true,
+      "sha256": "c8f6db54f3115339237c7ab7ebefa3d5d398e3522883acc5247a7000f5360c6d"
+    }
+  ],
+  "replacementMechanism": {
+    "explicitUserOverrideBeforeBundlePins": true,
+    "actualWindowsOverridePlayback": "passed",
+    "actualRelocatedRoot": "CI artifact copied from the Linux build output into a new native Windows work directory; selected with LUMA_LIBVLC_PATH",
+    "pinnedAppLocalRoute": "requires separate owner-review app build/native workflow",
+    "scope": "Compatible dynamic libvlc.dll/libvlccore.dll/plugins replacement route; no claim that arbitrary incompatible modified binaries work."
+  },
+  "approvalScope": "Technical review of this exact library component for a private owner-review app. No public installer/release, physical speaker audibility, physical Wi-Fi discovery, universal format/device coverage, patent or legal clearance."
+}
