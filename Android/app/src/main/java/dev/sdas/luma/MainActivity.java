@@ -67,13 +67,14 @@ public final class MainActivity extends Activity {
     private LanApi api=new LanApi();private LanApi.Session session;private LanEndpoint selectedEndpoint;private Network selectedNetwork;
     private Discovery discovery;private LibVLC engine;private MediaPlayer player;private StreamRelay relay;
     private FrameLayout root,home,playback,videoContainer;private VLCVideoLayout video;
-    private LinearLayout desktopRows,homeContent,playerControls;private TextView status,playlistTitle,playlistInfo,playerTitle,playerStatus,clock;
+    private LinearLayout desktopRows,homeContent,playerControls,playerHeader;private TextView status,playlistTitle,playlistInfo,playerTitle,playerStatus,clock;
+    private View videoTapTarget;private boolean chromeVisible=true;private Button fullButton;
     private EditText manual;private Button connect,playButton;private ListView list;private SeekBar seek,volume;private AlertDialog pairDialog;
     private boolean foreground,polling,connecting,dragging,full,wasPlaying,autoResumeApplied,destroyed;
     private int generation,mediaGeneration;private long initialResume;private LanApi.Item current;private String lastError;
     private boolean permissionAsked;
     private final java.util.Set<String> softwareItems=new java.util.HashSet<>();
-    private boolean softwarePlayback,videoWasDisplayed,hadVideoTracks,videoOutputWasCreated;private int videoOutputs;private long nativeStartedAt;
+    private boolean softwarePlayback,videoWasDisplayed,hadVideoTracks,videoOutputWasCreated,userPaused,debugSkipSurfaceOnce;private int videoOutputs;private long nativeStartedAt;
     private Media.Stats lastStats;private SeekBar.OnSeekBarChangeListener seekListener;
     private final Runnable pulse=new Runnable(){public void run(){if(!foreground||destroyed)return;updatePlayer();main.postDelayed(this,500);}};
     private final Runnable poll=new Runnable(){public void run(){if(!foreground||destroyed)return;refresh(false);main.postDelayed(this,5000);}};
@@ -83,7 +84,7 @@ public final class MainActivity extends Activity {
         root=new FrameLayout(this);root.setBackgroundColor(BG);setContentView(root);
         root.setOnApplyWindowInsetsListener((view,insets)->{view.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets;});
         buildHome();buildPlayer();
-        if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,()->{if(current!=null)leavePlayer();else finish();});
+        if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::navigateBack);
         discovery=new Discovery(this,main,new Discovery.Listener(){
             public void found(Discovery.Desktop desktop){desktops.put(desktop.name,desktop);renderDesktops();}
             public void lost(String name){desktops.remove(name);renderDesktops();}
@@ -120,8 +121,9 @@ public final class MainActivity extends Activity {
         playback=new FrameLayout(this);playback.setBackgroundColor(Color.BLACK);root.addView(playback,new FrameLayout.LayoutParams(-1,-1));playback.setVisibility(View.GONE);
         videoContainer=new FrameLayout(this);playback.addView(videoContainer,new FrameLayout.LayoutParams(-1,-1));
         video=new VLCVideoLayout(this);videoContainer.addView(video,new FrameLayout.LayoutParams(-1,-1));
-        LinearLayout top=row();top.setPadding(dp(12),dp(12),dp(12),dp(12));top.setBackgroundColor(0xc010131b);
-        Button back=button("‹  Playlist",this::leavePlayer,false);back.setId(R.id.player_back);top.addView(back);playerTitle=text("",16,TEXT);playerTitle.setSingleLine();playerTitle.setEllipsize(TextUtils.TruncateAt.END);top.addView(playerTitle,new LinearLayout.LayoutParams(0,-2,1));top.addView(button("Full screen",()->setFull(!full),false));
+        videoTapTarget=new View(this);videoTapTarget.setBackgroundColor(Color.TRANSPARENT);videoTapTarget.setOnClickListener(v->{if(full)setChromeVisible(!chromeVisible);});videoContainer.addView(videoTapTarget,new FrameLayout.LayoutParams(-1,-1));
+        LinearLayout top=row();playerHeader=top;top.setPadding(dp(12),dp(12),dp(12),dp(12));top.setBackgroundColor(0xc010131b);
+        Button back=button("‹  Playlist",this::leavePlayer,false);back.setId(R.id.player_back);top.addView(back);playerTitle=text("",16,TEXT);playerTitle.setSingleLine();playerTitle.setEllipsize(TextUtils.TruncateAt.END);top.addView(playerTitle,new LinearLayout.LayoutParams(0,-2,1));fullButton=button("Full screen",()->setFull(!full),false);top.addView(fullButton);
         FrameLayout.LayoutParams topParams=new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);playback.addView(top,topParams);
         playerControls=column();playerControls.setPadding(dp(14),dp(10),dp(14),dp(16));playerControls.setBackgroundColor(0xe610131b);
         playerStatus=text("Opening stream…",12,MUTED);playerStatus.setId(R.id.player_status);playerControls.addView(playerStatus);
@@ -174,7 +176,7 @@ public final class MainActivity extends Activity {
         });}catch(Exception error){main.post(()->{if(stale(version))return;polling=false;status.setText(safe(error));if(error instanceof LanApi.ApiException&&((LanApi.ApiException)error).status==401){disconnect(false);status.setText("Sharing restarted or pairing expired. Connect again to pair.");}});}});
     }
     private void startMedia(LanApi.Item item){
-        if(session==null){status.setText("Pair again before streaming.");return;}stopPlayback();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;videoOutputs=0;nativeStartedAt=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if(session==null){status.setText("Pair again before streaming.");return;}stopPlayback();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try{
             if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList("--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
             int version=generation,clip=mediaGeneration;LanApi.Session active=session;
@@ -182,10 +184,10 @@ public final class MainActivity extends Activity {
             player=new MediaPlayer(engine);MediaPlayer activePlayer=player;player.setVolume(volume.getProgress());
             player.setEventListener(event->main.post(()->{
                 if(destroyed||player!=activePlayer||current!=item)return;
-                if(event.type==MediaPlayer.Event.Playing){nativeStartedAt=android.os.SystemClock.uptimeMillis();hadVideoTracks|=activePlayer.getVideoTracksCount()>0;applyResume();playerStatus.setText((softwarePlayback?"Software playback · ":"Streaming · ")+active.host.name);playButton.setText("Pause");logPlayback("playing");}
+                if(event.type==MediaPlayer.Event.Playing){if(userPaused){activePlayer.pause();playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");return;}nativeStartedAt=android.os.SystemClock.uptimeMillis();hadVideoTracks|=activePlayer.getVideoTracksCount()>0;applyResume();playerStatus.setText((softwarePlayback?"Software playback · ":"Streaming · ")+active.host.name);playButton.setText("Pause");logPlayback("playing");}
                 else if(event.type==MediaPlayer.Event.Vout){videoOutputs=event.getVoutCount();videoOutputWasCreated|=videoOutputs>0;logPlayback("video-output");}
-                else if(event.type==MediaPlayer.Event.Paused)playButton.setText("Play");
-                else if(event.type==MediaPlayer.Event.Buffering&&event.getBuffering()<100)playerStatus.setText("Buffering "+Math.round(event.getBuffering())+"% · keep the desktop awake");
+                else if(event.type==MediaPlayer.Event.Paused){if(!activePlayer.isPlaying()){playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");}}
+                else if(event.type==MediaPlayer.Event.Buffering&&!userPaused&&lastError==null&&event.getBuffering()<100)playerStatus.setText("Buffering "+Math.round(event.getBuffering())+"% · keep the desktop awake");
                 else if(event.type==MediaPlayer.Event.EncounteredError){if(retrySoftware())return;lastError=lastError==null?"Could not play this stream. Check that the desktop is awake and sharing, then retry.":lastError;playerStatus.setText(lastError);playButton.setText("Play");}
                 else if(event.type==MediaPlayer.Event.EndReached){lastStats=stats();if(!videoWasDisplayed&&retrySoftware())return;logPlayback("ended");playerStatus.setText("Finished · choose another item from your playlist");playButton.setText("Play");}
             }));
@@ -200,7 +202,7 @@ public final class MainActivity extends Activity {
                 lastError="The video view could not become ready. Return to the playlist and retry.";playerStatus.setText(lastError);logPlayback("surface-timeout");stopPlayback();return;
             }
             try{
-                activePlayer.attachViews(video,null,true,false);
+                if(BuildConfig.DEBUG&&debugSkipSurfaceOnce&&!softwarePlayback){debugSkipSurfaceOnce=false;logPlayback("test-missing-native-output");}else activePlayer.attachViews(video,null,true,false);
                 Media media=new Media(engine,Uri.parse(localUrl));media.setHWDecoderEnabled(!softwarePlayback,false);
                 media.addOption(":network-caching=1200");media.addOption(":http-reconnect");activePlayer.setMedia(media);media.release();
                 logPlayback("surface-ready");activePlayer.play();
@@ -226,7 +228,7 @@ public final class MainActivity extends Activity {
     }
     private void applyResume(){if(player!=null&&!autoResumeApplied&&(initialResume<=0||player.isSeekable()&&player.getLength()>0)){autoResumeApplied=true;if(initialResume>0)player.setTime(Math.min(initialResume,Math.max(0,player.getLength()-1000)),false);}}
     private Media.Stats stats(){if(player==null)return lastStats;IMedia media=player.getMedia();if(media==null)return lastStats;try{Media.Stats value=media.getStats();if(value!=null&&(value.decodedVideo>0||value.decodedAudio>0)){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}return lastStats==null?value:lastStats;}finally{media.release();}}
-    private void togglePlay(){if(player==null){if(current!=null)startMedia(current);return;}if(player.isPlaying())player.pause();else if(lastError!=null)startMedia(current);else player.play();}
+    private void togglePlay(){if(player==null){if(current!=null)startMedia(current);return;}if(player.isPlaying()){userPaused=true;playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");player.pause();}else if(lastError!=null)startMedia(current);else{userPaused=false;playButton.setText("Pause");playerStatus.setText("Resuming stream…");player.play();}}
     private void jump(long amount){if(player!=null&&player.isSeekable())player.setTime(Math.max(0,Math.min(player.getLength(),player.getTime()+amount)),false);}
     private void stopPlayback(){
         mediaGeneration++;
@@ -236,7 +238,8 @@ public final class MainActivity extends Activity {
     }
     private static Media.Stats statsOf(MediaPlayer player){IMedia media=player.getMedia();if(media==null)return null;try{return media.getStats();}finally{media.release();}}
     private void leavePlayer(){updatePlayer();stopPlayback();current=null;playback.setVisibility(View.GONE);home.setVisibility(View.VISIBLE);setFull(false);}
-    private void setFull(boolean value){full=value;if(Build.VERSION.SDK_INT>=30){WindowInsetsController controller=getWindow().getInsetsController();if(controller!=null){if(value){controller.hide(WindowInsets.Type.systemBars());controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);}else controller.show(WindowInsets.Type.systemBars());}}else getWindow().getDecorView().setSystemUiVisibility(value?View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY:0);setRequestedOrientation(value?ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);}
+    private void setChromeVisible(boolean value){chromeVisible=value;playerHeader.setVisibility(value?View.VISIBLE:View.GONE);playerControls.setVisibility(value?View.VISIBLE:View.GONE);videoTapTarget.setContentDescription(value?"Hide playback controls":"Show playback controls");videoTapTarget.setImportantForAccessibility(full?View.IMPORTANT_FOR_ACCESSIBILITY_YES:View.IMPORTANT_FOR_ACCESSIBILITY_NO);}
+    private void setFull(boolean value){full=value;fullButton.setText(value?"Exit full screen":"Full screen");setChromeVisible(!value);if(Build.VERSION.SDK_INT>=30){WindowInsetsController controller=getWindow().getInsetsController();if(controller!=null){if(value){controller.hide(WindowInsets.Type.systemBars());controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);}else controller.show(WindowInsets.Type.systemBars());}}else getWindow().getDecorView().setSystemUiVisibility(value?View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY:0);setRequestedOrientation(value?ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);}
     private void disconnect(boolean clearUrl){generation++;polling=false;connecting=false;session=null;localResume.clear();softwareItems.clear();items=Collections.emptyList();if(playlistInfo!=null)playlistInfo.setText("Pair with a desktop to see its current playlist.");if(list!=null)((BaseAdapter)list.getAdapter()).notifyDataSetChanged();if(pairDialog!=null){pairDialog.dismiss();pairDialog=null;}if(current!=null)leavePlayer();if(clearUrl)getPreferences(MODE_PRIVATE).edit().remove("desktopUrl").apply();}
     private void execute(Runnable action){try{work.execute(action);}catch(java.util.concurrent.RejectedExecutionException error){status.setText("Please wait for the current desktop request to finish.");polling=false;connecting=false;connect.setEnabled(true);}}
     private boolean stale(int version){return destroyed||version!=generation;}
@@ -251,8 +254,9 @@ public final class MainActivity extends Activity {
     @Override public void onConfigurationChanged(Configuration config){super.onConfigurationChanged(config);MediaPlayer active=player;if(active!=null)main.post(()->{if(player==active)active.updateVideoSurfaces();});}
     // Modern back gestures use the native API33 dispatcher registered in onCreate.
     @SuppressLint("GestureBackNavigation")
-    @Override public void onBackPressed(){if(current!=null)leavePlayer();else super.onBackPressed();}
-    private void about(){new AlertDialog.Builder(this).setTitle("Luma · by sdas").setMessage("Free Android preview. Stream only from your trusted local desktop. No cloud relay, analytics, or saved media download.\n\nPlayback: official VideoLAN libVLC3.7.7. Third-party terms apply. Redistribution is pending the repository's component/source audit.\n\n"+(engine==null?"Engine starts when you play.":"libVLC "+LibVLC.version()+"\n"+LibVLC.changeset())).setPositiveButton("Done",null).setNeutralButton("Disconnect",(d,w)->{disconnect(true);status.setText("Disconnected. Pair again to stream.");}).setNegativeButton("Network settings",(d,w)->startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName())))).show();}
+    @Override public void onBackPressed(){navigateBack();}
+    private void navigateBack(){if(full)setFull(false);else if(current!=null)leavePlayer();else finish();}
+    private void about(){new AlertDialog.Builder(this).setTitle("Luma · by sdas").setMessage("Free Android preview. Stream only from your trusted local desktop. No cloud relay, analytics, or saved media download.\n\nPlayback: "+(BuildConfig.LUMA_CUSTOM_RUNTIME?"locally built libVLC with filtered Android3.7.7 bindings":"official VideoLAN Android3.7.7 bindings")+". Third-party terms apply. Redistribution is pending the repository's component/source audit.\n\n"+(engine==null?"Engine starts when you play.":"libVLC "+LibVLC.version()+"\n"+LibVLC.changeset())).setPositiveButton("Done",null).setNeutralButton("Disconnect",(d,w)->{disconnect(true);status.setText("Disconnected. Pair again to stream.");}).setNegativeButton("Network settings",(d,w)->startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName())))).show();}
     private static String safe(Exception error){return error instanceof LanApi.ApiException?error.getMessage():"Could not connect. Check the local address and keep desktop sharing enabled.";}
     private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
     private TextView text(String value,int size,int color){TextView v=new TextView(this);v.setText(value);v.setTextSize(size);v.setTextColor(color);return v;}
@@ -282,11 +286,20 @@ public final class MainActivity extends Activity {
     public void debugSeek(long milliseconds){if(!BuildConfig.DEBUG||player==null||player.getLength()<=0)throw new IllegalStateException();seekListener.onStartTrackingTouch(seek);seek.setProgress((int)Math.min(1000,milliseconds*1000/player.getLength()));seekListener.onStopTrackingTouch(seek);}
     public Media.Stats debugStats(){return BuildConfig.DEBUG?stats():null;}
     public String debugEngineVersion(){return engine==null?"not started":LibVLC.version()+" changeset="+LibVLC.changeset();}
+    public boolean debugPausedUi(){return BuildConfig.DEBUG&&!debugPlaying()&&playButton.getText().toString().equals("Play")&&playerStatus.getText().toString().equals("Paused");}
+    public void debugFailInitialOutputOnce(){if(!BuildConfig.DEBUG||player!=null)throw new IllegalStateException();debugSkipSurfaceOnce=true;}
+    public boolean debugSoftwarePlayback(){return BuildConfig.DEBUG&&softwarePlayback;}
     public String debugError(){return lastError;}
     public String debugDiagnostics(){return BuildConfig.DEBUG?playbackDiagnostics():"";}
     public void debugLeave(){if(!BuildConfig.DEBUG)throw new IllegalStateException();leavePlayer();}
     public void debugFull(boolean value){if(!BuildConfig.DEBUG)throw new IllegalStateException();setFull(value);}
     public boolean debugIsFull(){return BuildConfig.DEBUG&&full;}
+    public boolean debugChromeVisible(){return BuildConfig.DEBUG&&playerHeader.getVisibility()==View.VISIBLE&&playerControls.getVisibility()==View.VISIBLE;}
+    public void debugTapVideo(){if(!BuildConfig.DEBUG)throw new IllegalStateException();videoTapTarget.performClick();}
+    public boolean debugExitFullLabel(){return BuildConfig.DEBUG&&fullButton.getText().toString().equals("Exit full screen");}
+    public int debugPlayerIdentity(){return BuildConfig.DEBUG?System.identityHashCode(player):0;}
+    public int debugVideoViewIdentity(){return BuildConfig.DEBUG?System.identityHashCode(video):0;}
+    public int debugVideoOutputs(){return BuildConfig.DEBUG?videoOutputs:0;}
     public void debugVolume(int value){if(!BuildConfig.DEBUG)throw new IllegalStateException();volume.setProgress(value);}
     public int debugVolume(){return player==null?-1:player.getVolume();}
 }

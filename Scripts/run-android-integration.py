@@ -5,6 +5,7 @@ Only original synthetic fixtures are shared. Pairing metadata is private to a
 temporary directory; the server is stopped before this script exits. No APK or
 native runtime is published by this test harness.
 """
+import argparse
 import json
 import os
 from pathlib import Path
@@ -17,17 +18,36 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--desktop', choices=('portable', 'macos'), default='portable')
+    parser.add_argument('--exercise-video-recovery', action='store_true',
+                        help='Debug-only native output fault; require one successful software recovery.')
+    options = parser.parse_args()
     reports = ROOT / 'build/android-integration'
+    if options.desktop == 'macos':
+        reports = ROOT / 'build/android-mac-integration'
+    if options.exercise_video_recovery:
+        reports = reports.with_name(reports.name + '-recovery')
     reports.mkdir(parents=True, exist_ok=True)
-    subprocess.run(['dotnet', 'build', str(ROOT / 'Windows/Luma.Core.Tests'), '-c', 'Release'], check=True, cwd=ROOT)
-    library = ROOT / 'Windows/Luma.Core.Tests/bin/Release/net10.0/Luma.Core.Tests.dll'
+    if options.desktop == 'macos':
+        library = ROOT / 'build/tests/mac-sharing-host'
+        library.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(['xcrun', 'swiftc', '-swift-version', '5', '-target', 'arm64-apple-macos14.0',
+                        '-parse-as-library', '-module-cache-path', str(ROOT / '.cache/modules'),
+                        'Sources/SharingHTTP.swift', 'Sources/LocalSharingServer.swift', 'Tests/SharingHost.swift',
+                        '-o', str(library)], check=True, cwd=ROOT)
+        host = [str(library)]
+    else:
+        subprocess.run(['dotnet', 'build', str(ROOT / 'Windows/Luma.Core.Tests'), '-c', 'Release'], check=True, cwd=ROOT)
+        library = ROOT / 'Windows/Luma.Core.Tests/bin/Release/net10.0/Luma.Core.Tests.dll'
+        host = ['dotnet', str(library), '--sharing-test-host']
     debug = ROOT / 'Android/app/build/outputs/apk/debug/app-debug.apk'
     tests = ROOT / 'Android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk'
     if not debug.is_file() or not tests.is_file():
         raise RuntimeError('Build the development app and instrumentation APK first.')
     with tempfile.TemporaryDirectory(prefix='luma-android-pair-') as working, (reports / 'sharing-host.log').open('w') as log:
         ready = Path(working) / 'ready.json'
-        server = subprocess.Popen(['dotnet', str(library), '--sharing-test-host', str(ROOT / 'Tests/Fixtures'), str(ready)],
+        server = subprocess.Popen(host + [str(ROOT / 'Tests/Fixtures'), str(ready)],
                                   cwd=ROOT, stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT)
         try:
             deadline = time.monotonic() + 25
@@ -44,8 +64,10 @@ def main():
                        '-e', 'serverUrl', 'http://10.0.2.2:' + str(parameters['port']),
                        '-e', 'pairCode', parameters['code'],
                        '-e', 'demoId', parameters['ids']['demo'],
-                       '-e', 'hevcId', parameters['ids']['hevc10'],
-                       'dev.sdas.luma.preview.test/androidx.test.runner.AndroidJUnitRunner']
+                       '-e', 'hevcId', parameters['ids']['hevc10']]
+            if options.exercise_video_recovery:
+                command += ['-e', 'exerciseVideoRecovery', 'true']
+            command += ['dev.sdas.luma.preview.test/androidx.test.runner.AndroidJUnitRunner']
             try:
                 result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=240)
             except subprocess.TimeoutExpired as failure:
@@ -67,7 +89,7 @@ def main():
             if not shot.stdout.startswith(b'\x89PNG\r\n\x1a\n'):
                 raise RuntimeError('The in-app Android review capture is not a PNG.')
             (reports / 'Luma-Android-review.png').write_bytes(shot.stdout)
-            print('PASS: Android actual desktop pairing/list/range streaming, native AVC/HEVC decode/render, transport and no saved media download')
+            print('PASS: Android actual ' + options.desktop + ' desktop pairing/list/range streaming, native AVC/HEVC decode/render, transport and no saved media download')
             print('SCOPE: emulator/manual-address path; physical Wi-Fi discovery, phone hardware and physical sound still need device review')
         finally:
             if server.stdin:

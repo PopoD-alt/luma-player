@@ -1,5 +1,14 @@
 plugins { id 'com.android.application' }
 
+// Personal validation of a locally rebuilt component before central approval.
+// A separate output directory preserves the frozen default CI artifacts.
+def developmentAarPath = providers.gradleProperty('lumaDevelopmentAar').orNull
+def developmentAar = developmentAarPath == null ? null : file(developmentAarPath)
+if (developmentAar != null) {
+    if (!developmentAar.isFile() || !developmentAar.name.endsWith('.aar')) throw new GradleException('Build the local custom AAR before selecting lumaDevelopmentAar.')
+    layout.buildDirectory = layout.projectDirectory.dir('build-custom-native')
+}
+
 android {
     namespace = 'dev.sdas.luma'
     compileSdk = 37
@@ -10,6 +19,7 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = '0.1.0-preview'
+        buildConfigField 'boolean', 'LUMA_CUSTOM_RUNTIME', developmentAar != null ? 'true' : 'false'
         testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'
         ndk { abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64' }
     }
@@ -19,12 +29,19 @@ android {
         release { minifyEnabled = false }
     }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
-    packaging { jniLibs { useLegacyPackaging = false } }
+    packaging { jniLibs { useLegacyPackaging = false; if (developmentAar != null) keepDebugSymbols += ['**/libvlc.so', '**/libvlcjni.so', '**/libc++_shared.so'] } }
 }
 
 dependencies {
     // Official candidate is pinned for development; ThirdParty audit gates redistribution.
-    implementation 'org.videolan.android:libvlc-all:3.7.7'
+    if (developmentAar == null) implementation 'org.videolan.android:libvlc-all:3.7.7'
+    else {
+        implementation files(developmentAar)
+        // Exact transitive Java dependencies from the official binding POM.
+        implementation 'androidx.annotation:annotation:1.7.1'
+        implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+        implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.10'
+    }
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20240303'
     androidTestImplementation 'androidx.test:runner:1.7.0'
@@ -40,6 +57,7 @@ def verifyReleaseRuntimeAudit = tasks.register('verifyReleaseRuntimeAudit') {
     // Always inspect the resolved artifact, even if an earlier invocation passed.
     outputs.upToDateWhen { false }
     doLast {
+        if (developmentAar != null) throw new GradleException('Android release blocked: lumaDevelopmentAar is a personal debug/replacement test path; an approved registry-backed production component is required.')
         def document = new groovy.json.JsonSlurper().parse(registry)
         def record = document.packages['android-libvlc-all-3.7.7']
         def audit = record?.audit

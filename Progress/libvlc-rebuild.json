@@ -1,0 +1,32 @@
+{
+  "as_of": "2026-11-15T19:32:55+00:00",
+  "branch": "feature/vlc-lan-android \u00b7 native checkpoint 25e187b",
+  "platforms": [
+    {
+      "name": "Mac \u00b7 Apple Silicon",
+      "playback": "PASS: self-contained custom runtime; AVC, HEVC Main10/AAC5.1, MKV, native captions and transport. Space and fullscreen pass actual key events.",
+      "sharing": "PASS: actual Mac listener and Android app interoperability; pairing, original-file AVC/HEVC streaming, range seeking and revocation. Native Mac server checks include sparse5GiB reads.",
+      "distribution": "Custom LGPL-profile runtime technically approved; local ad-hoc app ready for owner review. No new DMG published.",
+      "evidence": "build/mac-bundled-runtime-smoke.log"
+    },
+    {
+      "name": "Windows \u00b7 x64",
+      "playback": "PASS: native Windows CI43752264480. AVC/HEVC Main10 rendering, AAC decode, captions, AVI/FLAC/ADPCM, transport, fullscreen and lifecycle/resume.",
+      "sharing": "PASS: portable real-listener suite and native sharing/pair/revoke UI; DNS-SD shutdown returned without deadlock. Physical discovery remains unverified.",
+      "distribution": "Separate installed VLC3 for development. Bundled runtime/source audit remains open; no new EXE release.",
+      "evidence": "build/windows-vlc-third-evidence/smoke.stdout.log"
+    },
+    {
+      "name": "Android \u00b7 API26+",
+      "playback": "PASS: local ARM64 emulator and fresh x64 CI43752264480. Actual AVC and HEVC Main10/AAC decode/display, seek/pause/volume/fullscreen.",
+      "sharing": "PASS: actual portable/Windows server and native Mac server; pair/list/range streaming without a saved download. One-time software recovery passes injected native-output failure. Physical Wi-Fi discovery still needs phones.",
+      "distribution": "Development APK built. Custom ARM64 native component built; final source/license/replacement audit pending. No production APK published.",
+      "evidence": "build/android-integration/instrumentation.log"
+    }
+  ],
+  "next": [
+    "Complete native runtime distribution/source/replacement audits for Windows and Android; source builds are underway.",
+    "Test physical Wi-Fi discovery, firewall behavior, speakers and A/V synchronization on real devices.",
+    "Owner reviews the apps before public packages or update-feed changes."
+  ]
+}

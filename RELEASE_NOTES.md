@@ -1,3 +1,11 @@
+# Luma Player 0.7.0 — unreleased review preview
+
+This branch adds direct libVLC playback on Mac/Windows, fixes Mac Space play/pause in normal and fullscreen views, and implements paired local playlist streaming to a new Android companion. Files stay on the desktop; the phone buffers streamed bytes without a saved media download. Sharing is opt-in, follows the live playlist and revokes access when stopped.
+
+The Mac custom runtime is bundled in the local review app. Windows uses a separately installed development runtime. Android APKs and runtime audits are still development work. Native evidence and remaining limits are in the [README](README.md), [roadmap](ROADMAP.md), and platform guides. No production package or live update feed has been published for 0.7.0. Owner review is required before packaging.
+
+---
+
 # Luma Player 0.6.1 alpha
 
 **Initial public release · by sdas · free for end users**

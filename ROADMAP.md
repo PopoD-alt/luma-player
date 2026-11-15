@@ -1,35 +1,31 @@
 # Luma Player roadmap
 
-Luma’s first public alpha is **0.6.1 for macOS 14+ on Apple Silicon**. Codec compatibility work is continuing, with original Luma implementations and verified macOS decoding routes identified separately.
+The active `feature/vlc-lan-android` branch rebuilds playback around libVLC 3 while retaining Luma's native interfaces and proprietary original code. It adds local desktop-to-Android playlist streaming. Published Mac 0.6.1 and Windows build 3 remain older versions; this preview has not replaced them.
 
-The current catalog has 46 grouped entries: 9 original implementation groups, 8 macOS routes, 6 partial groups and 23 unimplemented groups. The 29 partial/unimplemented groups are work ahead, not a count of individual codecs or a parity percentage. [CodecSupport.json](CodecSupport.json) and **Help → Format Support…** describe the current limits.
+## Current work
 
-## Codec and subtitle work
+- **Mac:** custom LGPL-profile arm64 libVLC component built from pinned source, bundled playback verified, and source/notices/replacement checks recorded. Space play/pause now passes native event tests in normal/fullscreen views. Authenticated local sharing passes actual AVC/HEVC streaming, seeking, large-file ranges and stream revocation checks.
+- **Windows:** direct libVLC playback, native audio/subtitle selection, saved library and local sharing implemented. Native runner playback has rendered AVC and HEVC Main10/AAC5.1. The fresh native Windows run passed lifecycle/resume, sharing UI, revocation and DNS-SD shutdown after its deadlock fix. A separately installed VLC 3 runtime is used for development; bundled runtime audit remains open.
+- **Android:** native pairing, discovery/manual URL, live playlist and bounded in-memory streaming relay implemented. Development APKs, unit tests and lint build locally. Native streaming passes on local ARM64 and fresh x64 CI emulators. Mac-to-Android streaming and one-time software recovery also pass a native-output fault test. The custom runtime's final source/license/replacement audit remains work in progress.
 
-- Broaden conformance testing for the new Microsoft Video 1, Microsoft ADPCM and PGS implementations, including independent real-world streams and edge cases.
-- Expand compatibility within the existing FLAC, baseline MJPEG and AVI paths. AVI audio and several palette/orientation/edge variants remain missing.
-- Extend Matroska handling while preserving every enabled supported track and A/V timing. Reordered variable-frame-rate video and other explicit limits remain open work.
-- Improve subtitle presentation beyond ASS/SSA readable text. Advanced styling/font attachments, VobSub and DVB need additional implementations.
-- Work through missing video/audio families in the catalog, including AV1, VP8/VP9, MPEG video, MPEG-4 Part 2, WMV/VC-1, DTS/TrueHD, Vorbis and other listed formats. Each route needs implementation and native playback/seek evidence before it is described as supported.
+## Before review packaging
+
+Finish native Windows and Android integration runs; verify complete corresponding source/notices delivery and replacement for each bundled runtime. Show the owner the apps before creating public production packages. No production APK/EXE/DMG or update-feed change is part of the evidence workflow.
+
+## Real-device testing
+
+Test Android phones against both desktop hosts on actual Wi-Fi, including multicast discovery, firewall prompts, client-isolated networks, host sleep/wake, large playlists and long paused streams. Verify physical audio output, surround routing, A/V synchronization and hardware decoder fallbacks. Generated fixtures and emulator counters do not cover every real file or device.
+
+## Formats
+
+Broad support now comes from selected libVLC modules rather than a promise to recreate every codec. Curated builds exclude modules outside their selected license profile. Track tested codec/profile/container combinations and report native failures clearly. Do not treat historical original-decoder catalogs, module counts or recognized extensions as a VLC parity percentage.
+
+The original Luma decoder/demux implementations remain reference work and retain their existing bounded conformance tests. There is no announced completion date for universal format support.
 
 ## Distribution and updates
 
-The macOS updater now supports quiet daily checks, idle-only new-release prompts, a persistent automatic-check preference, reminder deferral and verified DMG/ZIP downloads. The initial GitHub alpha and stable signed Mac feed are published. A Git push alone does not notify installed apps: a published signed manifest must point to the exact downloadable release artifact. Real update installation on additional target Macs remains part of release testing.
-
-Apple Developer ID signing/notarization and broader testing on target Macs remain distribution work. The initial alpha uses manual installation; the updater does not replace or execute the app automatically.
+Retain the proprietary updater and configure distinct platform feeds only after artifact review. The Mac signed feed still points to 0.6.1; Windows has no live feed, and Android publishing is not configured. Signed Windows installers, DeveloperID/notarized Mac packages, Android production signing and release automation remain distribution work. Free public download is the intended model; third-party license obligations still apply.
 
 ## Platforms
 
-**A Windows 11 x64 review preview is available.** See the [Windows download instructions](README.md#windows-preview) and the [windows-port source branch](https://github.com/PopoD-alt/luma-player/tree/windows-port). The native WPF app includes original bounded audio/video decoder ports, a persistent queue and bookmarks, SRT/WebVTT and a separate signed-update protocol. Windows CI passed original codec goldens, AVC Matroska playback, B-frame seeking, embedded readable ASS/UTF-8 captions, fullscreen and failed-file recovery. Independent native decoding verifies real AVC/B-frame/HEVC8/10 packet and pixel preservation through the new container code. Windows HEVC8/10 playback probes remain unverified after native failure, and physical audio output remains unverified because the hosted runner had no active audio render endpoint.
-
-Windows work ahead includes owner review, real-device audio/A/V synchronization, a working verified Windows HEVC path, more Matroska audio mappings and large-file/streaming support, PGS rendering and advanced ASS presentation, and missing/unverified codec families in the [Windows inventory](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/CodecSupport.json). A setup installer, signing and a live Windows update feed are separate distribution work. The current preview is an unsigned folder-based build with manual replacement, and does not establish full macOS feature or codec parity. The public macOS 0.6.1 release remains unchanged.
-
-**iOS and Android remain planned targets.** No builds or implementation progress for those platforms have been verified.
-
-Platform work requires adapting the interface, media output, storage and distribution to each operating system. Availability dates are not announced. The current macOS SwiftUI/AppKit/AVFoundation implementation should not be read as a finished portable player core.
-
-## Release criteria
-
-Support claims follow tested behavior, with decoder route and limitations visible to users. New work should retain saved queues/progress/bookmarks, preserve timing and track selection, reject unsupported variants clearly, and include meaningful generated/reference media checks.
-
-See [RELEASE_NOTES.md](RELEASE_NOTES.md) for the current alpha and [README.md](README.md) to install and use it.
+Current targets are macOS 14+ Apple Silicon, Windows 11 x64 and Android8+. iOS remains planned with no implemented or verified build. Intel Macs, Windows ARM and additional device/OS matrices require separate work.

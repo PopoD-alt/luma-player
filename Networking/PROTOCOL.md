@@ -44,3 +44,17 @@ must cancel listeners, discovery, active streams and revoke pairing tokens.
 Android refreshes the playlist while connected. Playback uses the stream URL
 and resume position, supports seeking via byte ranges, and stays on the phone;
 the desktop app and host computer must remain awake and sharing enabled.
+
+Request/header reads have short deadlines. Authenticated media writes allow up
+to 15 minutes of backpressure for a paused reader, while stop/removal still cancels
+immediately. The Mac host prevents idle system sleep while media streams are
+active; forced sleep/lid closure still interrupts them. The Windows preview
+requires the user to keep its host awake.
+
+Interop checks: `python3 Scripts/run-android-integration.py` starts the production
+portable/Windows implementation. On an Apple Silicon Mac,
+`python3 Scripts/run-android-integration.py --desktop macos` starts the production
+Mac implementation. Both share original synthetic fixtures only and keep pairing
+metadata in a temporary private file. `--exercise-video-recovery` is a debug-only
+negative test that withholds initial video output once and requires successful
+software recovery; normal playback tests keep the hardware-first path.

@@ -22,6 +22,9 @@ SOFTWARE.
 
 Scope: original Scripts/prepare-libvlc* files and original Luma build/audit
 support in ThirdParty/libvlc; Android/scripts/build-lgpl-runtime.py,
-Android/scripts/filter-native-modules.py and Android/scripts/test-native-filter.py.
+Android/scripts/filter-native-modules.py, Android/scripts/test-native-filter.py,
+and Android/scripts/prepare-native-review.py. Additional original native-library
+build, source-delivery, or replacement helpers in Android/scripts are covered
+when explicitly marked SPDX-License-Identifier: MIT and referring to this license.
 Upstream notices, source and patch files retain
 their own licenses. Luma application code and trademarks are not covered.

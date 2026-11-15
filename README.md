@@ -1,115 +1,65 @@
 # Luma Player
 
-**A free native media player for macOS, with a Windows desktop preview.** Luma combines a saved media queue, playback controls, bookmarks and subtitles in a focused desktop interface.
+**A free native media player by sdas.** This branch contains the **0.7.0 libVLC rebuild for Mac and Windows**, plus the first **Android local-streaming companion**. It is a review preview, not a new production release.
 
-**macOS public alpha: 0.6.1 · macOS 14 or later · Apple Silicon**
+[Mac source](Sources) · [Windows guide](Windows/README.md) · [Android guide](Android/README.md) · [Local sharing protocol](Networking/PROTOCOL.md) · [Roadmap](ROADMAP.md) · [Third-party components](THIRD_PARTY_NOTICES.md)
 
-**Windows compatibility preview · build 3 · Windows 11 x64 · unsigned review build**
+## Current preview
 
-[Download macOS DMG](https://github.com/PopoD-alt/luma-player/releases) · [Get the Windows preview](#windows-preview) · [Installation guide](INSTALL.md) · [Roadmap](ROADMAP.md) · [Release notes](RELEASE_NOTES.md)
+- **Mac:** macOS 14+, Apple Silicon. Native SwiftUI/AppKit interface, saved playlist, resume/bookmarks, fullscreen, audio/subtitle tracks and local sharing. The custom libVLC runtime is bundled in the local review build. Space now toggles playback in normal and video fullscreen views while leaving text input alone.
+- **Windows:** Windows 11 x64, native WPF interface. Direct libVLC playback replaces the old whole-file remux and installed-system HEVC dependency. Keep a separately installed 64-bit VLC 3 runtime available for development; no stock VLC binaries are redistributed in the current Windows review folder.
+- **Android:** Android 8/API 26 or later, native companion preview. Pair with a desktop, browse its live playlist and stream the original media. A development APK exists; a production APK/store release is not published.
 
-> Experimental software. macOS DMGs are attached to published releases. The Windows preview is available as a temporary GitHub Actions artifact. Source archives contain code; use the platform downloads below to get an app.
+The [cross-platform verification workflow](https://github.com/PopoD-alt/luma-player/actions/workflows/cross-platform-review.yml) preserves test evidence only. It does not publish APKs, EXEs, DMGs or updates. Owner review comes before packaging this rebuild.
 
-## Windows preview
+## Stream the desktop playlist to Android
 
-**[Download the Windows review artifact](https://github.com/PopoD-alt/luma-player/actions/runs/43632569709/artifacts/14128368227)** · [Successful Windows build and screenshots](https://github.com/PopoD-alt/luma-player/actions/runs/43632569709) · [Windows source and build instructions](https://github.com/PopoD-alt/luma-player/tree/windows-port/Windows)
+1. Add local videos to Luma on your Mac or Windows computer.
+2. Open **Share playlist** and choose **Start sharing**. Keep Luma open and the computer awake.
+3. Connect Android to the same trusted Wi-Fi. Open Luma and allow local-network access when requested.
+4. Choose the nearby desktop, or enter its displayed `http://IP-address:port` if discovery is unavailable. Enter the six-digit pairing code.
+5. Select a video. Playback, seeking and volume run on the phone; the original file remains on the computer.
 
-1. Download the artifact above. GitHub sign-in may be required. You can also open the successful build, scroll to **Artifacts**, and choose **Luma-windows-x64-review-db6133dbfc5621ca07ea1f33aa7343d993d5bea2**.
-2. Extract GitHub's outer ZIP, then extract **Luma-Player-windows-x64-review.zip** inside it into a normal folder.
-3. On a **Windows 11 x64 PC**, open **Luma Player.exe**. Keep the complete extracted folder together. The runtime is included; a separate .NET installation is unnecessary.
+The phone buffers streaming bytes in memory; Luma does not save a downloaded video. It refreshes the playlist every five seconds while foregrounded. Removing an item cuts off its stream. **Stop sharing** closes streams and revokes paired access. Sharing is off at desktop launch. No cloud account or router port forwarding is needed.
 
-This preview runs directly from its folder. A setup wizard, shortcuts and an uninstaller are not included yet. It is unsigned, so Windows may display an unknown-publisher warning. The artifact is retained until **November 28, 2026**; after it expires, use the [Windows build instructions](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/README.md) to build from source.
+This preview uses local HTTP on a trusted network. Wi-Fi client isolation, firewalls, VPNs or blocked multicast can prevent connection/discovery. Manual private-IP addresses are supported. Discovery across physical devices and physical speaker output still need real-device testing. Mac prevents idle system sleep while a stream is active; keep the Windows host awake yourself. Closing a laptop lid or forcing sleep interrupts playback.
 
-The Windows preview includes a saved queue, bookmarks/resume, external SRT/WebVTT and selectable embedded UTF-8/ASS/SSA readable captions, original bounded WAVE/FLAC/AIFF/AIFC/AU audio decoders, and supported video-only AVI paths. New original Matroska demux and MP4 remux code handles bounded AVC/HEVC video with selectable AAC-LC or audio off. Compressed AVC/HEVC/AAC decoding uses installed Windows media facilities. See the separate [Windows format limits](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/FORMAT_SUPPORT.md) and [48-group Windows development inventory](https://github.com/PopoD-alt/luma-player/blob/windows-port/Windows/CodecSupport.json); these groups are not an exact codec count or a VLC parity percentage.
+## Playback and format support
 
-Build 3 adds modern Windows Media Foundation playback for HEVC/multichannel AAC, effective AAC channel inspection, a validated `hev1`→`hvc1` compatibility copy for eligible MP4 files, plain MP4 text captions, and **More… → Media diagnostics…**. Original media is not modified. A compatibility copy needs temporary disk space approximately equal to the file size. Unsupported HEVC variants keep their original container tag.
+Playback uses **libVLC 3**, rather than recreating VLC's codecs. Common containers, codecs and subtitles are handled by the selected runtime and its compiled modules. Native tests have decoded and displayed synthetic H.264, raw `hev1` HEVC Main10 with AAC 5.1, and AVC/AAC Matroska on Mac and Windows. Tests separately check tracks, captions, seeking and fullscreen. Android streaming passes against the production portable/Windows and native Mac servers, including AVC/HEVC output and software recovery. [Native Windows/Android CI evidence](https://github.com/PopoD-alt/luma-player/actions/runs/43752264480) records the tested checkpoint; physical devices remain a separate check.
 
-Native Windows CI passed original codec goldens, actual modern H.264 rendered frames, native decoded video samples, **AAC-LC 48 kHz six-channel PCM** from an authored silent test clip, AVC MKV playback with audio off, B-frame seeking, captions, fullscreen, saved-queue resume and failed-file recovery. **HEVC 8/10-bit Windows playback remains unverified:** both the modern engine and direct decoder probe returned `MF_E_TOPO_CODEC_NOT_FOUND` (`0xC00D5212`) on the test machine. Luma still needs a compatible installed Windows HEVC decoder; see [Microsoft's codec FAQ](https://support.microsoft.com/en-gb/windows/apps/windowsmediaplayer/codecs-faq). The AAC test proves decoding of that silence fixture, not audible 5.1 or real-device A/V synchronization. **Physical audio remains unverified:** the runner had zero active audio endpoints.
+A plugin inventory is not proof that every VLC format/profile/device works. The curated runtime omits modules that do not meet its selected license profile. DRM, interactive disc menus, unusual profiles and physical audio/A/V synchronization are not universally verified. The older [Mac catalog](CodecSupport.json) and [Windows catalog](Windows/CodecSupport.json) document **historical original-codec experiments**, not the active libVLC backend's coverage or a current pending-codec count. Those implementations/tests remain available for reference.
 
-The original MKV remux path is limited to 512 MiB, known-size Clusters and supported AVC/HEVC + AAC-LC timelines; WebM, other Matroska audio mappings, PGS rendering and advanced ASS styling remain unfinished. Full VLC compatibility is not complete. The live Windows update feed is unconfigured, so review builds are replaced manually. Windows source is on [windows-port](https://github.com/PopoD-alt/luma-player/tree/windows-port); the macOS 0.6.1 release remains separate.
+On Mac use **Space** to play/pause, **←/→** to seek, **⌘O** to open media and **⌃⌘F** or a video double-click for fullscreen. Editable text fields still accept spaces. Windows uses **Space**, **←/→** and **F11**. Audio/subtitle menus select native tracks; external caption files and timing controls are available.
 
-## Install on macOS
+## Build the review apps
 
-1. Download the macOS DMG from the release page.
-2. Open the DMG and drag **Luma Player** into **Applications**.
-3. Open Luma, then use **Open Media**, press **⌘O**, or drop local video/audio files into the window.
+### Mac
 
-This alpha is not Apple-notarized. If macOS blocks the first launch and you trust the official download, try opening it once, then use **System Settings → Privacy & Security → Open Anyway**, where your Mac permits that per-app exception. See [INSTALL.md](INSTALL.md) and [Apple’s opening guidance](https://support.apple.com/en-us/102445). Managed Macs may restrict this option.
-
-Your queue, playback position and bookmarks are saved locally outside the app. Replacing the app preserves that data; media files are referenced rather than copied into the library.
-
-## macOS controls
-
-- **Space:** play/pause. **← / →:** jump back/forward 10 seconds.
-- **Double-click video** or **⌃⌘F:** video fullscreen. **Escape:** exit fullscreen.
-- **⌘B:** bookmark a moment. The Details panel lists saved moments.
-- Use the subtitle and audio menus to select available tracks. Add UTF-8 SRT/VTT files with **⌘⇧S**.
-- Speed, volume, subtitle timing and repeat controls are available below the video.
-- **Help → Format Support…** shows the current searchable compatibility catalog. The playback footer identifies the decoder route being used.
-
-## macOS format support
-
-Luma is an alpha with bounded format support. The file’s container, codec, profile and encoding details determine whether it plays; a recognized filename extension is not a compatibility guarantee.
-
-**Original Luma implementations** include:
-
-- PCM, G.711 A-law/μ-law, IMA ADPCM and Microsoft ADPCM in supported WAVE files. PCM 24/32-bit input is currently reduced to 16-bit output.
-- Native FLAC files with fixed/LPC predictors, Rice residuals, stereo reconstruction and checksum checks. This uses a bounded full-file decoder.
-- Uncompressed RGB, complete RLE8 keyframes and Microsoft Video 1 in supported AVI files. **These AVI paths play video only.** Microsoft Video 1 supports 8-bit indexed/16-bit RGB555 blocks and delta seeking, with dimension/palette limits.
-- Limited baseline MJPEG AVI: 8-bit sequential Huffman JPEG with explicit tables. Progressive, missing-table and interlaced-field variants remain unsupported.
-- External UTF-8 SRT/WebVTT captions, plus supported Matroska text and bounded PGS bitmap subtitle decoding/rendering.
-
-**macOS supplies compressed decoding** for compatible H.264/HEVC MP4/MOV, AAC, MP3, ALAC and supported AIFF/CAF files. Six standard ProRes MOV profiles and an H.263 MOV route have native playback/seek evidence. Machine, profile and carrier limits still apply.
-
-**Matroska compatibility is partial.** Luma’s original demuxer remuxes supported local MKV/MKA tracks to a temporary MOV before playback. Tested paths include AVC/HEVC, selectable alternate audio, AAC-LC/HE-AAC, MP3/FLAC/PCM and limited mono/stereo Opus. Compressed decoding on this route uses macOS. Reordered video requires a complete bounded constant-frame-rate timeline. Remuxing needs temporary disk space and completes before playback begins.
-
-Embedded ASS/SSA currently renders readable text; advanced fonts, styling, positioning, animation and drawings are not reproduced. PGS supports bitmap placement, palette updates, clears, selection, seeking and timing adjustment within its limits; Blu-ray disc/PES parsing and 3D/HDR extensions are unsupported. VobSub/DVB subtitles remain missing. AC-3/E-AC-3 framing is experimental; full payload playback is unverified.
-
-The [catalog](CodecSupport.json) tracks **46 format groups: 9 original implementation groups, 8 macOS routes, 6 partial groups and 23 unimplemented groups**. That leaves **29 partial or unimplemented groups** for further work. These are grouped development labels, not an exact codec count or a VLC parity percentage. AV1, VP8/VP9, MPEG-1/2, DivX/Xvid, WMV/VC-1, DTS/TrueHD and other cataloged families still need implementation or verification.
-
-Codec compatibility development is continuing. See [ROADMAP.md](ROADMAP.md) for priorities and platform plans.
-
-## macOS updates
-
-The initial alpha and its [signed update feed](Updates/manifest.json) are published. Release builds are configured with that stable HTTPS feed and the publisher’s public verification key. A Git push alone does not release an update: upload the matching DMG first, then publish its signed manifest. [RELEASING.md](RELEASING.md) describes the owner’s release steps.
-
-Configured installations check on launch when due and at most once per 24 hours while active. New-release prompts wait until playback/fullscreen are idle and no app modal dialog or sheet is open. Automatic failures and up-to-date results stay quiet. **Luma Player → Automatically Check for Updates** controls the preference; **Check for Updates…** remains available manually. **Not Now** defers automatic reminders for a day.
-
-Before revealing a downloaded DMG or legacy ZIP, Luma verifies the publisher’s Ed25519 signature, the newer numeric build, HTTPS, exact file size and SHA-256. You install the verified download manually. The updater never opens the archive, executes it or replaces the running application. A build without valid feed/key settings makes no update requests.
-
-## Platforms and licensing
-
-The public 0.6.1 release targets **Apple Silicon Macs running macOS 14+**. A separate **Windows 11 x64 preview** is available above, with source and platform-specific documentation on [windows-port](https://github.com/PopoD-alt/luma-player/tree/windows-port). iOS and Android remain planned targets in the [cross-platform roadmap](ROADMAP.md#platforms); no builds for those platforms are available.
-
-Luma is made by **sdas** and is free for end users. Published source is available for inspection under the proprietary [LICENSE](LICENSE); making the source visible does not grant broad reuse, modification or redistribution rights. Apple frameworks retain their own terms. Luma does not bundle or require VLC, FFmpeg or Sparkle implementations.
-
-## Build and test on macOS
-
-Developers need macOS 14+, Apple Silicon and Apple’s Swift command-line tools. No third-party package download is required.
+Use Apple Silicon, macOS 14+ and Swift command-line tools. The approved custom runtime is built from pinned source; large native/source artifacts are not committed to git.
 
 ```sh
+python3 Scripts/prepare-libvlc.py status
+# Build/stage the custom component as described in ThirdParty/libvlc/REBUILD.md.
 bash build.sh
 ```
 
-This creates an ad-hoc signed app in `build/Luma Player.app`; it does not publish a release or create a production-notarized DMG.
+The local result is `build/Luma Player.app`, ad-hoc signed for review. With the approved runtime staged, `build.sh` bundles and verifies it automatically. An existing local VLC 3 installation can be used for personal development when no runtime is bundled; `LUMA_LIBVLC_PATH` selects an explicit matching library. This is not a notarized production app.
 
-Representative checks:
+Useful native checks: `bash test-vlc-bundle.sh`, `bash test-vlc.sh`, `bash test-sharing.sh`, `bash test-fullscreen.sh`. Runtime/release gates: `python3 Scripts/prepare-libvlc-tests.py`, `bash test-release-plan.sh`. Native checks need macOS media/window/network services. All media fixtures are original synthetic test files.
 
-```sh
-bash test-codecs.sh
-bash test-flac.sh
-bash test-jpeg.sh
-bash test-matroska.sh
-bash test-pgs.sh
-bash test-pgs-playback.sh
-bash test-native-formats.sh
-bash test-updates.sh
-bash test-release-plan.sh
-bash test-fullscreen.sh
-```
+### Windows and Android
 
-Decoder tests use original generated fixtures and exact/reference comparisons. Native playback/fullscreen tests need normal access to macOS media/window services. Update tests use synthetic data and isolated preferences without a live feed. Release-plan tests stub packaging/signing commands; passing them does not establish production notarization or publication.
+Follow [Windows/README.md](Windows/README.md) for PowerShell/.NET 10 builds and a separate libVLC runtime. Follow [Android/README.md](Android/README.md) for JDK 17/Android SDK builds and APK installation. Development binaries are unsigned or debug-signed; no production signing keys are included.
 
-`CodecSupport.json` is the support catalog; `Progress/work-items.json` records development milestones. Local check logs/snapshots are generated outputs. `python3 Scripts/progress.py check CHECK_ID` records a selected check, and `python3 Scripts/progress.py refresh` refreshes the local progress snapshot. The dashboard records work; it does not run codec development in the background.
+## Ownership, licensing and updates
 
-Original implementations use published format descriptions, including [Microsoft AVI RIFF](https://learn.microsoft.com/en-us/windows/win32/directshow/avi-riff-file-reference), [RFC 3551 audio algorithms](https://www.rfc-editor.org/rfc/rfc3551), [RFC 9639: FLAC](https://www.rfc-editor.org/rfc/rfc9639), [ITU-T T.81: JPEG](https://www.itu.int/rec/T-REC-T.81-199209-I/en), [RFC 9559: Matroska](https://www.rfc-editor.org/rfc/rfc9559), and the [official Matroska mappings](https://www.matroska.org/technical/codec_specs.html). Implementation-specific references and bounds are documented in the source.
+Luma's original code belongs to **sdas** under the proprietary [LICENSE](LICENSE); free downloads and visible source do not grant unrestricted reuse rights. libVLC, FFmpeg and other dependencies retain their own licenses. Their notices, corresponding sources, module inventory and replacement requirements are separate from Luma's ownership. The custom Mac component has passed this repository's technical distribution gates. Windows and Android runtime redistribution work remains in progress; stock packages stay development-only. These checks are not a legal opinion or a guarantee against claims.
+
+Luma retains its **own updater**. The published Mac 0.6.1 feed uses signed manifests, HTTPS, exact size and SHA256 verification, then reveals a download for manual installation. A source push alone does not notify installed apps. This preview does not change that live feed. Windows has a separate updater protocol but no configured public feed; Android update publishing is not configured. See [RELEASING.md](RELEASING.md).
+
+## Previous public downloads
+
+The published **Mac 0.6.1 alpha** is an older, more limited playback engine: [DMG releases](https://github.com/PopoD-alt/luma-player/releases), [release notes](RELEASE_NOTES.md), [installation guide](INSTALL.md). Its support limits differ from this branch. It is not Apple-notarized.
+
+The earlier **Windows build 3** is a temporary unsigned folder-based [review artifact](https://github.com/PopoD-alt/luma-player/actions/runs/43632569709/artifacts/14128368227), retained until November 28, 2026. It does not contain this libVLC rebuild or local sharing. New preview binaries will follow review; the stable release/update feed remains unchanged.

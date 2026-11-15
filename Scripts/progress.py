@@ -97,6 +97,7 @@ def snapshot():
             'work': plan['items'], 'checks': list(records.values()), 'baseline': baseline,
             'history': history[-20:][::-1], 'baseline_count': plan.get('baseline_inventory_count', len(catalog['entries'])),
             'native_evidence': evidence.get('verified_formats', []),
+            'rebuild': read(PROGRESS / 'libvlc-rebuild.json', None),
             'native_notes': evidence.get('not_verified', []), 'native_as_of': evidence.get('generated_at')}
     atomic(PROGRESS / 'snapshot.json', json.dumps(data, indent=2) + '\n')
     rendered = CANVAS.replace('__SNAPSHOT__', json.dumps(data, ensure_ascii=True).replace('<', '\\u003c'))
@@ -143,7 +144,8 @@ CANVAS = r'''import { Stack, Row, Grid, H1, H2, Text, Pill, Stat, Card, CardHead
 type Entry = { id:string; name:string; status:string; category:string; coverage:string; reference:string };
 type Work = { id:string; name:string; implementation:string; stage:string; detail:string; next:string; source:string; source_exists:boolean };
 type Check = { id:string; status:string; started_at:string; duration_seconds?:number; log:string; summary?:string[]; matches_current_source:boolean; source_scope?:string; source_changed_during_check?:boolean };
-type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; windows_entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null };
+type Rebuild = {as_of:string; branch:string; platforms:{name:string;playback:string;sharing:string;distribution:string;evidence:string}[]; next:string[]};
+type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; windows_entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null; rebuild:Rebuild|null };
 const snapshot = __SNAPSHOT__ as unknown as Snapshot;
 const names: Record<string,string> = { independent: "Luma decoder", system: "Verified system route", experimental: "Partial", unimplemented: "Missing", unverified: "Unverified" };
 const stages: Record<string,string> = { planned: "Queued", implementation: "Implementing", verification: "Verifying", integrated: "Integrated" };
@@ -170,7 +172,18 @@ export default function LumaCodecProgress() {
   const open = (path:string) => dispatch({type:"openFile",path:path.startsWith("/")?path:`${snapshot.root}/${path}`});
   const native = snapshot.native_evidence;
   return <Stack gap={22} style={{padding:24,maxWidth:1400,margin:"0 auto",color:theme.text.primary,background:theme.bg.editor}}>
-    <Row justify="space-between" wrap><div><Text size="small" tone="tertiary">SDAS / LUMA PLAYER</Text><H1>Codec development progress</H1></div><Pill>Local work only</Pill></Row>
+    <Row justify="space-between" wrap><div><Text size="small" tone="tertiary">SDAS / LUMA PLAYER</Text><H1>Player rebuild progress</H1></div><Pill>Review preview</Pill></Row>
+    {snapshot.rebuild && <Stack gap={12}>
+      <Text>Mac and Windows now use libVLC. Android streams the desktop playlist over the local network. The original-codec inventory below records earlier experiments; it does not measure this backend's compatibility.</Text>
+      <Table headers={["Platform","Playback evidence","Local sharing","Distribution / review"]} rows={snapshot.rebuild.platforms.map(p=>[
+        <div><Text weight="medium">{p.name}</Text><Button variant="ghost" onClick={()=>open(p.evidence)}>Open evidence</Button></div>,p.playback,p.sharing,p.distribution
+      ])}/>
+      <Text size="small" tone="tertiary">Source: local native test logs and CI evidence · {snapshot.rebuild.branch} · recorded {date(snapshot.rebuild.as_of)}. Synthetic fixtures do not establish every VLC format or physical audio output.</Text>
+      <H2>Remaining before packaging</H2>
+      {snapshot.rebuild.next.map(item=><Text key={item} size="small">{item}</Text>)}
+      <Divider/>
+    </Stack>}
+    <H2>Historical original-codec work</H2>
     <Row justify="space-between" wrap><Select value={platform} onChange={setPlatform} options={[{value:"windows",label:"Windows preview"},{value:"macos",label:"macOS alpha"}]}/><Pill>{work.filter(w=>w.implementation==="Original decoder"&&w.stage==="integrated").length} original decoder milestones integrated</Pill>{!windows && <Pill>{native.length} native fixture routes verified</Pill>}</Row>
     <Text tone="secondary">{pending} tracked groups still need work. Full VLC compatibility is not complete. Counts represent grouped formats, not an exact codec count or a parity percentage.</Text>
     <Grid columns="repeat(auto-fit, minmax(140px, 1fr))" gap={20}>
