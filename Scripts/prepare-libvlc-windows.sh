@@ -7,6 +7,8 @@ LUMA_REPO="$(cd "$(dirname "$0")/.." && pwd)"
 LUMA_WORK="${1:-$LUMA_REPO/ThirdParty/work/windows-ci-lgpl}"
 LUMA_OUTPUT="${2:-$LUMA_WORK/curated-component}"
 LUMA_JOBS="${LUMA_WINDOWS_JOBS:-4}"
+LUMA_MODE="${3:-build}"
+[[ "$LUMA_MODE" == build || "$LUMA_MODE" == --probe-only ]] || { echo 'Third argument must be --probe-only or omitted.' >&2; exit 2; }
 LUMA_SOURCE_SHA=48e0bf127711d829bcd49d35195b5e1b590f93d1bdd4263266dc4fd367641106
 LUMA_SOURCE_COMMIT=6de05adcbaf2e8b85fe86aad4169393098628119
 LUMA_IMAGE='registry.videolan.org/vlc-debian-llvm-ucrt@sha256:a0f9255792ee12da494efebdd203e8d11d769b7d938d5191920f76754d29f6e1'
@@ -39,6 +41,13 @@ PYSDK
 LUMA_SDK="$LUMA_WORK/llvm-mingw-20260908-ucrt-ubuntu-22.04-x86_64"
 export PATH="$LUMA_SDK/bin:$PATH"
 LUMA_TOOLCHAIN_LICENSE="$LUMA_SDK/LICENSE.TXT"
+# Fail in seconds on compiler/runtime or libtool C++ DLL incompatibility, before
+# fetching/building any media dependency. A dedicated CI job can stop here.
+bash "$LUMA_REPO/Scripts/prepare-libvlc-windows-toolchain-probe.sh" "$LUMA_SDK" "$LUMA_WORK/toolchain-probe" 2>&1 | tee "$LUMA_WORK/logs/toolchain-probe.log"
+if [[ "$LUMA_MODE" == --probe-only ]]; then
+ printf 'Toolchain-only proof: %s\n' "$LUMA_WORK/toolchain-probe/result.json"
+ exit 0
+fi
 python3 - "$LUMA_WORK" "$LUMA_IMAGE" "$LUMA_SOURCE_COMMIT" <<'PY'
 import json,subprocess,sys
 from pathlib import Path
@@ -77,7 +86,7 @@ LUMA_INSTALL="$LUMA_WORK/unfiltered-install"
 LUMA_BUILD_TRIPLET="$(cc -dumpmachine)"
 export GIT_CEILING_DIRECTORIES="$LUMA_WORK"
 export USE_FFMPEG=1 CMAKE_POLICY_VERSION_MINIMUM=3.5
-unset PKG_CONFIG_PATH PKG_CONFIG_LIBDIR CFLAGS CXXFLAGS CPPFLAGS LDFLAGS DEBUG || true
+unset PKG_CONFIG_PATH PKG_CONFIG_LIBDIR CC CXX CPP CXXCPP AR AS LD NM RANLIB RC WINDRES DLLTOOL STRIP CCAS CFLAGS CXXFLAGS CPPFLAGS LDFLAGS LIBS COMPILER_PATH LIBRARY_PATH CPATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH GCC_EXEC_PREFIX CLANG_CONFIG_FILE_SYSTEM_DIR CLANG_CONFIG_FILE_USER_DIR DEBUG || true
 mkdir -p "$LUMA_CONTRIB"
 cd "$LUMA_CONTRIB"
 ../bootstrap --build="$LUMA_BUILD_TRIPLET" --host=x86_64-w64-mingw32 --prefix="$LUMA_PREFIX" \
@@ -97,12 +106,25 @@ make -j"$LUMA_JOBS" GNU=https://ftpmirror.gnu.org/gnu \
 cd "$LUMA_VLC"
 printf '%s\n' 'Luma-LGPL-Windows-6de05adcba-r1' > src/revision.txt
 ./bootstrap 2>&1 | tee "$LUMA_WORK/logs/core-bootstrap.log"
+cp m4/libtool.m4 "$LUMA_WORK/audit/libtool-before.m4"
+python3 "$LUMA_REPO/Scripts/prepare-libvlc-windows-libtool.py" m4/libtool.m4 --receipt "$LUMA_WORK/audit/libtool-recognition-fix.json"
+python3 - "$LUMA_WORK" "$LUMA_VLC" <<'PYLIBTOOL'
+import difflib,json,sys
+from pathlib import Path
+work=Path(sys.argv[1]);source=Path(sys.argv[2]);before=(work/'audit/libtool-before.m4').read_text();after=(source/'m4/libtool.m4').read_text()
+(work/'audit/libtool-recognition.patch').write_text(''.join(difflib.unified_diff(before.splitlines(keepends=True),after.splitlines(keepends=True),fromfile='m4/libtool.m4.before',tofile='m4/libtool.m4',n=4)))
+(work/'audit/libtool-recognition-context.json').write_text(json.dumps({
+ 'purpose':'Preserve the official Clang compiler-rt archive in the hidden C++ dependencies used with -nostdlib; no custom stack-probe code',
+ 'gnuIssue':'https://debbugs.gnu.org/cgi/bugreport.cgi?bug=27866',
+ 'videoLANEquivalent':'https://code.videolan.org/videolan/vlc/-/blob/79128878/extras/tools/libtool-2.4.7-clang-libs.patch',
+ 'sourceOfBeforeMacro':'The pinned container GNU libtool2.5.4, copied into the owned VLC worktree by autoreconf --install',
+ 'regeneration':'autoconf --force after the one-line m4 change; system tools are not modified',
+},indent=2)+'\n')
+PYLIBTOOL
+autoconf --force 2>&1 | tee "$LUMA_WORK/logs/core-autoconf.log"
 mkdir -p build-luma-windows && cd build-luma-windows
 export PKG_CONFIG_LIBDIR="$LUMA_PREFIX/lib/pkgconfig"
-# Upstream3.0.24 has no --disable-sapi switch. Its optional speech-synthesis
-# renderer is selected by this AC_CHECK_TYPES probe. Exclude it explicitly;
-# visual ASS/FreeType rendering and every required playback module stay selected.
-have_sapi=no ac_cv_type_ISpObjectToken=no ../configure --build="$LUMA_BUILD_TRIPLET" --host=x86_64-w64-mingw32 --prefix="$LUMA_INSTALL" \
+../configure --build="$LUMA_BUILD_TRIPLET" --host=x86_64-w64-mingw32 --prefix="$LUMA_INSTALL" \
  --with-contrib="$LUMA_PREFIX" --enable-shared --disable-static --disable-vlc --disable-qt --disable-skins2 \
  --disable-lua --disable-nls --disable-dbus --disable-vlm --disable-sout --disable-update-check --disable-notify \
  --disable-dvdread --disable-dvdnav --disable-bluray --disable-vcd --disable-addonmanagermodules \

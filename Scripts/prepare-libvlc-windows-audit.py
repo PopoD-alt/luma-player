@@ -168,8 +168,6 @@ def audit_modules(source: Path, build: Path, prefix: Path, audit: Path) -> dict:
         names = mapping.get(path.stem, [])
         sources = module_sources(source, names)
         reasons = []
-        if path.name == 'libsapi_plugin.dll':
-            reasons.append('Optional SAPI speech-synthesis module is excluded from the playback profile')
         if not license_ or 'GNU Lesser General Public License, version 2.1 or later' not in license_:
             reasons.append('Metadata is not inspected LGPL2.1+')
         if not names or not sources:
@@ -310,6 +308,8 @@ def snapshot_configuration(source: Path, build: Path, audit: Path) -> None:
         'ffmpeg-config_components.h': source/'contrib/luma-windows-x64/ffmpeg/vlc_build/config_components.h',
         'ffmpeg-config.asm': source/'contrib/luma-windows-x64/ffmpeg/vlc_build/config.asm',
         'ffmpeg-config.mak': source/'contrib/luma-windows-x64/ffmpeg/vlc_build/ffbuild/config.mak',
+        'libtool.m4': source/'m4/libtool.m4',
+        'configure': source/'configure',
     }
     destination = audit/'BuildInputs'
     destination.mkdir(exist_ok=True)
@@ -319,6 +319,26 @@ def snapshot_configuration(source: Path, build: Path, audit: Path) -> None:
             raise ValueError('Missing actual build configuration: '+name)
         shutil.copyfile(path, destination/name)
         records[name] = {'sourcePath': path.relative_to(source).as_posix(), 'sha256': digest(path)}
+    receipt = audit/'libtool-recognition-fix.json'
+    before = audit/'libtool-before.m4'
+    if not receipt.is_file() or not before.is_file():
+        raise ValueError('Missing libtool compiler-runtime recognition patch receipt/original')
+    change = json.loads(receipt.read_text())
+    if change.get('inputSHA256') != digest(before) or change.get('outputSHA256') != digest(source/'m4/libtool.m4'):
+        raise ValueError('Libtool patch receipt does not match the actual before/after macros')
+    for name in ['libtool-recognition-fix.json', 'libtool-before.m4', 'libtool-recognition.patch', 'libtool-recognition-context.json']:
+        path = audit/name
+        if not path.is_file():
+            raise ValueError('Missing libtool patch provenance: '+name)
+        shutil.copyfile(path, destination/name)
+        records[name] = {'workPath': path.relative_to(audit.parent).as_posix(), 'sha256': digest(path)}
+    probe = audit.parent/'toolchain-probe'
+    for name in ['result.json', 'libtool-recognition-fix.json', 'libtool-before', 'libtool-after', 'inherited-tool-environment.json']:
+        path = probe/name
+        if not path.is_file():
+            raise ValueError('Missing pre-build compiler/linker proof: '+name)
+        shutil.copyfile(path, destination/('toolchain-probe-'+name))
+        records['toolchain-probe-'+name] = {'workPath': path.relative_to(audit.parent).as_posix(), 'sha256': digest(path)}
     save(destination, 'inventory.json', records)
 
 

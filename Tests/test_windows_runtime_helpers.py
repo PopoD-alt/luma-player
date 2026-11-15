@@ -9,8 +9,26 @@ from unittest.mock import patch
 REPO=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('windows_audit',REPO/'Scripts/prepare-libvlc-windows-audit.py')
 audit=importlib.util.module_from_spec(spec);spec.loader.exec_module(audit)
+spec=importlib.util.spec_from_file_location('windows_libtool',REPO/'Scripts/prepare-libvlc-windows-libtool.py')
+libtool=importlib.util.module_from_spec(spec);spec.loader.exec_module(libtool)
 
 class WindowsRuntimeHelpers(unittest.TestCase):
+    def test_libtool_preserves_official_clang_runtime_and_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'libtool.m4';path.write_text('prefix\n'+libtool.OLD+'\nsuffix\n')
+            receipt=libtool.patch_macro(path)
+            self.assertTrue(receipt['changed']);self.assertNotEqual(receipt['inputSHA256'],receipt['outputSHA256'])
+            self.assertEqual(path.read_text(),'prefix\n'+libtool.NEW+'\nsuffix\n')
+            self.assertFalse(libtool.patch_macro(path)['changed'])
+
+    def test_libtool_unknown_or_ambiguous_parser_fails_without_change(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'libtool.m4'
+            for text in ['unrecognized parser',libtool.OLD+'\n'+libtool.OLD]:
+                path.write_text(text)
+                with self.assertRaises(ValueError):libtool.patch_macro(path)
+                self.assertEqual(path.read_text(),text)
+
     def test_nested_automake_dependencies_use_compile_directory(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);source=root/'vlc';build=source/'build/src'

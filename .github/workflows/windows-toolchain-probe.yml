@@ -1,0 +1,57 @@
+name: Windows compiler runtime probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/vlc-lan-android]
+    paths:
+      - 'Scripts/prepare-libvlc-windows*'
+      - 'Tests/test_windows_runtime_helpers.py'
+      - '.github/workflows/windows-toolchain-probe.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: luma-windows-compiler-probe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compiler-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: registry.videolan.org/vlc-debian-llvm-ucrt@sha256:a0f9255792ee12da494efebdd203e8d11d769b7d938d5191920f76754d29f6e1
+      options: --user 0
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Exercise helper regressions
+        run: python3 -m unittest discover -s Tests -p test_windows_runtime_helpers.py -v
+      - name: Check direct and libtool C/C++ DLL linking before any media build
+        run: |
+          mkdir -p build
+          bash Scripts/prepare-libvlc-windows.sh \
+            "$PWD/ThirdParty/work/windows-toolchain-probe" \
+            "$PWD/ThirdParty/work/windows-toolchain-probe/unused-component" --probe-only \
+            2>&1 | tee build/windows-compiler-probe.log
+      - name: Preserve probe text evidence only
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-Windows-compiler-probe-${{ github.sha }}
+          path: |
+            build/windows-compiler-probe.log
+            ThirdParty/work/windows-toolchain-probe/logs/*.log
+            ThirdParty/work/windows-toolchain-probe/toolchain-probe/*.log
+            ThirdParty/work/windows-toolchain-probe/toolchain-probe/*.json
+            ThirdParty/work/windows-toolchain-probe/toolchain-probe/*.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+# No probe DLL, codec dependency, source component, app, installer or release
+# is uploaded. The full source build is dispatched only after this probe passes.

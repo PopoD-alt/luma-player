@@ -2,13 +2,6 @@ name: Custom Windows runtime review
 
 on:
   workflow_dispatch:
-  push:
-    branches: [feature/vlc-lan-android]
-    paths:
-      - 'Scripts/prepare-libvlc-windows*'
-      - 'Scripts/prepare-libvlc-pe-audit.py'
-      - 'Tests/test_windows_runtime_helpers.py'
-      - '.github/workflows/windows-native-component-review.yml'
 
 permissions:
   contents: read
