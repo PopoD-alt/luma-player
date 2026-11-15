@@ -43,13 +43,16 @@ must cancel listeners, discovery, active streams and revoke pairing tokens.
 
 Android refreshes the playlist while connected. Playback uses the stream URL
 and resume position, supports seeking via byte ranges, and stays on the phone;
-the desktop app and host computer must remain awake and sharing enabled.
+the host must remain on, the desktop app open and sharing enabled. The companion
+streams desktop original files on the same trusted Wi-Fi using discovery or a
+manual desktop URL; it does not provide a standalone local-file picker.
 
 Request/header reads have short deadlines. Authenticated media writes allow up
 to 15 minutes of backpressure for a paused reader, while stop/removal still cancels
-immediately. The Mac host prevents idle system sleep while media streams are
-active; forced sleep/lid closure still interrupts them. The Windows preview
-requires the user to keep its host awake.
+immediately. Both Mac and Windows hold an idle-system-sleep prevention request
+while media streams are active, releasing it after the last stream ends. Merely
+enabling sharing does not hold that request. Forced sleep/lid closure still
+interrupts streams; the request does not keep the desktop app running.
 
 Interop checks: `python3 Scripts/run-android-integration.py` starts the production
 portable/Windows implementation. On an Apple Silicon Mac,
@@ -58,3 +61,13 @@ Mac implementation. Both share original synthetic fixtures only and keep pairing
 metadata in a temporary private file. `--exercise-video-recovery` is a debug-only
 negative test that withholds initial video output once and requires successful
 software recovery; normal playback tests keep the hardware-first path.
+
+Verification is checkpoint-specific. Mac's approved bundled runtime and Windows
+checkpoint `df964b2` have native sharing/playback evidence, including the Windows
+active-stream power request. Windows custom runtime's compiler/linker probe
+passed; its full source build and native/independent audit remain pending.
+Android's custom ARM64 library component is
+independently approved for private owner review, but the later stock-runtime x64
+run still reports a native video-output failure after the locally passing
+surface-recovery fix; diagnosis and a successful rerun remain pending. Component approval does not imply production publication approval or
+universal format/device compatibility.

@@ -13,6 +13,29 @@ spec=importlib.util.spec_from_file_location('windows_libtool',REPO/'Scripts/prep
 libtool=importlib.util.module_from_spec(spec);spec.loader.exec_module(libtool)
 
 class WindowsRuntimeHelpers(unittest.TestCase):
+    def test_core_snapshot_framework_does_not_enable_ffmpeg_encoders(self):
+        vlc='#define ENABLE_SOUT 1\n'
+        ffmpeg='#define CONFIG_ENCODERS 0\n'
+        components='#define CONFIG_FLAC_ENCODER 0\n#define CONFIG_PNG_ENCODER 0\n#define CONFIG_AAC_ENCODER 0\n'
+        result=audit.image_encoding_profile(vlc,ffmpeg,components)
+        self.assertTrue(result['coreImageEncoderFrameworkEnabled'])
+        self.assertFalse(result['ffmpegEncodersEnabled'])
+        self.assertEqual(result['ffmpegEncoderComponentCount'],3)
+        for inputs in [('#undef ENABLE_SOUT\n',ffmpeg,components),
+                       (vlc,'#define CONFIG_ENCODERS 1\n',components),
+                       (vlc,ffmpeg,components.replace('CONFIG_AAC_ENCODER 0','CONFIG_AAC_ENCODER 1')),
+                       (vlc,ffmpeg,''),
+                       (vlc,ffmpeg,'#define CONFIG_PNG_ENCODER 0\n')]:
+            with self.assertRaises(ValueError):audit.image_encoding_profile(*inputs)
+
+    def test_playback_only_curation_preserves_inputs_and_image_encoder(self):
+        for name in ['access_output/libfile_plugin.dll','mux/libmp4_plugin.dll','stream_out/libtranscode_plugin.dll',
+                     'stream_filter/librecord_plugin.dll','STREAM_OUT/libhttp_plugin.dll']:
+            self.assertIsNotNone(audit.playback_only_exclusion(name))
+        for name in ['access/libaccess_http_plugin.dll','demux/libmp4_plugin.dll','codec/libpng_plugin.dll',
+                     'stream_filter/libprefetch_plugin.dll','audio_output/libwasapi_plugin.dll','video_output/libdirect3d11_plugin.dll']:
+            self.assertIsNone(audit.playback_only_exclusion(name))
+
     def test_libtool_preserves_official_clang_runtime_and_is_idempotent(self):
         with tempfile.TemporaryDirectory() as folder:
             path=Path(folder)/'libtool.m4';path.write_text('prefix\n'+libtool.OLD+'\nsuffix\n')

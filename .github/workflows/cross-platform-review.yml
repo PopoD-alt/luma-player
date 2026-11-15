@@ -92,7 +92,7 @@ jobs:
           profile: pixel_7_pro
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
-          script: python3 Scripts/run-android-integration.py
+          script: python3 Scripts/run-android-integration.py --native-diagnostics
       - name: Preserve Android evidence only
         if: always()
         uses: actions/upload-artifact@v7

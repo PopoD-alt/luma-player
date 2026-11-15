@@ -74,6 +74,8 @@ API36 `google_apis` x86_64 is suitable for the stock development CI path; use AR
 
 The root [integration harness](../Scripts/run-android-integration.py) supports the actual portable Windows-Core server or native Mac server, custom app/test APK paths, separate report directories, and `--exercise-video-recovery`. Local ARM64 source-built runtime runs have passed both desktop servers, AVC/HEVC Main10/AAC5.1, normal startup, explicit recovery, and independent APK re-signing. These are bounded fixture checks rather than full VLC parity.
 
+The frozen Android source at `b8c6d50cde08e4f93a23a9fe6fb7941f3fade71b` passes both default-development and approved-runtime debug builds, lint, and **10 JVM tests**. Actual ARM64 instrumentation also destroys and recreates a `SurfaceView`, pauses during repair, then verifies preserved intent and advancing displayed frames on the same player/view. Startup requires the native surface-created callback and a valid holder; each new player gets fresh views, while old stop/disconnect work runs off the UI thread. Fresh x86_64 CI for this lifecycle fix is pending; these local results do not establish an x86_64 pass.
+
 Successful emulator output is software decoding/rendering evidence, **not proof of audible physical speaker output, surround routing, physical Wi-Fi discovery, every hardware decoder, or every VLC codec/container**. Those require real-device coverage. The synthetic AAC5.1 fixture tests channel-layout decoding, not all real-world multichannel streams. Runtime CI results are recorded by the parent workflow; do not infer a passed emulator run from compilation alone.
 
 ## Dependency provenance

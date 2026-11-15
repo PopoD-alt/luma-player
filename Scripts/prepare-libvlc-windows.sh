@@ -126,7 +126,7 @@ mkdir -p build-luma-windows && cd build-luma-windows
 export PKG_CONFIG_LIBDIR="$LUMA_PREFIX/lib/pkgconfig"
 ../configure --build="$LUMA_BUILD_TRIPLET" --host=x86_64-w64-mingw32 --prefix="$LUMA_INSTALL" \
  --with-contrib="$LUMA_PREFIX" --enable-shared --disable-static --disable-vlc --disable-qt --disable-skins2 \
- --disable-lua --disable-nls --disable-dbus --disable-vlm --disable-sout --disable-update-check --disable-notify \
+ --disable-lua --disable-nls --disable-dbus --disable-vlm --enable-sout --disable-update-check --disable-notify \
  --disable-dvdread --disable-dvdnav --disable-bluray --disable-vcd --disable-addonmanagermodules \
  --disable-mad --disable-a52 --enable-avcodec --enable-merge-ffmpeg --enable-libass \
  CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ \

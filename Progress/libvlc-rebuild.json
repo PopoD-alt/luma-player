@@ -1,33 +1,34 @@
 {
-  "as_of": "2026-11-15T20:15:03+00:00",
-  "branch": "feature/vlc-lan-android \u00b7 implementation2c8ddbf \u00b7 last full cross-platform pass25e187b",
+  "as_of": "2026-11-15T21:17:23+00:00",
+  "branch": "feature/vlc-lan-android \u00b7 Android b8c6d50 \u00b7 portable Windows bundle33b9d94",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
-      "playback": "PASS: self-contained custom runtime; AVC, HEVC Main10/AAC5.1, MKV, native captions and transport. Space and fullscreen pass actual key events.",
+      "playback": "PASS: self-contained approved runtime; AVC, HEVC Main10 MP4/MKV, AAC5.1, captions and transport. Space and fullscreen pass actual key events.",
       "sharing": "PASS: actual Mac listener and Android app interoperability; pairing, original-file AVC/HEVC streaming, range seeking and revocation. Native Mac server checks include sparse5GiB reads.",
       "distribution": "Custom LGPL-profile runtime technically approved; local ad-hoc app ready for owner review. No new DMG published.",
-      "evidence": "build/mac-bundled-runtime-smoke.log"
+      "evidence": "build/mac-final-bundled-runtime-native.log"
     },
     {
       "name": "Windows \u00b7 x64",
-      "playback": "PASS: native Windows CI43752264480. AVC/HEVC Main10 rendering, AAC decode, captions, AVI/FLAC/ADPCM, transport, fullscreen and lifecycle/resume.",
-      "sharing": "PASS: portable real-listener suite and native sharing/pair/revoke UI; DNS-SD shutdown returned without deadlock. Physical discovery remains unverified.",
-      "distribution": "Custom x64 runtime and independent local audits pass. Clean CI reached an optional speech-module linker issue; explicit exclusion is ready for retry. No public installer.",
-      "evidence": "build/windows-vlc-third-evidence/smoke.stdout.log"
+      "playback": "PASS: native Windows CI43759294052, including HEVC Main10 MP4/MKV, AAC, AVC, captions, AVI/FLAC/ADPCM, transport, fullscreen and lifecycle/resume.",
+      "sharing": "PASS: production listener, pairing/ranges/revocation, DNS-SD shutdown and real SystemRequired power handle create/release. Physical discovery and speakers remain unverified.",
+      "distribution": "Custom source build, DLL identity and independent static/source/import audit pass. Native PNG frame-capture proof found the disabled core image encoder; upstream image framework restored, FFmpeg encoders/output modules remain excluded. Full rebuild/native rerun is next. No public installer.",
+      "evidence": "build/windows-sixth-evidence/smoke/smoke-results.json"
     },
     {
       "name": "Android \u00b7 API26+",
-      "playback": "Opening/resume fix passes fully source-built Java/native ARM64 APK: portable1s resume and Mac0.5s injected recovery, including pause/seek/fullscreen. Fresh x64 emulator retry is queued.",
-      "sharing": "PASS: actual portable/Windows server and native Mac server; pair/list/range streaming without a saved download. One-time software recovery passes injected native-output failure. Physical Wi-Fi discovery still needs phones.",
-      "distribution": "Cleaned native/binding audits pass. Direct-source Java AAR and final source companion are being finalized; no production APK published.",
-      "evidence": "build/android-source-aar-r2-resigned-macos-recovery/instrumentation.log"
+      "playback": "PASS ARM64: AVC/HEVC/AAC, normal and injected recovery, real SurfaceView destruction/Pause/restoration, fullscreen and independent re-signing. Fresh x64 CI43761442211 still fails native video output despite a valid surface; detailed codec/vout diagnostics are being added.",
+      "sharing": "PASS: original-file streaming from actual Mac and portable Windows production servers, pairing, live playlist and seeking without a saved movie. Physical Wi-Fi discovery remains unverified.",
+      "distribution": "Approved source-built Java/native ARM64 component, private debug APK, complete matching b8c6d50 application archive and native sources preserved. Re-signed exact app passes real Mac streaming. No production APK published.",
+      "evidence": "build/android-surface-lifecycle-fixed-review/private-debug-manifest.json"
     }
   ],
   "next": [
-    "Fix the Android opening stall found by fresh x64 CI; finish source-built Windows native proof and both runtime distribution gates.",
-    "Test physical Wi-Fi discovery, firewall behavior, speakers and A/V synchronization on real devices.",
-    "Owner reviews the apps before public packages or update-feed changes."
+    "Diagnose remaining x64 native output failure using live redacted codec/vout logs; rerun actual streaming checks.",
+    "Finish custom Windows source build, native rendering and independent component verification.",
+    "Test physical Wi-Fi discovery, firewall behavior, speakers and A/V sync on real devices.",
+    "Owner reviews the apps before production packages or update-feed changes."
   ],
   "previews": [
     {
@@ -39,14 +40,14 @@
     {
       "id": "windows",
       "name": "Windows \u00b7 native WPF",
-      "path": "build/windows-vlc-third-evidence/smoke/Luma-Windows-dark.png",
+      "path": "build/windows-sixth-evidence/smoke/Luma-Windows-dark.png",
       "caption": "Native Windows CI interface. This WPF capture omits its separate native video child; decoded/displayed counters and libVLC frame snapshots establish video output separately."
     },
     {
       "id": "android",
       "name": "Android \u00b7 streaming playback",
-      "path": "build/android-source-aar-r2-resigned-macos-recovery/Luma-Android-review.png",
-      "caption": "Actual Android emulator streaming the authored demo from the production Mac server, using independently re-signed Java/native libraries built from pinned sources. Development review only."
+      "path": "build/android-surface-lifecycle-fixed-review/Luma-Android-fullscreen.png",
+      "caption": "Final ARM64 private debug review: independently re-signed app streaming from the production Mac server, fullscreen after actual surface loss/recovery. Fresh x64 native-output issue remains under diagnosis."
     }
   ]
 }

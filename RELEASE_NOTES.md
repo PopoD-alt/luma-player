@@ -2,7 +2,11 @@
 
 This branch adds direct libVLC playback on Mac/Windows, fixes Mac Space play/pause in normal and fullscreen views, and implements paired local playlist streaming to a new Android companion. Files stay on the desktop; the phone buffers streamed bytes without a saved media download. Sharing is opt-in, follows the live playlist and revokes access when stopped.
 
-The Mac custom runtime is bundled in the local review app. Windows uses a separately installed development runtime. Android APKs and runtime audits are still development work. Native evidence and remaining limits are in the [README](README.md), [roadmap](ROADMAP.md), and platform guides. No production package or live update feed has been published for 0.7.0. Owner review is required before packaging.
+The approved Mac custom runtime is bundled in the local review app, with direct HEVC Main10 Matroska playback verified. [Windows native tests at checkpoint `df964b2`](https://github.com/PopoD-alt/luma-player/actions/runs/43759294052) passed with a separate stock development runtime, including HEVC Main10 Matroska and idle-sleep prevention during active streams. Its custom runtime's compiler/linker probe passed; full source-build and native/independent audit completion remain pending.
+
+The custom Android ARM64 LGPL-profile library component passed independent technical source/license/replacement checks for private owner review. Actual streaming and independently re-signed APK checks passed, but the later stock-runtime x64 run still reports a native video-output failure after the ARM64 surface-recovery fix; diagnosis and a successful rerun remain pending. Android streams desktop original files over the same trusted Wi-Fi, using discovery or a manual desktop URL; it has no standalone local-file picker.
+
+Mac and Windows request idle-sleep prevention only during active media streams. The host must remain on with Luma open and sharing enabled; forced sleep and lid closure still interrupt playback. Native evidence and remaining limits are in the [README](README.md), [roadmap](ROADMAP.md), and platform guides. Component approval is not legal/patent clearance. No production package or live update feed has been published for 0.7.0; owner review remains required before production packaging/publication. The older downloads below do not contain this rebuild.
 
 ---
 

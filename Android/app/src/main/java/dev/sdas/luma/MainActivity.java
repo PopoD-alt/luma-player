@@ -75,7 +75,7 @@ public final class MainActivity extends Activity {
     private EditText manual;private Button connect,playButton;private ListView list;private SeekBar seek,volume;private AlertDialog pairDialog;
     private boolean foreground,polling,connecting,dragging,full,wasPlaying,autoResumeApplied,destroyed;
     private int generation,mediaGeneration;private long initialResume;private LanApi.Item current;private String lastError;
-    private boolean permissionAsked;
+    private boolean permissionAsked,nativeDiagnostics;
     private final java.util.Set<String> softwareItems=new java.util.HashSet<>();
     private boolean softwarePlayback,videoWasDisplayed,hadVideoTracks,videoOutputWasCreated,userPaused,debugSkipSurfaceOnce,nativePlayingSeen;private int videoOutputs;private long nativeStartedAt,playRequestedAt,lastOpeningDiagnostic;
     private Media.Stats lastStats;private SeekBar.OnSeekBarChangeListener seekListener;private IVLCVout.Callback surfaceCallback;
@@ -184,7 +184,7 @@ public final class MainActivity extends Activity {
     private void startMedia(LanApi.Item item){
         if(session==null){status.setText("Pair again before streaming.");return;}if(retiringGraphs>=3){playerStatus.setText("Finishing the previous stream. Please retry in a moment.");return;}stopPlayback();graphStartedAt=android.os.SystemClock.uptimeMillis();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;nativeSurfacesReady=false;surfaceRebindPending=false;surfaceRestartPending=false;surfaceRestartStarted=false;surfaceRecoveryNeedsResume=false;surfaceRebinds=0;surfaceRebindAttempts=0;surfaceCreatedEvents=0;surfaceDestroyedEvents=0;lastOpeningDiagnostic=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playButton.setText("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try{
-            if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList("--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
+            if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList(BuildConfig.DEBUG&&nativeDiagnostics?"--verbose=2":"--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
             int version=generation,clip=mediaGeneration;LanApi.Session active=session;
             relay=new StreamRelay(active,item,api.connections(),failure->main.post(()->{if(stale(version)||clip!=mediaGeneration||current!=item)return;lastError=failure==StreamRelay.Failure.AUTH?"Pairing expired. Return to the playlist and pair again.":failure==StreamRelay.Failure.REMOVED?"This item was removed from the desktop.":failure==StreamRelay.Failure.UNSAFE_RESPONSE?"The desktop returned an unsafe stream response.":"Desktop offline. Keep sharing enabled and retry.";playerStatus.setText(lastError);userPaused=true;if(player!=null)player.pause();}));
             // Each native player owns its own surface tree. A retired helper
@@ -389,6 +389,7 @@ public final class MainActivity extends Activity {
     public void debugFailInitialOutputOnce(){if(!BuildConfig.DEBUG||player!=null)throw new IllegalStateException();debugSkipSurfaceOnce=true;}
     public boolean debugSoftwarePlayback(){return BuildConfig.DEBUG&&softwarePlayback;}
     public boolean debugPauseRequested(){return BuildConfig.DEBUG&&userPaused;}
+    public void debugNativeDiagnostics(boolean value){if(!BuildConfig.DEBUG||engine!=null)throw new IllegalStateException();nativeDiagnostics=value;}
     public boolean debugPauseIntentUi(){return BuildConfig.DEBUG&&userPaused&&playButton.getText().toString().equals("Play")&&playerStatus.getText().toString().equals("Paused");}
     public boolean debugNativeSurfaceReady(){return BuildConfig.DEBUG&&nativeSurfacesReady&&validVideoSurface(video)&&player!=null&&player.getVLCVout().areViewsAttached();}
     public int debugVideoGraphSequence(){return BuildConfig.DEBUG?videoGraphSequence:0;}

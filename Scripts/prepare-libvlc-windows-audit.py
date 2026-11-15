@@ -8,7 +8,7 @@ import hashlib
 import importlib.util
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import shlex
 import shutil
@@ -67,6 +67,41 @@ def gpl_header(path: Path) -> bool:
     return bool(GPL.search(re.sub(r'[\s*;]+', ' ', text)))
 
 
+def image_encoding_profile(vlc_config: str, ffmpeg_config: str, ffmpeg_components: str) -> dict:
+    """Core snapshot encoding is separate from FFmpeg's disabled encoders."""
+    if not re.search(r'^#define ENABLE_SOUT 1\s*$', vlc_config, re.M):
+        raise ValueError('The upstream core image-encoder framework is required for PNG snapshots')
+    if not re.search(r'^#define CONFIG_ENCODERS 0\s*$', ffmpeg_config, re.M):
+        raise ValueError('FFmpeg encoders must remain disabled in the playback profile')
+    encoders = dict(re.findall(r'^#define (CONFIG_[A-Z0-9_]+_ENCODER) ([0-9]+)\s*$', ffmpeg_components, re.M))
+    if not encoders or encoders.get('CONFIG_FLAC_ENCODER') != '0' or any(value != '0' for value in encoders.values()):
+        raise ValueError('Missing or enabled FFmpeg encoder component; the image framework must not broaden that profile')
+    return {'coreImageEncoderFrameworkEnabled': True, 'ffmpegEncodersEnabled': False,
+            'ffmpegEncoderComponentCount': len(encoders), 'enabledFfmpegEncoderComponents': [],
+            'requiredImageModule': 'codec/libpng_plugin.dll',
+            'excludedModuleCategories': ['access_output', 'mux', 'stream_out'],
+            'excludedRecordingModule': 'stream_filter/librecord_plugin.dll',
+            'scope': 'Retain the upstream PNG snapshot path; no Luma transcoder or streaming-output feature. Actual module/source/import and native snapshot checks remain required.'}
+
+
+def audit_image_encoding_profile(source: Path, build: Path, audit: Path) -> dict:
+    ffmpeg = source/'contrib/luma-windows-x64/ffmpeg/vlc_build'
+    paths = {'vlcConfiguration': build/'config.h', 'ffmpegConfiguration': ffmpeg/'config.h',
+             'ffmpegComponents': ffmpeg/'config_components.h'}
+    result = image_encoding_profile(*(paths[key].read_text() for key in paths))
+    result['configurationHashes'] = {key: digest(path) for key, path in paths.items()}
+    return save(audit, 'image-encoding-profile.json', result)
+
+
+def playback_only_exclusion(relative: str) -> str | None:
+    name = PurePosixPath(relative.lower())
+    if name.parts and name.parts[0] in {'access_output', 'mux', 'stream_out'}:
+        return 'Playback-only curation excludes '+name.parts[0]+' modules; the core encoder framework is retained for image snapshots'
+    if name.as_posix() == 'stream_filter/librecord_plugin.dll':
+        return 'Playback-only curation excludes internal stream recording'
+    return None
+
+
 def audit_ffmpeg(work: Path, source: Path, audit: Path, ar: str) -> dict:
     src = source/'contrib/luma-windows-x64/ffmpeg'
     build = src/'vlc_build'
@@ -76,7 +111,7 @@ def audit_ffmpeg(work: Path, source: Path, audit: Path, ar: str) -> dict:
     def define(name, text=config):
         match = re.search(r'^#define '+re.escape(name)+r' (.+)$', text, re.M)
         return match.group(1) if match else None
-    settings = {name: define(name) for name in ['FFMPEG_LICENSE', 'CONFIG_GPL', 'CONFIG_GPLV3', 'CONFIG_VERSION3', 'CONFIG_NONFREE']}
+    settings = {name: define(name) for name in ['FFMPEG_LICENSE', 'CONFIG_GPL', 'CONFIG_GPLV3', 'CONFIG_VERSION3', 'CONFIG_NONFREE', 'CONFIG_ENCODERS']}
     candidates = []
     for directory in ['libavcodec', 'libavformat', 'libavutil', 'libswscale']:
         for path in sorted((src/directory).rglob('*')):
@@ -91,7 +126,7 @@ def audit_ffmpeg(work: Path, source: Path, audit: Path, ar: str) -> dict:
         'selectedSourcePaths': [p.relative_to(src).as_posix() for p in sorted(selected)], 'gplHeaderCandidates': candidates, 'archives': archives})
     if not depfiles or not selected or any(row['selected'] for row in candidates):
         raise ValueError('FFmpeg compiled source closure is empty or selects a GPL header candidate')
-    if any(settings[n] != '0' for n in ['CONFIG_GPL', 'CONFIG_GPLV3', 'CONFIG_VERSION3', 'CONFIG_NONFREE']) or report['flacEncoder'] != '0':
+    if any(settings[n] != '0' for n in ['CONFIG_GPL', 'CONFIG_GPLV3', 'CONFIG_VERSION3', 'CONFIG_NONFREE', 'CONFIG_ENCODERS']) or report['flacEncoder'] != '0':
         raise ValueError('Unexpected FFmpeg GPL/version3/nonfree/encoder configuration')
     if any('flac_dsp_gpl' in member for row in archives for member in row['members']):
         raise ValueError('GPL FLAC assembly object is present in an archive')
@@ -168,6 +203,8 @@ def audit_modules(source: Path, build: Path, prefix: Path, audit: Path) -> dict:
         names = mapping.get(path.stem, [])
         sources = module_sources(source, names)
         reasons = []
+        if policy := playback_only_exclusion(path.relative_to(plugins).as_posix()):
+            reasons.append(policy)
         if not license_ or 'GNU Lesser General Public License, version 2.1 or later' not in license_:
             reasons.append('Metadata is not inspected LGPL2.1+')
         if not names or not sources:
@@ -185,6 +222,9 @@ def audit_modules(source: Path, build: Path, prefix: Path, audit: Path) -> dict:
     merged = next((row for row in rows if Path(row['path']).name == 'libavcodec_plugin.dll' and row['retained']), None)
     if merged is None or not any(row['path'] == 'modules/demux/avformat/demux.c' for row in merged['sources']):
         raise ValueError('Merged FFmpeg plugin has no audited avformat demux source closure')
+    png = next((row for row in rows if row['path'] == 'codec/libpng_plugin.dll' and row['retained']), None)
+    if png is None or not any(row['path'] == 'modules/codec/png.c' for row in png['sources']):
+        raise ValueError('PNG snapshot module has no audited upstream decoder/encoder source closure')
     return report
 
 
@@ -358,6 +398,7 @@ def main() -> int:
     audit.mkdir(exist_ok=True)
     try:
         snapshot_configuration(source, build, audit)
+        audit_image_encoding_profile(source, build, audit)
         audit_ffmpeg(work, source, audit, args.ar)
         audit_core(source, build, audit)
         modules = audit_modules(source, build, prefix, audit)
