@@ -1,0 +1,971 @@
+{
+  "scope": "Verbatim license/copyright/notice/author files from all45source archives. Packages can contain licenses for unbuilt tools or code; this collection does not imply those licenses govern every binary component.",
+  "files": [
+    {
+      "sourceArchive": "dav1d-1.5.1.tar.xz",
+      "pathInArchive": "dav1d-1.5.1/COPYING",
+      "noticePath": "Notices/macos-contrib/dav1d-1.5.1.tar.xz/dav1d-1.5.1/COPYING",
+      "sha256": "b327887de263238deaa80c34cdd2ff3e0ba1d35db585ce14a37ce3e74ee389e9",
+      "bytes": 1317
+    },
+    {
+      "sourceArchive": "ffmpeg-4.4.5.tar.xz",
+      "pathInArchive": "ffmpeg-4.4.5/COPYING.LGPLv2.1",
+      "noticePath": "Notices/macos-contrib/ffmpeg-4.4.5.tar.xz/ffmpeg-4.4.5/COPYING.LGPLv2.1",
+      "sha256": "b634ab5640e258563c536e658cad87080553df6f34f62269a21d554844e58bfe",
+      "bytes": 26526
+    },
+    {
+      "sourceArchive": "ffmpeg-4.4.5.tar.xz",
+      "pathInArchive": "ffmpeg-4.4.5/COPYING.GPLv2",
+      "noticePath": "Notices/macos-contrib/ffmpeg-4.4.5.tar.xz/ffmpeg-4.4.5/COPYING.GPLv2",
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "bytes": 18092
+    },
+    {
+      "sourceArchive": "ffmpeg-4.4.5.tar.xz",
+      "pathInArchive": "ffmpeg-4.4.5/COPYING.LGPLv3",
+      "noticePath": "Notices/macos-contrib/ffmpeg-4.4.5.tar.xz/ffmpeg-4.4.5/COPYING.LGPLv3",
+      "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+      "bytes": 7651
+    },
+    {
+      "sourceArchive": "ffmpeg-4.4.5.tar.xz",
+      "pathInArchive": "ffmpeg-4.4.5/COPYING.GPLv3",
+      "noticePath": "Notices/macos-contrib/ffmpeg-4.4.5.tar.xz/ffmpeg-4.4.5/COPYING.GPLv3",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+      "bytes": 35147
+    },
+    {
+      "sourceArchive": "ffmpeg-4.4.5.tar.xz",
+      "pathInArchive": "ffmpeg-4.4.5/doc/authors.texi",
+      "noticePath": "Notices/macos-contrib/ffmpeg-4.4.5.tar.xz/ffmpeg-4.4.5/doc/authors.texi",
+      "sha256": "fb5fac6dd8f7474033e933814491a8297d8723c52be4dcbcc82eef9c4f008dd2",
+      "bytes": 403
+    },
+    {
+      "sourceArchive": "ffmpeg-4.4.5.tar.xz",
+      "pathInArchive": "ffmpeg-4.4.5/LICENSE.md",
+      "noticePath": "Notices/macos-contrib/ffmpeg-4.4.5.tar.xz/ffmpeg-4.4.5/LICENSE.md",
+      "sha256": "cb48bf09a11f5fb576cddb0431c8f5ed0a60157a9ec942adffc13907cbe083f2",
+      "bytes": 4376
+    },
+    {
+      "sourceArchive": "flac-1.3.4.tar.xz",
+      "pathInArchive": "flac-1.3.4/AUTHORS",
+      "noticePath": "Notices/macos-contrib/flac-1.3.4.tar.xz/flac-1.3.4/AUTHORS",
+      "sha256": "a94c7269d91073b1e1675dd2006481dee1a9cd1d81e8f7ac3e735f28ef31daec",
+      "bytes": 2155
+    },
+    {
+      "sourceArchive": "flac-1.3.4.tar.xz",
+      "pathInArchive": "flac-1.3.4/COPYING.FDL",
+      "noticePath": "Notices/macos-contrib/flac-1.3.4.tar.xz/flac-1.3.4/COPYING.FDL",
+      "sha256": "f45cc81b400a048b56c9edbd4c3317f7a8958463dfd55aa96f268ecfd6baa12c",
+      "bytes": 20403
+    },
+    {
+      "sourceArchive": "flac-1.3.4.tar.xz",
+      "pathInArchive": "flac-1.3.4/COPYING.GPL",
+      "noticePath": "Notices/macos-contrib/flac-1.3.4.tar.xz/flac-1.3.4/COPYING.GPL",
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+      "bytes": 18092
+    },
+    {
+      "sourceArchive": "flac-1.3.4.tar.xz",
+      "pathInArchive": "flac-1.3.4/COPYING.LGPL",
+      "noticePath": "Notices/macos-contrib/flac-1.3.4.tar.xz/flac-1.3.4/COPYING.LGPL",
+      "sha256": "5df07007198989c622f5d41de8d703e7bef3d0e79d62e24332ee739a452af62a",
+      "bytes": 26436
+    },
+    {
+      "sourceArchive": "flac-1.3.4.tar.xz",
+      "pathInArchive": "flac-1.3.4/COPYING.Xiph",
+      "noticePath": "Notices/macos-contrib/flac-1.3.4.tar.xz/flac-1.3.4/COPYING.Xiph",
+      "sha256": "fa27cb11f13f97b0c5f3ff363b1e2610c6efe87ed175779cb2a78e44eb19d34c",
+      "bytes": 1509
+    },
+    {
+      "sourceArchive": "flac-1.3.4.tar.xz",
+      "pathInArchive": "flac-1.3.4/doc/html/license.html",
+      "noticePath": "Notices/macos-contrib/flac-1.3.4.tar.xz/flac-1.3.4/doc/html/license.html",
+      "sha256": "c90cb3427f6600a58a85acff7bbe651a55e64593101269bf2ea45c82084ae050",
+      "bytes": 5036
+    },
+    {
+      "sourceArchive": "freetype-2.13.1.tar.xz",
+      "pathInArchive": "freetype-2.13.1/LICENSE.TXT",
+      "noticePath": "Notices/macos-contrib/freetype-2.13.1.tar.xz/freetype-2.13.1/LICENSE.TXT",
+      "sha256": "2e3bbb7d7c5c396368dd0853a790ec29ce5b8647163dde42a0493fb0d6556b2b",
+      "bytes": 2074
+    },
+    {
+      "sourceArchive": "fribidi-1.0.12.tar.xz",
+      "pathInArchive": "fribidi-1.0.12/AUTHORS",
+      "noticePath": "Notices/macos-contrib/fribidi-1.0.12.tar.xz/fribidi-1.0.12/AUTHORS",
+      "sha256": "cb173f55c9514c8f38f4647ac3fedd5f8611358d331e65ab955da931e826861c",
+      "bytes": 1640
+    },
+    {
+      "sourceArchive": "fribidi-1.0.12.tar.xz",
+      "pathInArchive": "fribidi-1.0.12/COPYING",
+      "noticePath": "Notices/macos-contrib/fribidi-1.0.12.tar.xz/fribidi-1.0.12/COPYING",
+      "sha256": "32434afcc8666ba060e111d715bfdb6c2d5dd8a35fa4d3ab8ad67d8f850d2f2b",
+      "bytes": 26440
+    },
+    {
+      "sourceArchive": "harfbuzz-11.5.0.tar.xz",
+      "pathInArchive": "harfbuzz-11.5.0/AUTHORS",
+      "noticePath": "Notices/macos-contrib/harfbuzz-11.5.0.tar.xz/harfbuzz-11.5.0/AUTHORS",
+      "sha256": "19bfe8f5ed100636cd24ab0c90a3f71c21d8b02d9ba00719447a0faab364d49f",
+      "bytes": 201
+    },
+    {
+      "sourceArchive": "harfbuzz-11.5.0.tar.xz",
+      "pathInArchive": "harfbuzz-11.5.0/COPYING",
+      "noticePath": "Notices/macos-contrib/harfbuzz-11.5.0.tar.xz/harfbuzz-11.5.0/COPYING",
+      "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+      "bytes": 1971
+    },
+    {
+      "sourceArchive": "harfbuzz-11.5.0.tar.xz",
+      "pathInArchive": "harfbuzz-11.5.0/src/ms-use/COPYING",
+      "noticePath": "Notices/macos-contrib/harfbuzz-11.5.0.tar.xz/harfbuzz-11.5.0/src/ms-use/COPYING",
+      "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "bytes": 1141
+    },
+    {
+      "sourceArchive": "harfbuzz-11.5.0.tar.xz",
+      "pathInArchive": "harfbuzz-11.5.0/test/COPYING",
+      "noticePath": "Notices/macos-contrib/harfbuzz-11.5.0.tar.xz/harfbuzz-11.5.0/test/COPYING",
+      "sha256": "9b35b8485f69cd298fccbb3c40a827dc06cf1185553bef827903497d2944a8d7",
+      "bytes": 4370
+    },
+    {
+      "sourceArchive": "harfbuzz-11.5.0.tar.xz",
+      "pathInArchive": "harfbuzz-11.5.0/test/shape/data/aots/COPYING",
+      "noticePath": "Notices/macos-contrib/harfbuzz-11.5.0.tar.xz/harfbuzz-11.5.0/test/shape/data/aots/COPYING",
+      "sha256": "f55f74bf740db07bb032a90aa74af4307adea3d489c1ccba12453cf0c0a764cb",
+      "bytes": 593
+    },
+    {
+      "sourceArchive": "harfbuzz-11.5.0.tar.xz",
+      "pathInArchive": "harfbuzz-11.5.0/test/shape/data/text-rendering-tests/COPYING",
+      "noticePath": "Notices/macos-contrib/harfbuzz-11.5.0.tar.xz/harfbuzz-11.5.0/test/shape/data/text-rendering-tests/COPYING",
+      "sha256": "d24039e4d22c9bc72096f6174374539d92a3d6e1163938546ec59179fe095e6f",
+      "bytes": 584
+    },
+    {
+      "sourceArchive": "lame-3.100.tar.gz",
+      "pathInArchive": "lame-3.100/COPYING",
+      "noticePath": "Notices/macos-contrib/lame-3.100.tar.gz/lame-3.100/COPYING",
+      "sha256": "bfe4a52dc4645385f356a8e83cc54216a293e3b6f1cb4f79f5fc0277abf937fd",
+      "bytes": 25284
+    },
+    {
+      "sourceArchive": "lame-3.100.tar.gz",
+      "pathInArchive": "lame-3.100/LICENSE",
+      "noticePath": "Notices/macos-contrib/lame-3.100.tar.gz/lame-3.100/LICENSE",
+      "sha256": "7a40cbd8818c57e5285e83c772a459a996d1662c824a879836b97b473c07cae4",
+      "bytes": 487
+    },
+    {
+      "sourceArchive": "lame-3.100.tar.gz",
+      "pathInArchive": "lame-3.100/mpglib/AUTHORS",
+      "noticePath": "Notices/macos-contrib/lame-3.100.tar.gz/lame-3.100/mpglib/AUTHORS",
+      "sha256": "d8ecf9556aafa8c653796d6be3dc43deea374257680e21c30109a5c3c4484263",
+      "bytes": 604
+    },
+    {
+      "sourceArchive": "lame-3.100.tar.gz",
+      "pathInArchive": "lame-3.100/debian/copyright",
+      "noticePath": "Notices/macos-contrib/lame-3.100.tar.gz/lame-3.100/debian/copyright",
+      "sha256": "1f27f9f698183275bd615c1140b7bf6e498750e9280597c6eb39790e54ae809b",
+      "bytes": 2303
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/AUTHORS",
+      "sha256": "4a1875a896cbb686e7c1033dc242b32de87d30e96917b57daf98f5d9d612cb4f",
+      "bytes": 10938
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/LICENSE",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/LICENSE",
+      "sha256": "4764a286d8b2faeaf42f4418e7d7a28d58fc8fd4d00a3d0a7f44b0a4099de7f2",
+      "bytes": 1316
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/third_party/fastfeat/LICENSE",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/third_party/fastfeat/LICENSE",
+      "sha256": "043dcfd059386f9facd376351b2bd79325778744aa442177390cdfcca54babed",
+      "bytes": 1506
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/third_party/googletest/src/LICENSE",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/third_party/googletest/src/LICENSE",
+      "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+      "bytes": 1475
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/third_party/libwebm/AUTHORS.TXT",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/third_party/libwebm/AUTHORS.TXT",
+      "sha256": "1e8751834a0341c39c75a06021fdad56aa614fc6cd7cf0a7f8a18921689c9e2c",
+      "bytes": 98
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/third_party/libwebm/LICENSE.TXT",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/third_party/libwebm/LICENSE.TXT",
+      "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+      "bytes": 1496
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/third_party/libyuv/LICENSE",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/third_party/libyuv/LICENSE",
+      "sha256": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+      "bytes": 1506
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/third_party/vector/LICENSE",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/third_party/vector/LICENSE",
+      "sha256": "ff6c857ce2708e87701323078aef115c1872a1f80a9649f86dc899b48083bc60",
+      "bytes": 1084
+    },
+    {
+      "sourceArchive": "libaom-3.5.0.tar.gz",
+      "pathInArchive": "libaom-3.5.0/third_party/x86inc/LICENSE",
+      "noticePath": "Notices/macos-contrib/libaom-3.5.0.tar.gz/libaom-3.5.0/third_party/x86inc/LICENSE",
+      "sha256": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8",
+      "bytes": 936
+    },
+    {
+      "sourceArchive": "libarchive-3.8.0.tar.gz",
+      "pathInArchive": "libarchive-3.8.0/COPYING",
+      "noticePath": "Notices/macos-contrib/libarchive-3.8.0.tar.gz/libarchive-3.8.0/COPYING",
+      "sha256": "30e556b3959e3985d66efefec5eaac51d4995053caa1d3cffe6eb916f146f229",
+      "bytes": 3089
+    },
+    {
+      "sourceArchive": "libass-0.17.3.tar.gz",
+      "pathInArchive": "libass-0.17.3/COPYING",
+      "noticePath": "Notices/macos-contrib/libass-0.17.3.tar.gz/libass-0.17.3/COPYING",
+      "sha256": "f7e30699d02798351e7f839e3d3bfeb29ce65e44efa7735c225464c4fd7dfe9c",
+      "bytes": 755
+    },
+    {
+      "sourceArchive": "libdsm-0.4.3.tar.xz",
+      "pathInArchive": "libdsm-0.4.3/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libdsm-0.4.3.tar.xz/libdsm-0.4.3/AUTHORS",
+      "sha256": "37442d1321e7452b1d7cebce4d7d0caeddf1b18baf967f1dcb1f8c45a7244939",
+      "bytes": 258
+    },
+    {
+      "sourceArchive": "libdsm-0.4.3.tar.xz",
+      "pathInArchive": "libdsm-0.4.3/COPYING",
+      "noticePath": "Notices/macos-contrib/libdsm-0.4.3.tar.xz/libdsm-0.4.3/COPYING",
+      "sha256": "806b80ec9ff3b429533869fd5b0e47cad4e572e2c338f1994fa5f912b44d8008",
+      "bytes": 27427
+    },
+    {
+      "sourceArchive": "libdvbpsi-1.3.3.tar.bz2",
+      "pathInArchive": "libdvbpsi-1.3.3/COPYING",
+      "noticePath": "Notices/macos-contrib/libdvbpsi-1.3.3.tar.bz2/libdvbpsi-1.3.3/COPYING",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "bytes": 26530
+    },
+    {
+      "sourceArchive": "libdvbpsi-1.3.3.tar.bz2",
+      "pathInArchive": "libdvbpsi-1.3.3/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libdvbpsi-1.3.3.tar.bz2/libdvbpsi-1.3.3/AUTHORS",
+      "sha256": "66ad6934bcf53c8c19cfc854ad95f179f3b5bb3a052d8001f1b2e99167851148",
+      "bytes": 2260
+    },
+    {
+      "sourceArchive": "libebml-1.4.3.tar.xz",
+      "pathInArchive": "libebml-1.4.3/LICENSE.LGPL",
+      "noticePath": "Notices/macos-contrib/libebml-1.4.3.tar.xz/libebml-1.4.3/LICENSE.LGPL",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "bytes": 26530
+    },
+    {
+      "sourceArchive": "libebur128-1.2.4.tar.gz",
+      "pathInArchive": "libebur128-1.2.4/COPYING",
+      "noticePath": "Notices/macos-contrib/libebur128-1.2.4.tar.gz/libebur128-1.2.4/COPYING",
+      "sha256": "d6b4754bb67bdd08b97d5d11b2d7434997a371585a78fe77007149df3af8d09c",
+      "bytes": 1059
+    },
+    {
+      "sourceArchive": "libgcrypt-1.10.1.tar.bz2",
+      "pathInArchive": "libgcrypt-1.10.1/LICENSES",
+      "noticePath": "Notices/macos-contrib/libgcrypt-1.10.1.tar.bz2/libgcrypt-1.10.1/LICENSES",
+      "sha256": "819030c60337759c3411dc480a303a4275657a5734e6ae65b24bfb68a7ecc4ef",
+      "bytes": 13003
+    },
+    {
+      "sourceArchive": "libgcrypt-1.10.1.tar.bz2",
+      "pathInArchive": "libgcrypt-1.10.1/COPYING",
+      "noticePath": "Notices/macos-contrib/libgcrypt-1.10.1.tar.bz2/libgcrypt-1.10.1/COPYING",
+      "sha256": "32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670",
+      "bytes": 17992
+    },
+    {
+      "sourceArchive": "libgcrypt-1.10.1.tar.bz2",
+      "pathInArchive": "libgcrypt-1.10.1/COPYING.LIB",
+      "noticePath": "Notices/macos-contrib/libgcrypt-1.10.1.tar.bz2/libgcrypt-1.10.1/COPYING.LIB",
+      "sha256": "ca0061fc1381a3ab242310e4b3f56389f28e3d460eb2fd822ed7a21c6f030532",
+      "bytes": 26536
+    },
+    {
+      "sourceArchive": "libgcrypt-1.10.1.tar.bz2",
+      "pathInArchive": "libgcrypt-1.10.1/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libgcrypt-1.10.1.tar.bz2/libgcrypt-1.10.1/AUTHORS",
+      "sha256": "1e849956448bad4a186dd03a12dc89a9b86be08beccb7c9f69a3e82cce0dc2cd",
+      "bytes": 8558
+    },
+    {
+      "sourceArchive": "libgpg-error-1.27.tar.bz2",
+      "pathInArchive": "libgpg-error-1.27/COPYING",
+      "noticePath": "Notices/macos-contrib/libgpg-error-1.27.tar.bz2/libgpg-error-1.27/COPYING",
+      "sha256": "231f7edcc7352d7734a96eef0b8030f77982678c516876fcb81e25b32d68564c",
+      "bytes": 18002
+    },
+    {
+      "sourceArchive": "libgpg-error-1.27.tar.bz2",
+      "pathInArchive": "libgpg-error-1.27/COPYING.LIB",
+      "noticePath": "Notices/macos-contrib/libgpg-error-1.27.tar.bz2/libgpg-error-1.27/COPYING.LIB",
+      "sha256": "a9bdde5616ecdd1e980b44f360600ee8783b1f99b8cc83a2beb163a0a390e861",
+      "bytes": 26527
+    },
+    {
+      "sourceArchive": "libgpg-error-1.27.tar.bz2",
+      "pathInArchive": "libgpg-error-1.27/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libgpg-error-1.27.tar.bz2/libgpg-error-1.27/AUTHORS",
+      "sha256": "32d4369a7cb61060d769402bded84cb21c3cacda3077b625290b343f7c558699",
+      "bytes": 2141
+    },
+    {
+      "sourceArchive": "libgsm_1.0.13.tar.gz",
+      "pathInArchive": "gsm-1.0-pl13/COPYRIGHT",
+      "noticePath": "Notices/macos-contrib/libgsm_1.0.13.tar.gz/gsm-1.0-pl13/COPYRIGHT",
+      "sha256": "81c68a3374937ed9b5e4929c709e81a2c4b35b5d1f450ecf8c473e2daea46ff6",
+      "bytes": 1450
+    },
+    {
+      "sourceArchive": "libmatroska-1.7.0.tar.xz",
+      "pathInArchive": "libmatroska-1.7.0/LICENSE.LGPL",
+      "noticePath": "Notices/macos-contrib/libmatroska-1.7.0.tar.xz/libmatroska-1.7.0/LICENSE.LGPL",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "bytes": 26530
+    },
+    {
+      "sourceArchive": "libmodplug-0.8.9.0.tar.gz",
+      "pathInArchive": "libmodplug-0.8.9.0/COPYING",
+      "noticePath": "Notices/macos-contrib/libmodplug-0.8.9.0.tar.gz/libmodplug-0.8.9.0/COPYING",
+      "sha256": "49942e7b3b175f549e751feb08b5270ca6f6c5fb7a1be9f9517db275ec32c92e",
+      "bytes": 57
+    },
+    {
+      "sourceArchive": "libmodplug-0.8.9.0.tar.gz",
+      "pathInArchive": "libmodplug-0.8.9.0/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libmodplug-0.8.9.0.tar.gz/libmodplug-0.8.9.0/AUTHORS",
+      "sha256": "9bf4fdca73ed1f9654ba5930261fd8d31d3874327e9925bf64c4ac7dfd9ac11a",
+      "bytes": 648
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/LICENSE",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/LICENSE",
+      "sha256": "9c8713ccc5d6d93d20c7a1cfcb876e64baf551bfbe67faa4e60d39cda9ffd023",
+      "bytes": 1453
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/tests/LICENSE.CIPIC_subject_003_hrir_final",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/tests/LICENSE.CIPIC_subject_003_hrir_final",
+      "sha256": "78149b9a8138d9fdcbd77b66e554711a1a2a5451d16b432b5eaec6d642697d85",
+      "bytes": 2259
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/tests/LICENSE.FHK_HRIR_L2354",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/tests/LICENSE.FHK_HRIR_L2354",
+      "sha256": "47c326d67143bb68c008a900c954c8a6779bdafa25d350d12c57d532c3a32200",
+      "bytes": 19587
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/tests/LICENSE.LISTEN_1002_IRC_1002_C_HRIR",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/tests/LICENSE.LISTEN_1002_IRC_1002_C_HRIR",
+      "sha256": "29661b4a131466c1d5cdb786db0e531244c14850af0d3fb80fb8c801bdbe7145",
+      "bytes": 619
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/tests/LICENSE.MIT_KEMAR_pinnae",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/tests/LICENSE.MIT_KEMAR_pinnae",
+      "sha256": "548b43283652608c38ed82accb918fae135885016de78c969cbd8cd7215d15ec",
+      "bytes": 1414
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/tests/LICENSE.TU-Berlin_QU_KEMAR_anechoic",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/tests/LICENSE.TU-Berlin_QU_KEMAR_anechoic",
+      "sha256": "84be1cf7d2cf8ea106fcf1f24e360cd922a05f80c6172e3f70608b0eaed50460",
+      "bytes": 19431
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/tests/LICENSE.pulse",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/tests/LICENSE.pulse",
+      "sha256": "fabb8e1099a0812e0be1951a94cdda0def9b3e60f1aa5b649a0dbe01fc637fc0",
+      "bytes": 12851
+    },
+    {
+      "sourceArchive": "libmysofa-0.5.tar.gz",
+      "pathInArchive": "libmysofa-0.5/windows/third-party/sys/LICENSE",
+      "noticePath": "Notices/macos-contrib/libmysofa-0.5.tar.gz/libmysofa-0.5/windows/third-party/sys/LICENSE",
+      "sha256": "818fd40b46dfbe838f4dc0957bfe44afc4b35d450237723b82d793a0403f3c77",
+      "bytes": 7991
+    },
+    {
+      "sourceArchive": "libnfs-5.0.1.tar.gz",
+      "pathInArchive": "libnfs-libnfs-5.0.1/COPYING",
+      "noticePath": "Notices/macos-contrib/libnfs-5.0.1.tar.gz/libnfs-libnfs-5.0.1/COPYING",
+      "sha256": "edd960c0142b8ada98b43b6396b78f4e557b0bc70ac601a51e397ad04070e2c5",
+      "bytes": 1601
+    },
+    {
+      "sourceArchive": "libnfs-5.0.1.tar.gz",
+      "pathInArchive": "libnfs-libnfs-5.0.1/LICENCE-BSD.txt",
+      "noticePath": "Notices/macos-contrib/libnfs-5.0.1.tar.gz/libnfs-libnfs-5.0.1/LICENCE-BSD.txt",
+      "sha256": "d9406ced95457941032aa11d04623b8ab71f2827a3395ebef137aec475be35b1",
+      "bytes": 1457
+    },
+    {
+      "sourceArchive": "libnfs-5.0.1.tar.gz",
+      "pathInArchive": "libnfs-libnfs-5.0.1/LICENCE-GPL-3.txt",
+      "noticePath": "Notices/macos-contrib/libnfs-5.0.1.tar.gz/libnfs-libnfs-5.0.1/LICENCE-GPL-3.txt",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+      "bytes": 35147
+    },
+    {
+      "sourceArchive": "libnfs-5.0.1.tar.gz",
+      "pathInArchive": "libnfs-libnfs-5.0.1/LICENCE-LGPL-2.1.txt",
+      "noticePath": "Notices/macos-contrib/libnfs-5.0.1.tar.gz/libnfs-libnfs-5.0.1/LICENCE-LGPL-2.1.txt",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "bytes": 26530
+    },
+    {
+      "sourceArchive": "libogg-1.3.6.tar.xz",
+      "pathInArchive": "libogg-1.3.6/COPYING",
+      "noticePath": "Notices/macos-contrib/libogg-1.3.6.tar.xz/libogg-1.3.6/COPYING",
+      "sha256": "d2ab5758336489da61c12cc5bb757da5339c4ae9001f9bb0562b4370249af814",
+      "bytes": 1466
+    },
+    {
+      "sourceArchive": "libogg-1.3.6.tar.xz",
+      "pathInArchive": "libogg-1.3.6/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libogg-1.3.6.tar.xz/libogg-1.3.6/AUTHORS",
+      "sha256": "6fcb33d0cdd60b5054e7df820916388b590427514288c2bab01c626bb8ae9506",
+      "bytes": 198
+    },
+    {
+      "sourceArchive": "libplacebo-0.2.1.tar.gz",
+      "pathInArchive": "libplacebo-0.2.1/LICENSE",
+      "noticePath": "Notices/macos-contrib/libplacebo-0.2.1.tar.gz/libplacebo-0.2.1/LICENSE",
+      "sha256": "f55acf28f3afab9acf0b0184681725281c5786642fd4613012a24c033f7689a2",
+      "bytes": 25355
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/AUTHORS",
+      "sha256": "5d9d94afa7d911c590ee287da91787d84e49a04a9ee67ef57f1f42970249f5c2",
+      "bytes": 1544
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/LICENSE",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/LICENSE",
+      "sha256": "16d9daaafbf63a31a5bdc91d4600972548fef5aaa1244202393288dbd079c49a",
+      "bytes": 5345
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/ci/LICENSE_MIT.txt",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/ci/LICENSE_MIT.txt",
+      "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+      "bytes": 1036
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/contrib/gregbook/COPYING",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/contrib/gregbook/COPYING",
+      "sha256": "d6cb0e9e560f51085556949a84af12b79a00f10ab8b66c752537faf7cd665572",
+      "bytes": 18097
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/contrib/gregbook/LICENSE",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/contrib/gregbook/LICENSE",
+      "sha256": "b6a03c1803eb58ffb1f1278d5c7d4096c4c116e66dce8a7553e8c77d163c3438",
+      "bytes": 2373
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/contrib/pngexif/LICENSE_MIT.txt",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/contrib/pngexif/LICENSE_MIT.txt",
+      "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+      "bytes": 1036
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/contrib/pngminus/LICENSE.txt",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/contrib/pngminus/LICENSE.txt",
+      "sha256": "1806f1f10d393e9e377b3a8d1b968452b54f1a90378f14eeef45426946ace330",
+      "bytes": 1164
+    },
+    {
+      "sourceArchive": "libpng-1.6.50.tar.xz",
+      "pathInArchive": "libpng-1.6.50/scripts/cmake/AUTHORS.md",
+      "noticePath": "Notices/macos-contrib/libpng-1.6.50.tar.xz/libpng-1.6.50/scripts/cmake/AUTHORS.md",
+      "sha256": "4691b0d26afaaac9681957a307c0c79d1e834380ca1ea483320ddcf003eb4637",
+      "bytes": 842
+    },
+    {
+      "sourceArchive": "libshout-2.4.1.tar.gz",
+      "pathInArchive": "libshout-2.4.1/src/common/thread/COPYING",
+      "noticePath": "Notices/macos-contrib/libshout-2.4.1.tar.gz/libshout-2.4.1/src/common/thread/COPYING",
+      "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+      "bytes": 25275
+    },
+    {
+      "sourceArchive": "libshout-2.4.1.tar.gz",
+      "pathInArchive": "libshout-2.4.1/src/common/timing/COPYING",
+      "noticePath": "Notices/macos-contrib/libshout-2.4.1.tar.gz/libshout-2.4.1/src/common/timing/COPYING",
+      "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+      "bytes": 25275
+    },
+    {
+      "sourceArchive": "libshout-2.4.1.tar.gz",
+      "pathInArchive": "libshout-2.4.1/src/common/httpp/COPYING",
+      "noticePath": "Notices/macos-contrib/libshout-2.4.1.tar.gz/libshout-2.4.1/src/common/httpp/COPYING",
+      "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+      "bytes": 25275
+    },
+    {
+      "sourceArchive": "libshout-2.4.1.tar.gz",
+      "pathInArchive": "libshout-2.4.1/src/common/avl/COPYING",
+      "noticePath": "Notices/macos-contrib/libshout-2.4.1.tar.gz/libshout-2.4.1/src/common/avl/COPYING",
+      "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+      "bytes": 25275
+    },
+    {
+      "sourceArchive": "libshout-2.4.1.tar.gz",
+      "pathInArchive": "libshout-2.4.1/src/common/net/COPYING",
+      "noticePath": "Notices/macos-contrib/libshout-2.4.1.tar.gz/libshout-2.4.1/src/common/net/COPYING",
+      "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+      "bytes": 25275
+    },
+    {
+      "sourceArchive": "libshout-2.4.1.tar.gz",
+      "pathInArchive": "libshout-2.4.1/COPYING",
+      "noticePath": "Notices/macos-contrib/libshout-2.4.1.tar.gz/libshout-2.4.1/COPYING",
+      "sha256": "7a4436f9ec37603356791c87de3bc444989befd2682d29efb3d97604e04c1852",
+      "bytes": 25275
+    },
+    {
+      "sourceArchive": "libsmb2-4.0.0.tar.gz",
+      "pathInArchive": "libsmb2-4.0.0/COPYING",
+      "noticePath": "Notices/macos-contrib/libsmb2-4.0.0.tar.gz/libsmb2-4.0.0/COPYING",
+      "sha256": "749c710c2b3d5c95906c785f28af9abbe4ce909311e72eb72eee5c6873e2fa6f",
+      "bytes": 895
+    },
+    {
+      "sourceArchive": "libsmb2-4.0.0.tar.gz",
+      "pathInArchive": "libsmb2-4.0.0/LICENCE-LGPL-2.1.txt",
+      "noticePath": "Notices/macos-contrib/libsmb2-4.0.0.tar.gz/libsmb2-4.0.0/LICENCE-LGPL-2.1.txt",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "bytes": 26530
+    },
+    {
+      "sourceArchive": "libssh2-1.10.0.tar.gz",
+      "pathInArchive": "libssh2-1.10.0/docs/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libssh2-1.10.0.tar.gz/libssh2-1.10.0/docs/AUTHORS",
+      "sha256": "12228e95c6b41c76d00b6ca8f2bf7bfb3372f3f32b6c62f34882530b9406f26d",
+      "bytes": 1202
+    },
+    {
+      "sourceArchive": "libssh2-1.10.0.tar.gz",
+      "pathInArchive": "libssh2-1.10.0/COPYING",
+      "noticePath": "Notices/macos-contrib/libssh2-1.10.0.tar.gz/libssh2-1.10.0/COPYING",
+      "sha256": "859e60d760a3446ecaf777339f1eef98c527aea40714384d24b882a83ffdd23a",
+      "bytes": 1960
+    },
+    {
+      "sourceArchive": "libtasn1-4.8.tar.gz",
+      "pathInArchive": "libtasn1-4.8/COPYING.LIB",
+      "noticePath": "Notices/macos-contrib/libtasn1-4.8.tar.gz/libtasn1-4.8/COPYING.LIB",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "bytes": 26530
+    },
+    {
+      "sourceArchive": "libtasn1-4.8.tar.gz",
+      "pathInArchive": "libtasn1-4.8/COPYING",
+      "noticePath": "Notices/macos-contrib/libtasn1-4.8.tar.gz/libtasn1-4.8/COPYING",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+      "bytes": 35147
+    },
+    {
+      "sourceArchive": "libtasn1-4.8.tar.gz",
+      "pathInArchive": "libtasn1-4.8/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libtasn1-4.8.tar.gz/libtasn1-4.8/AUTHORS",
+      "sha256": "949894e3b1d3952cbe5e2b16fcdcd2192d967e5da20d1f71bd8f434f6ccec2b1",
+      "bytes": 456
+    },
+    {
+      "sourceArchive": "libtheora-1.1.1.tar.xz",
+      "pathInArchive": "libtheora-1.1.1/LICENSE",
+      "noticePath": "Notices/macos-contrib/libtheora-1.1.1.tar.xz/libtheora-1.1.1/LICENSE",
+      "sha256": "654a0238f789f4435c4818f50005b141d013c5a09a31d861efc1d0d67ba975a4",
+      "bytes": 964
+    },
+    {
+      "sourceArchive": "libtheora-1.1.1.tar.xz",
+      "pathInArchive": "libtheora-1.1.1/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libtheora-1.1.1.tar.xz/libtheora-1.1.1/AUTHORS",
+      "sha256": "76ce13651678372266b233e026810a368e2cf0a0d255d19805d268d80ac1dbcd",
+      "bytes": 702
+    },
+    {
+      "sourceArchive": "libtheora-1.1.1.tar.xz",
+      "pathInArchive": "libtheora-1.1.1/COPYING",
+      "noticePath": "Notices/macos-contrib/libtheora-1.1.1.tar.xz/libtheora-1.1.1/COPYING",
+      "sha256": "8417fad7da775735564e209484a2e011e0fa201e94f01fdbee6e4977e478e6fc",
+      "bytes": 1470
+    },
+    {
+      "sourceArchive": "libvorbis-1.3.6.tar.xz",
+      "pathInArchive": "libvorbis-1.3.6/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libvorbis-1.3.6.tar.xz/libvorbis-1.3.6/AUTHORS",
+      "sha256": "f5cab9f16035f770f50299f85cf2938c06dc3a9a30425961067788102ec896d3",
+      "bytes": 65
+    },
+    {
+      "sourceArchive": "libvorbis-1.3.6.tar.xz",
+      "pathInArchive": "libvorbis-1.3.6/COPYING",
+      "noticePath": "Notices/macos-contrib/libvorbis-1.3.6.tar.xz/libvorbis-1.3.6/COPYING",
+      "sha256": "29e9914e6173b7061b7d48c25e6159fc1438326738bc047cc7248abc01b271f6",
+      "bytes": 1470
+    },
+    {
+      "sourceArchive": "libvpx-1.15.2.tar.gz",
+      "pathInArchive": "libvpx-1.15.2/AUTHORS",
+      "noticePath": "Notices/macos-contrib/libvpx-1.15.2.tar.gz/libvpx-1.15.2/AUTHORS",
+      "sha256": "4f7d19d35614f7e56c65cc4475b78fed0086d20af973c65f2ec5a201b1617225",
+      "bytes": 8794
+    },
+    {
+      "sourceArchive": "libvpx-1.15.2.tar.gz",
+      "pathInArchive": "libvpx-1.15.2/LICENSE",
+      "noticePath": "Notices/macos-contrib/libvpx-1.15.2.tar.gz/libvpx-1.15.2/LICENSE",
+      "sha256": "8267348d5af1262c11d1a08de2f5afc77457755f1ac658627dd9acf71011d615",
+      "bytes": 1537
+    },
+    {
+      "sourceArchive": "libvpx-1.15.2.tar.gz",
+      "pathInArchive": "libvpx-1.15.2/third_party/googletest/src/LICENSE",
+      "noticePath": "Notices/macos-contrib/libvpx-1.15.2.tar.gz/libvpx-1.15.2/third_party/googletest/src/LICENSE",
+      "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+      "bytes": 1475
+    },
+    {
+      "sourceArchive": "libvpx-1.15.2.tar.gz",
+      "pathInArchive": "libvpx-1.15.2/third_party/libwebm/AUTHORS.TXT",
+      "noticePath": "Notices/macos-contrib/libvpx-1.15.2.tar.gz/libvpx-1.15.2/third_party/libwebm/AUTHORS.TXT",
+      "sha256": "3edb5f5496bfff3d6d4a62fa75fe996b814920d0d6e348c2e65c589e7ac5d177",
+      "bytes": 137
+    },
+    {
+      "sourceArchive": "libvpx-1.15.2.tar.gz",
+      "pathInArchive": "libvpx-1.15.2/third_party/libwebm/LICENSE.TXT",
+      "noticePath": "Notices/macos-contrib/libvpx-1.15.2.tar.gz/libvpx-1.15.2/third_party/libwebm/LICENSE.TXT",
+      "sha256": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+      "bytes": 1496
+    },
+    {
+      "sourceArchive": "libvpx-1.15.2.tar.gz",
+      "pathInArchive": "libvpx-1.15.2/third_party/libyuv/LICENSE",
+      "noticePath": "Notices/macos-contrib/libvpx-1.15.2.tar.gz/libvpx-1.15.2/third_party/libyuv/LICENSE",
+      "sha256": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+      "bytes": 1506
+    },
+    {
+      "sourceArchive": "libvpx-1.15.2.tar.gz",
+      "pathInArchive": "libvpx-1.15.2/third_party/x86inc/LICENSE",
+      "noticePath": "Notices/macos-contrib/libvpx-1.15.2.tar.gz/libvpx-1.15.2/third_party/x86inc/LICENSE",
+      "sha256": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8",
+      "bytes": 936
+    },
+    {
+      "sourceArchive": "libxml2-2.9.14.tar.xz",
+      "pathInArchive": "libxml2-2.9.14/Copyright",
+      "noticePath": "Notices/macos-contrib/libxml2-2.9.14.tar.xz/libxml2-2.9.14/Copyright",
+      "sha256": "c5c63674f8a83c4d2e385d96d1c670a03cb871ba2927755467017317878574bd",
+      "bytes": 1289
+    },
+    {
+      "sourceArchive": "libxml2-2.9.14.tar.xz",
+      "pathInArchive": "libxml2-2.9.14/COPYING",
+      "noticePath": "Notices/macos-contrib/libxml2-2.9.14.tar.xz/libxml2-2.9.14/COPYING",
+      "sha256": "c5c63674f8a83c4d2e385d96d1c670a03cb871ba2927755467017317878574bd",
+      "bytes": 1289
+    },
+    {
+      "sourceArchive": "live.2016.10.21.tar.gz",
+      "pathInArchive": "live/COPYING",
+      "noticePath": "Notices/macos-contrib/live.2016.10.21.tar.gz/live/COPYING",
+      "sha256": "d75cbbcd32b1a2a081472184116e9fd330205c9e55c3e9119203022072294106",
+      "bytes": 24386
+    },
+    {
+      "sourceArchive": "mpg123-1.30.1.tar.bz2",
+      "pathInArchive": "mpg123-1.30.1/AUTHORS",
+      "noticePath": "Notices/macos-contrib/mpg123-1.30.1.tar.bz2/mpg123-1.30.1/AUTHORS",
+      "sha256": "acf074a5eb7933a9d60074ea3251629c2eddd28e5255b306252c753142c91b4c",
+      "bytes": 9170
+    },
+    {
+      "sourceArchive": "mpg123-1.30.1.tar.bz2",
+      "pathInArchive": "mpg123-1.30.1/COPYING",
+      "noticePath": "Notices/macos-contrib/mpg123-1.30.1.tar.bz2/mpg123-1.30.1/COPYING",
+      "sha256": "c22482728a634a8dfdb4ff72a96d4c1ed64cd8f3e79335c401751ac591609366",
+      "bytes": 40718
+    },
+    {
+      "sourceArchive": "mpg123-1.30.1.tar.bz2",
+      "pathInArchive": "mpg123-1.30.1/doc/LICENSE",
+      "noticePath": "Notices/macos-contrib/mpg123-1.30.1.tar.bz2/mpg123-1.30.1/doc/LICENSE",
+      "sha256": "cca79ea6fc0a7715e52450df2d86311f990e85067dd13f4d7f5a88d4fd23a07c",
+      "bytes": 957
+    },
+    {
+      "sourceArchive": "openjpeg-2.5.0.tar.gz",
+      "pathInArchive": "openjpeg-2.5.0/AUTHORS.md",
+      "noticePath": "Notices/macos-contrib/openjpeg-2.5.0.tar.gz/openjpeg-2.5.0/AUTHORS.md",
+      "sha256": "cf22e984f9fbb9be7550e9a94120595ba8c4a7de0d63f47d3725f4b2e28a4387",
+      "bytes": 712
+    },
+    {
+      "sourceArchive": "openjpeg-2.5.0.tar.gz",
+      "pathInArchive": "openjpeg-2.5.0/LICENSE",
+      "noticePath": "Notices/macos-contrib/openjpeg-2.5.0.tar.gz/openjpeg-2.5.0/LICENSE",
+      "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6",
+      "bytes": 2112
+    },
+    {
+      "sourceArchive": "openjpeg-2.5.0.tar.gz",
+      "pathInArchive": "openjpeg-2.5.0/src/bin/wx/OPJViewer/source/license.txt",
+      "noticePath": "Notices/macos-contrib/openjpeg-2.5.0.tar.gz/openjpeg-2.5.0/src/bin/wx/OPJViewer/source/license.txt",
+      "sha256": "8081c33f6953950dcf424aa844714658b73ada0fcaea16e4487f5fa07ef0960d",
+      "bytes": 1683
+    },
+    {
+      "sourceArchive": "openjpeg-2.5.0.tar.gz",
+      "pathInArchive": "openjpeg-2.5.0/thirdparty/astyle/LICENSE.md",
+      "noticePath": "Notices/macos-contrib/openjpeg-2.5.0.tar.gz/openjpeg-2.5.0/thirdparty/astyle/LICENSE.md",
+      "sha256": "2e8480e753b7a1d100c80920f4250b1bc9f93a18c6a5953c42b11445218cd0fb",
+      "bytes": 1094
+    },
+    {
+      "sourceArchive": "openjpeg-2.5.0.tar.gz",
+      "pathInArchive": "openjpeg-2.5.0/thirdparty/liblcms2/COPYING",
+      "noticePath": "Notices/macos-contrib/openjpeg-2.5.0.tar.gz/openjpeg-2.5.0/thirdparty/liblcms2/COPYING",
+      "sha256": "c725daac91a9259ce5e195683c0eeb797d345035c36ac5ba114c9fa80e11639a",
+      "bytes": 1078
+    },
+    {
+      "sourceArchive": "openjpeg-2.5.0.tar.gz",
+      "pathInArchive": "openjpeg-2.5.0/thirdparty/libpng/LICENSE",
+      "noticePath": "Notices/macos-contrib/openjpeg-2.5.0.tar.gz/openjpeg-2.5.0/thirdparty/libpng/LICENSE",
+      "sha256": "f01bdeecb7ce7a5ab73b1bcc4d381b73448ce672286a10fb6c946f880fc936e9",
+      "bytes": 4937
+    },
+    {
+      "sourceArchive": "opus-1.3.tar.gz",
+      "pathInArchive": "opus-1.3/COPYING",
+      "noticePath": "Notices/macos-contrib/opus-1.3.tar.gz/opus-1.3/COPYING",
+      "sha256": "8338ce8d922bb4416ce3dd1e5680173332435e3f0755007ac7801ccd674fe682",
+      "bytes": 1928
+    },
+    {
+      "sourceArchive": "opus-1.3.tar.gz",
+      "pathInArchive": "opus-1.3/AUTHORS",
+      "noticePath": "Notices/macos-contrib/opus-1.3.tar.gz/opus-1.3/AUTHORS",
+      "sha256": "f9fd849e652219ce98e008303370b352d37663d0ffb27b8dc514ad93c9c7438b",
+      "bytes": 239
+    },
+    {
+      "sourceArchive": "protobuf-3.1.0-cpp.tar.gz",
+      "pathInArchive": "protobuf-3.1.0/LICENSE",
+      "noticePath": "Notices/macos-contrib/protobuf-3.1.0-cpp.tar.gz/protobuf-3.1.0/LICENSE",
+      "sha256": "af67c58de2e18677a0b8cb5fffbe2232aabb8eb2930e8cd684769cef3d74a262",
+      "bytes": 2133
+    },
+    {
+      "sourceArchive": "protobuf-3.1.0-cpp.tar.gz",
+      "pathInArchive": "protobuf-3.1.0/gmock/LICENSE",
+      "noticePath": "Notices/macos-contrib/protobuf-3.1.0-cpp.tar.gz/protobuf-3.1.0/gmock/LICENSE",
+      "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+      "bytes": 1475
+    },
+    {
+      "sourceArchive": "protobuf-3.1.0-cpp.tar.gz",
+      "pathInArchive": "protobuf-3.1.0/gmock/gtest/LICENSE",
+      "noticePath": "Notices/macos-contrib/protobuf-3.1.0-cpp.tar.gz/protobuf-3.1.0/gmock/gtest/LICENSE",
+      "sha256": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+      "bytes": 1475
+    },
+    {
+      "sourceArchive": "protobuf-3.1.0-cpp.tar.gz",
+      "pathInArchive": "protobuf-3.1.0/gmock/scripts/generator/LICENSE",
+      "noticePath": "Notices/macos-contrib/protobuf-3.1.0-cpp.tar.gz/protobuf-3.1.0/gmock/scripts/generator/LICENSE",
+      "sha256": "5e0df8c845c742e76f2f64d2d9ce1b7e74a2422fddbc577ae6a56319083de0bf",
+      "bytes": 11386
+    },
+    {
+      "sourceArchive": "pupnp-release-1.14.13.tar.gz",
+      "pathInArchive": "pupnp-release-1.14.13/COPYING",
+      "noticePath": "Notices/macos-contrib/pupnp-release-1.14.13.tar.gz/pupnp-release-1.14.13/COPYING",
+      "sha256": "c8b99423cad48bb44e2cf52a496361404290865eac259a82da6d1e4331ececb3",
+      "bytes": 1477
+    },
+    {
+      "sourceArchive": "pupnp-release-1.14.13.tar.gz",
+      "pathInArchive": "pupnp-release-1.14.13/site/LICENSE",
+      "noticePath": "Notices/macos-contrib/pupnp-release-1.14.13.tar.gz/pupnp-release-1.14.13/site/LICENSE",
+      "sha256": "0375955c8a79d6e8fa0792d45d00fc4e7710d7ac95bcbd27f9225a83f5c946fd",
+      "bytes": 1499
+    },
+    {
+      "sourceArchive": "soxr-0.1.3-Source.tar.xz",
+      "pathInArchive": "soxr-0.1.3-Source/AUTHORS",
+      "noticePath": "Notices/macos-contrib/soxr-0.1.3-Source.tar.xz/soxr-0.1.3-Source/AUTHORS",
+      "sha256": "e5d53cd6c716dfeabe47a9f3613a8c6815aa4a67f0f77900787c59445396aeff",
+      "bytes": 39
+    },
+    {
+      "sourceArchive": "soxr-0.1.3-Source.tar.xz",
+      "pathInArchive": "soxr-0.1.3-Source/LICENCE",
+      "noticePath": "Notices/macos-contrib/soxr-0.1.3-Source.tar.xz/soxr-0.1.3-Source/LICENCE",
+      "sha256": "dc98676341fdcd29d9f279c9679d6a75288785b174ded8d1b2e316c366166135",
+      "bytes": 1024
+    },
+    {
+      "sourceArchive": "soxr-0.1.3-Source.tar.xz",
+      "pathInArchive": "soxr-0.1.3-Source/COPYING.LGPL",
+      "noticePath": "Notices/macos-contrib/soxr-0.1.3-Source.tar.xz/soxr-0.1.3-Source/COPYING.LGPL",
+      "sha256": "f2f118b9029ec1871b953639ecc46651b2fc7b62e295e6cf3ef2ac4c9a058b33",
+      "bytes": 26432
+    },
+    {
+      "sourceArchive": "spatialaudio-0.3.0.tar.bz2",
+      "pathInArchive": "spatialaudio-0.3.0/LICENSE",
+      "noticePath": "Notices/macos-contrib/spatialaudio-0.3.0.tar.bz2/spatialaudio-0.3.0/LICENSE",
+      "sha256": "63176449375086d82d675541c56bce8dd1ed7b2e9cff41c9fb8b8b388f2869b6",
+      "bytes": 27436
+    },
+    {
+      "sourceArchive": "speex-1.2.1.tar.gz",
+      "pathInArchive": "speex-1.2.1/AUTHORS",
+      "noticePath": "Notices/macos-contrib/speex-1.2.1.tar.gz/speex-1.2.1/AUTHORS",
+      "sha256": "6e5a9d92c5f9ccd28fe0b15ad59443fbf435bfc6ab2221f532006d3717ddf642",
+      "bytes": 502
+    },
+    {
+      "sourceArchive": "speex-1.2.1.tar.gz",
+      "pathInArchive": "speex-1.2.1/COPYING",
+      "noticePath": "Notices/macos-contrib/speex-1.2.1.tar.gz/speex-1.2.1/COPYING",
+      "sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+      "bytes": 1773
+    },
+    {
+      "sourceArchive": "speexdsp-1.2.1.tar.gz",
+      "pathInArchive": "speexdsp-1.2.1/AUTHORS",
+      "noticePath": "Notices/macos-contrib/speexdsp-1.2.1.tar.gz/speexdsp-1.2.1/AUTHORS",
+      "sha256": "6e5a9d92c5f9ccd28fe0b15ad59443fbf435bfc6ab2221f532006d3717ddf642",
+      "bytes": 502
+    },
+    {
+      "sourceArchive": "speexdsp-1.2.1.tar.gz",
+      "pathInArchive": "speexdsp-1.2.1/COPYING",
+      "noticePath": "Notices/macos-contrib/speexdsp-1.2.1.tar.gz/speexdsp-1.2.1/COPYING",
+      "sha256": "2654a4264b2bfe298dedc508748d140111840c315cc8eb646a3a68c13fa75b01",
+      "bytes": 1773
+    },
+    {
+      "sourceArchive": "taglib-1.13.1.tar.gz",
+      "pathInArchive": "taglib-1.13.1/AUTHORS",
+      "noticePath": "Notices/macos-contrib/taglib-1.13.1.tar.gz/taglib-1.13.1/AUTHORS",
+      "sha256": "047780f6bded3712fc24edc77b9187bfa49ea3826ed090933cb6342458eace85",
+      "bytes": 889
+    },
+    {
+      "sourceArchive": "taglib-1.13.1.tar.gz",
+      "pathInArchive": "taglib-1.13.1/COPYING.LGPL",
+      "noticePath": "Notices/macos-contrib/taglib-1.13.1.tar.gz/taglib-1.13.1/COPYING.LGPL",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "bytes": 26530
+    },
+    {
+      "sourceArchive": "taglib-1.13.1.tar.gz",
+      "pathInArchive": "taglib-1.13.1/COPYING.MPL",
+      "noticePath": "Notices/macos-contrib/taglib-1.13.1.tar.gz/taglib-1.13.1/COPYING.MPL",
+      "sha256": "53692a2ed6c6a2c6ec9b32dd0b820dfae91e0a1fcdf625ca9ed0bdf8705fcc4f",
+      "bytes": 25755
+    },
+    {
+      "sourceArchive": "zlib-1.3.1.tar.xz",
+      "pathInArchive": "zlib-1.3.1/LICENSE",
+      "noticePath": "Notices/macos-contrib/zlib-1.3.1.tar.xz/zlib-1.3.1/LICENSE",
+      "sha256": "845efc77857d485d91fb3e0b884aaa929368c717ae8186b66fe1ed2495753243",
+      "bytes": 1002
+    },
+    {
+      "sourceArchive": "zlib-1.3.1.tar.xz",
+      "pathInArchive": "zlib-1.3.1/contrib/dotzlib/LICENSE_1_0.txt",
+      "noticePath": "Notices/macos-contrib/zlib-1.3.1.tar.xz/zlib-1.3.1/contrib/dotzlib/LICENSE_1_0.txt",
+      "sha256": "36266a8fd073568394cb81cdb2b124f7fdae2c64c1a7ed09db34b4d22efa2951",
+      "bytes": 1359
+    },
+    {
+      "sourceArchive": "zvbi-0.2.35.tar.bz2",
+      "pathInArchive": "zvbi-0.2.35/COPYING.LIB",
+      "noticePath": "Notices/macos-contrib/zvbi-0.2.35.tar.bz2/zvbi-0.2.35/COPYING.LIB",
+      "sha256": "ab70717003986c4b2d4126371ee6406e554a924f107dba536f63946957526a72",
+      "bytes": 25292
+    },
+    {
+      "sourceArchive": "zvbi-0.2.35.tar.bz2",
+      "pathInArchive": "zvbi-0.2.35/AUTHORS",
+      "noticePath": "Notices/macos-contrib/zvbi-0.2.35.tar.bz2/zvbi-0.2.35/AUTHORS",
+      "sha256": "f54cd71e21a8edf5d51c228df485f6a4a1307422274fa39a4469f08b30b7be40",
+      "bytes": 2932
+    },
+    {
+      "sourceArchive": "zvbi-0.2.35.tar.bz2",
+      "pathInArchive": "zvbi-0.2.35/COPYING",
+      "noticePath": "Notices/macos-contrib/zvbi-0.2.35.tar.bz2/zvbi-0.2.35/COPYING",
+      "sha256": "231f7edcc7352d7734a96eef0b8030f77982678c516876fcb81e25b32d68564c",
+      "bytes": 18002
+    }
+  ]
+}

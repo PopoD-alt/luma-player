@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")"
+mkdir -p build/tests .cache/modules
+xcrun swiftc -swift-version 5 -target arm64-apple-macos14.0 -D LUMA_UI_TEST -parse-as-library -module-cache-path "$PWD/.cache/modules" \
+  Sources/*.swift Tests/VLCPlaybackSmoke.swift -o build/tests/vlc-playback-smoke
+build/tests/vlc-playback-smoke "$PWD/Tests/Fixtures"

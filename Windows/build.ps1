@@ -2,7 +2,8 @@
 [CmdletBinding()]
 param(
     [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release',
-    [ValidateRange(30, 600)][int]$SmokeTimeoutSeconds = 180
+    [ValidateRange(30, 600)][int]$SmokeTimeoutSeconds = 600,
+    [switch]$AcquireTestVlc
 )
 
 Set-StrictMode -Version Latest
@@ -122,6 +123,49 @@ function Copy-RuntimeNotices {
     return $resolved
 }
 
+# Stock VideoLAN VLC is acquired only for an explicitly requested developer/CI
+# test. It is never copied into the app publish directory or redistribution ZIP.
+function Resolve-TestVlcRuntime {
+    $runtime = $env:LUMA_LIBVLC_PATH
+    if (-not [string]::IsNullOrWhiteSpace($runtime)) {
+        if (-not [IO.Path]::IsPathFullyQualified($runtime) -or -not (Test-Path -LiteralPath $runtime -PathType Leaf)) {
+            throw 'LUMA_LIBVLC_PATH must be an existing absolute libvlc.dll path.'
+        }
+    }
+    elseif ($AcquireTestVlc) {
+        $version = '3.0.24'
+        $sha256 = 'fcf30850371ad10c9373cc4f0f4501e7dee49e3e9ae9f20c72fb2661a1ca6323'
+        $cache = Join-Path $windowsRoot '.cache/vlc-test-runtime'
+        $zip = Join-Path $cache "vlc-$version-win64.zip"
+        $extracted = Join-Path $cache "vlc-$version"
+        New-Item -ItemType Directory -Path $cache -Force | Out-Null
+        if (-not (Test-Path -LiteralPath $zip -PathType Leaf) -or (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $sha256) {
+            $download = $zip + '.pending'
+            try {
+                Invoke-WebRequest -Uri "https://download.videolan.org/pub/videolan/vlc/$version/win64/vlc-$version-win64.zip" -OutFile $download -TimeoutSec 180
+                if ((Get-FileHash -LiteralPath $download -Algorithm SHA256).Hash.ToLowerInvariant() -cne $sha256) { throw 'The external VLC test runtime hash does not match the official pinned archive.' }
+                Move-Item -LiteralPath $download -Destination $zip -Force
+            }
+            finally { if (Test-Path -LiteralPath $download) { Remove-Item -LiteralPath $download -Force } }
+        }
+        if (Test-Path -LiteralPath $extracted) { Remove-Item -LiteralPath $extracted -Recurse -Force }
+        Expand-Archive -LiteralPath $zip -DestinationPath $cache -Force
+        $runtime = Join-Path $extracted 'libvlc.dll'
+    }
+    else {
+        $runtime = Join-Path $env:ProgramFiles 'VideoLAN/VLC/libvlc.dll'
+    }
+    if (-not (Test-Path -LiteralPath $runtime -PathType Leaf) -or
+        -not (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $runtime) 'plugins') -PathType Container)) {
+        throw 'Install official x64 VLC3 separately, set LUMA_LIBVLC_PATH, or explicitly use -AcquireTestVlc for CI/development only.'
+    }
+    $env:LUMA_LIBVLC_PATH = [IO.Path]::GetFullPath($runtime)
+    @{ mode = 'external-test-runtime'; runtimeBundled = $false; approvedForRedistribution = $false;
+        pinnedAcquisition = [bool]$AcquireTestVlc; officialArchiveVersion = '3.0.24';
+        officialArchiveSha256 = 'fcf30850371ad10c9373cc4f0f4501e7dee49e3e9ae9f20c72fb2661a1ca6323' } |
+        ConvertTo-Json | Set-Content -LiteralPath (Join-Path $reportsRoot 'libvlc-runtime-gate.json') -Encoding utf8
+}
+
 function Invoke-VisualSmoke([string]$Executable) {
     $start = [Diagnostics.ProcessStartInfo]::new()
     $start.FileName = $Executable
@@ -150,30 +194,15 @@ function Invoke-VisualSmoke([string]$Executable) {
             throw 'Native smoke exited successfully but produced no smoke-results.json.'
         }
         $results = Get-Content -LiteralPath $resultsPath -Raw | ConvertFrom-Json -AsHashtable
-        if ($results -isnot [System.Collections.IDictionary] -or
-            -not $results.Contains('nativeMp4') -or -not $results.Contains('originalAudio') -or
-            -not $results.Contains('activeAudioRenderEndpoints')) {
-            throw 'Native smoke results are missing required verification fields.'
+        if ($results -isnot [System.Collections.IDictionary]) { throw 'Native smoke did not produce a result object.' }
+        foreach ($required in @('libvlcPlayback', 'hevc10Aac51', 'subtitleSelection', 'lifecycleRecovery', 'sharingUi')) {
+            if (-not $results.Contains($required) -or $results[$required] -cne 'passed') { throw "Missing native libVLC verification: $required." }
         }
-        if ($results['nativeMp4'] -cne 'passed' -or
-            $results['originalAudio'] -cnotin @('passed', 'unverified-no-active-render-endpoint')) {
-            throw 'Native smoke results contain an unsuccessful or unknown playback status.'
-        }
-        foreach ($required in @('modernRenderer', 'sourceReaderAvc', 'aac51Decode', 'matroskaAvc', 'matroskaBframes', 'embeddedCaptions', 'lifecycleRecovery')) {
-            if (-not $results.Contains($required) -or $results[$required] -cne 'passed') {
-                throw "Native Windows smoke is missing required passed verification: $required."
-            }
-        }
+        if ($results['runtimeVersion'] -notmatch '^3\.' -or $results['runtimeBundled'] -ne $false) { throw 'Unexpected or bundled libVLC runtime in this external-runtime review.' }
         $endpoints = $results['activeAudioRenderEndpoints']
-        if ($null -ne $endpoints -and
-            (($endpoints -isnot [int] -and $endpoints -isnot [long] -and $endpoints -isnot [uint32] -and $endpoints -isnot [uint64]) -or
-             $endpoints -lt 0 -or $endpoints -gt [uint32]::MaxValue)) {
-            throw 'Native smoke active render endpoint count must be an unsigned 32-bit integer or null.'
-        }
-        if ($results['originalAudio'] -ceq 'unverified-no-active-render-endpoint' -and
-            ($null -eq $endpoints -or $endpoints -ne 0)) {
-            throw 'Unverified audio hardware status requires an observed zero active render endpoints.'
-        }
+        if ($null -ne $endpoints -and (($endpoints -isnot [int] -and $endpoints -isnot [long] -and $endpoints -isnot [uint32] -and $endpoints -isnot [uint64]) -or $endpoints -lt 0)) { throw 'Invalid native audio endpoint diagnostic.' }
+        if ($results['physicalAudio'] -cnotin @('unverified-no-active-render-endpoint', 'system-output-requested-audibility-not-measured')) { throw 'Physical audio status must not invent an audible-output pass.' }
+        if ($results['physicalAudio'] -ceq 'unverified-no-active-render-endpoint' -and ($null -eq $endpoints -or $endpoints -ne 0)) { throw 'Unverified audio-device status requires an observed zero endpoint count.' }
         return $results
     }
     finally { $process.Dispose() }
@@ -195,12 +224,14 @@ try {
     $actualSdk = (& dotnet --version).Trim()
     if ($LASTEXITCODE -ne 0 -or $actualSdk -ne $requiredSdk) { throw "Install the pinned .NET SDK $requiredSdk; selected SDK: $actualSdk." }
     if (-not (Test-Path -LiteralPath (Join-Path $fixturesRoot 'flac/manifest.json'))) { throw 'Run from a complete source checkout containing Tests/Fixtures.' }
+    Resolve-TestVlcRuntime
     Invoke-Dotnet @('restore', $testsProject)
     $env:LUMA_WINDOWS_MEDIA_EXPORT = Join-Path $reportsRoot 'generated'
     Invoke-Dotnet @('run', '--project', $testsProject, '--configuration', $Configuration, '--no-restore', '--', $fixturesRoot)
     Invoke-Dotnet @('restore', $appProject, '--runtime', 'win-x64', '-p:SelfContained=true', '-p:PublishSingleFile=true')
     Invoke-Dotnet @('publish', $appProject, '--configuration', $Configuration, '--runtime', 'win-x64', '--self-contained', 'true', '--no-restore',
         '-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true', '-p:PublishTrimmed=false', '-p:PublishReadyToRun=false', '--output', $publishRoot)
+    if (@(Get-ChildItem -LiteralPath $publishRoot -Filter 'libvlc*.dll' -File -Recurse).Count -gt 0 -or (Test-Path -LiteralPath (Join-Path $publishRoot 'libvlc/plugins'))) { throw 'Unapproved VLC runtime must remain outside the publish artifact.' }
     Copy-Item -LiteralPath (Join-Path $repoRoot 'LICENSE') -Destination (Join-Path $publishRoot 'LICENSE.txt')
     Copy-Item -LiteralPath (Join-Path $windowsRoot 'README.md') -Destination (Join-Path $publishRoot 'README-WINDOWS.md')
     foreach ($file in @('FORMAT_SUPPORT.md', 'THIRD_PARTY_NOTICES.md')) {

@@ -50,25 +50,23 @@ struct CodecSupportView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Format Support").font(.system(size: 23, weight: .semibold))
-                    Text("Experimental coverage · codec, profile and container all matter")
+                    Text("VideoLAN libVLC playback · codec, profile and container all matter")
                         .font(.system(size: 12)).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
             }
-            Text("Luma does not yet match every VLC format. Luma decoders are independently written; macOS decoders use the system media framework.")
+            Text("Luma now uses libVLC for normal playback. Available formats follow the runtime and codec modules installed with it; a filename extension alone is not a playback guarantee.")
                 .font(.system(size: 12)).foregroundStyle(.secondary)
-            TextField("Search formats or decoder type", text: $model.query).textFieldStyle(.roundedBorder)
-            List(model.filtered) { entry in
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(entry.name).font(.system(size: 13, weight: .semibold))
-                        Spacer()
-                        Text(entry.label).font(.system(size: 10, weight: .medium)).foregroundStyle(entry.color)
-                    }
-                    Text(entry.coverage).font(.system(size: 11)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                }.padding(.vertical, 5)
-            }.listStyle(.inset)
-        }.padding(24).frame(width: 660, height: 650)
+            GroupBox("Verified in this Mac review") {
+                Text("Synthetic H.264 MP4, HEVC Main10 with AAC 5.1, and AVC/AAC Matroska decoded and displayed through libVLC. These tests do not cover every VLC format, DRM-protected media or physical surround-sound output.").frame(maxWidth: .infinity, alignment: .leading).padding(10)
+            }
+            GroupBox("Watching over Wi-Fi") {
+                Text("The desktop serves the original file; Android decodes it. Local sharing does not transcode unsupported media. Use the same trusted network and keep the desktop awake with sharing enabled.").frame(maxWidth: .infinity, alignment: .leading).padding(10)
+            }
+            Button("Third-party licenses") {
+                if let url = Bundle.main.resourceURL?.appendingPathComponent("Licenses") { NSWorkspace.shared.open(url) }
+            }
+        }.padding(24).frame(width: 660)
     }
 }

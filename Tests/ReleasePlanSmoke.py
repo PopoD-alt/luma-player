@@ -71,6 +71,8 @@ class ReleasePlanSmoke(unittest.TestCase):
         if len(args) > 1 and args[1] == '--public-key': return self.key + '\n'
         if args[:2] == ('otool', '-L'): return '/System/Library/Frameworks/AVFoundation.framework/AVFoundation\n'
         if args[:2] == ('otool', '-l'): return 'Apple system linkage only\n'
+        if args[:3] == ('python3', 'Scripts/prepare-libvlc.py', 'verify') and capture:
+            return json.dumps({'runtimeEntry': str(self.root / 'ThirdParty/runtime/audited/libvlc.dylib')})
         if args == ('bash', 'test-fullscreen.sh'):
             if self.change_after_checks == 'head': self.head = 'b' * 40
             if self.change_after_checks == 'dirty': self.dirty = ' M Sources/changed-during-tests.swift\n'
@@ -172,6 +174,38 @@ class ReleasePlanSmoke(unittest.TestCase):
         self.assertIn(('bash', 'test-fullscreen.sh'), self.calls)
         self.assertIn(('bash', 'test-opus.sh'), self.calls)
         self.assertIn(('bash', 'test-release-plan.sh'), self.calls)
+
+    def test_libvlc_incomplete_audit_blocks_before_build_or_signing(self):
+        self.config.update(engineDistribution='libvlc', libvlcPackage='candidate')
+        (self.root / 'ReleaseConfig.json').write_text(json.dumps(self.config))
+        directory = self.root / 'ThirdParty/libvlc'
+        directory.mkdir(parents=True)
+        flags = dict(status='development-only', moduleLicensesReviewed=True,
+            dependencyLicensesReviewed=True, completeCorrespondingSources=True, replacementMechanismVerified=True)
+        for key in ('status', 'moduleLicensesReviewed', 'dependencyLicensesReviewed', 'completeCorrespondingSources', 'replacementMechanismVerified'):
+            audit = dict(flags, status='approved-for-redistribution')
+            audit[key] = 'development-only' if key == 'status' else False
+            (directory / 'packages.json').write_text(json.dumps({'packages': {'candidate': {'audit': audit}}}))
+            with self.assertRaisesRegex(RuntimeError, 'libVLC distribution is blocked'):
+                self.prepare()
+        self.assertFalse(self.calls, 'An incomplete runtime audit reached an external command')
+
+    def test_libvlc_plan_requires_runtime_inventory_before_and_after_build(self):
+        self.config.update(engineDistribution='libvlc', libvlcPackage='audited')
+        (self.root / 'ReleaseConfig.json').write_text(json.dumps(self.config))
+        directory = self.root / 'ThirdParty/libvlc'
+        directory.mkdir(parents=True)
+        audit = dict(status='approved-for-redistribution', moduleLicensesReviewed=True,
+            dependencyLicensesReviewed=True, completeCorrespondingSources=True, replacementMechanismVerified=True)
+        (directory / 'packages.json').write_text(json.dumps({'packages': {'audited': {'audit': audit}}}))
+        self.assertEqual(self.prepare(), 0)
+        expected = ('python3', 'Scripts/prepare-libvlc.py', 'verify', '--runtime')
+        checks = [(index, call) for index, call in enumerate(self.calls) if call[:4] == expected]
+        self.assertEqual(len(checks), 2)
+        self.assertTrue(all(call[-1] == '--distribution' for _, call in checks))
+        building = self.index(('env', 'LUMA_DISTRIBUTION_BUILD=1'))
+        self.assertLess(checks[0][0], building)
+        self.assertGreater(checks[1][0], building)
 
     def test_preview_is_explicit_unnotarized_and_hashes_final_signed_bytes(self):
         self.assertEqual(self.prepare_preview(), 0)

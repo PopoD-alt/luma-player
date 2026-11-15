@@ -1,0 +1,112 @@
+name: VLC and local sharing review
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/vlc-lan-android]
+    paths:
+      - 'Sources/**'
+      - 'Windows/**'
+      - 'Android/**'
+      - 'Networking/**'
+      - 'ThirdParty/**'
+      - 'Scripts/prepare-libvlc*'
+      - 'Scripts/run-android-integration.py'
+      - '.github/workflows/cross-platform-review.yml'
+      - 'LICENSE'
+      - 'THIRD_PARTY_NOTICES.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: luma-vlc-review-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.404'
+      - name: Exercise native Windows VLC playback and local sharing
+        shell: pwsh
+        run: ./Windows/build.ps1 -Configuration Release -SmokeTimeoutSeconds 600 -AcquireTestVlc
+      - name: Preserve test reports only
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-Windows-VLC-evidence-${{ github.sha }}
+          path: Windows/artifacts/review/
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17.0.21'
+          cache: gradle
+          cache-dependency-path: |
+            Android/*.gradle
+            Android/app/build.gradle
+            Android/gradle/wrapper/gradle-wrapper.properties
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools platforms;android-37.0 build-tools;36.0.0 emulator'
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.404'
+      - name: Build and check Android development apps
+        working-directory: Android
+        run: bash ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest testDebugUnitTest lintDebug
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Stream from the actual desktop server in Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          disable-animations: true
+          script: python3 Scripts/run-android-integration.py
+      - name: Preserve Android evidence only
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-Android-streaming-evidence-${{ github.sha }}
+          path: |
+            build/android-integration/
+            Android/app/build/reports/
+            Android/app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
+
+# Candidate libVLC binaries are used only on disposable development runners.
+# No EXE, APK, DMG, native runtime, tag, release, signing key or update feed is
+# published by this workflow. Binary distribution stays behind the runtime audit
+# and the owner's review, including the Android AAR's native dependencies.

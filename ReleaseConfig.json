@@ -5,6 +5,7 @@
   "feedURL": "https://raw.githubusercontent.com/PopoD-alt/luma-player/main/Updates/manifest.json",
   "publicEdKey": "YH+uGK0yetBErOtSgO2Q8YJW64qVcwcXJWLZ8Hjkh2o=",
   "keychainAccount": "sdas-luma-updates",
-  "engineDistribution": "original-and-system",
+  "engineDistribution": "libvlc",
+  "libvlcPackage": "macos-vlckit-3.7.3",
   "licenseChoice": "proprietary-source"
 }

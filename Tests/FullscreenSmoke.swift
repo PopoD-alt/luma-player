@@ -71,6 +71,19 @@ struct FullscreenSmoke {
         try await wait("production engine starts with embedded video") {
             coordinator.engine.isPlaying && !originalHost.subviews.isEmpty
         }
+        window.makeFirstResponder(originalHost)
+        postSpace(window)
+        try await wait("Space pauses production playback") { coordinator.engine.state == "paused" && !coordinator.engine.isPlaying }
+        postSpace(window)
+        try await wait("Space resumes production playback") { coordinator.engine.isPlaying }
+        let editor = NSTextField(frame: NSRect(x: 20, y: 20, width: 180, height: 26))
+        editor.stringValue = "hello"; hosting.addSubview(editor); window.makeFirstResponder(editor)
+        if let fieldEditor = window.firstResponder as? NSTextView { fieldEditor.setSelectedRange(NSRange(location: 5, length: 0)) }
+        postSpace(window)
+        try await wait("Space remains available to text input") { editor.stringValue == "hello " }
+        try check(coordinator.engine.isPlaying, "Typing a space paused playback")
+        window.makeFirstResponder(originalHost); editor.removeFromSuperview()
+        print("PASS: real queued Space key events pause/resume production playback; editable text receives spaces without toggling")
         coordinator.engine.pause()
         try await wait("video pauses before fullscreen transition") { coordinator.engine.state == "paused" }
         hosting.layoutSubtreeIfNeeded()
@@ -91,10 +104,17 @@ struct FullscreenSmoke {
         guard let fullscreenHost = findVideoHost(in: hosting) else { throw Failure.check("Video host disappeared entering fullscreen") }
         try check(fullscreenHost === originalHost, "Fullscreen replaced the video drawable NSView")
         try check(!fullscreenHost.subviews.isEmpty, "Fullscreen lost embedded output")
+        // AppKit suppresses input during the native space transition even after
+        // the layout has reached its destination rectangle.
+        try await Task.sleep(for: .milliseconds(900))
+        try await wait("fullscreen window accepts keyboard input") { window.isKeyWindow }
+        window.makeFirstResponder(fullscreenHost); postSpace(window)
+        try await wait("Space resumes in video fullscreen") { coordinator.engine.isPlaying }
+        postSpace(window)
+        try await wait("Space pauses in video fullscreen") { coordinator.engine.state == "paused" }
         print("PASS: native fullscreen, video fills \(hosting.bounds), same drawable NSView and video output retained")
 
-        // Wait for AppKit's fullscreen animation to complete before toggling back.
-        try await Task.sleep(for: .milliseconds(900))
+        // The fullscreen animation has completed before toggling back.
         coordinator.toggleVideoFullscreen()
         try await wait("native fullscreen exit", timeout: 12) {
             !window.styleMask.contains(.fullScreen) && !coordinator.isVideoFullscreen
@@ -144,6 +164,11 @@ struct FullscreenSmoke {
 
     static func rectMatches(_ lhs: NSRect, _ rhs: NSRect) -> Bool {
         abs(lhs.minX - rhs.minX) < 2 && abs(lhs.minY - rhs.minY) < 2 && abs(lhs.width - rhs.width) < 2 && abs(lhs.height - rhs.height) < 2
+    }
+    @MainActor static func postSpace(_ window: NSWindow) {
+        let event = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+            windowNumber: window.windowNumber, context: nil, characters: " ", charactersIgnoringModifiers: " ", isARepeat: false, keyCode: 49)!
+        NSApp.postEvent(event, atStart: false)
     }
 
     @MainActor

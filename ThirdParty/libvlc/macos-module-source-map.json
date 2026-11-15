@@ -1,0 +1,4336 @@
+{
+  "scope": "Heuristic module-name/Makefile SOURCES mapping; inspect submodule aliases and unclassified units before approval. Source headers alone do not establish dependency licenses.",
+  "runtimeDistinctNames": 230,
+  "mapped": [
+    {
+      "module": "a52",
+      "units": [
+        {
+          "path": "codec/a52.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "access_mms",
+      "units": [
+        {
+          "path": "access/mms/mms.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/mms.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/mmsh.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/mmsh.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/mmstu.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/mmstu.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/buffer.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/buffer.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/asf.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/asf.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/libasf_guid.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "access_output_rist",
+      "units": [
+        {
+          "path": "access_output/rist.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/rist.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "access_output_shout",
+      "units": [
+        {
+          "path": "access_output/shout.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "adaptive",
+      "units": []
+    },
+    {
+      "module": "adf",
+      "units": [
+        {
+          "path": "stream_filter/adf.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "adjust",
+      "units": [
+        {
+          "path": "video_filter/adjust.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/adjust_sat_hue.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/adjust_sat_hue.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "adpcm",
+      "units": [
+        {
+          "path": "codec/adpcm.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "adummy",
+      "units": [
+        {
+          "path": "audio_output/adummy.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "aes3",
+      "units": [
+        {
+          "path": "codec/aes3.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "afile",
+      "units": [
+        {
+          "path": "audio_output/file.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "aiff",
+      "units": [
+        {
+          "path": "demux/aiff.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "amem",
+      "units": [
+        {
+          "path": "audio_output/amem.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "aom",
+      "units": [
+        {
+          "path": "codec/aom.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/iso_color_tables.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "araw",
+      "units": [
+        {
+          "path": "codec/araw.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "archive",
+      "units": [
+        {
+          "path": "stream_extractor/archive.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "asf",
+      "units": [
+        {
+          "path": "demux/asf/asf.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/libasf.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/libasf.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/asfpacket.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/asfpacket.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/libasf_guid.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "attachment",
+      "units": [
+        {
+          "path": "access/attachment.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "au",
+      "units": [
+        {
+          "path": "demux/au.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "audio_format",
+      "units": [
+        {
+          "path": "audio_filter/converter/format.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "auhal",
+      "units": [
+        {
+          "path": "audio_output/auhal.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "audio_output/coreaudio_common.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "audio_output/coreaudio_common.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "avcodec",
+      "units": [
+        {
+          "path": "codec/avcodec/video.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/subtitle.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/audio.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/va.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/va.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/avcodec.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/avcodec.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/av1_obu.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/av1_obu.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/av1.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/encoder.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/avformat/demux.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/avio.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/avparser.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/avformat/mux.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "avformat",
+      "units": [
+        {
+          "path": "demux/avformat/demux.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/vobsub.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/avformat/avformat.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/avformat/avformat.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/avformat/mux.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "avi",
+      "units": [
+        {
+          "path": "demux/avi/avi.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/avi/libavi.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/avi/libavi.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "avio",
+      "units": [
+        {
+          "path": "access/avio.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/avio.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "blend",
+      "units": []
+    },
+    {
+      "module": "bonjour",
+      "units": [
+        {
+          "path": "services_discovery/bonjour.m",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "cache_block",
+      "units": [
+        {
+          "path": "stream_filter/cache_block.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "cache_read",
+      "units": [
+        {
+          "path": "stream_filter/cache_read.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "caf",
+      "units": [
+        {
+          "path": "demux/caf.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "canvas",
+      "units": [
+        {
+          "path": "video_filter/canvas.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "caopengllayer",
+      "units": [
+        {
+          "path": "video_output/caopengllayer.m",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "cc",
+      "units": [
+        {
+          "path": "codec/cc.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/cc.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/substext.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/cea708.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/cea708.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "cdg",
+      "units": [
+        {
+          "path": "codec/cdg.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "chain",
+      "units": [
+        {
+          "path": "video_chroma/chain.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "chorus_flanger",
+      "units": [
+        {
+          "path": "audio_filter/chorus_flanger.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ci_filters",
+      "units": [
+        {
+          "path": "video_filter/ci_filters.m",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/vt_utils.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/vt_utils.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "compressor",
+      "units": [
+        {
+          "path": "audio_filter/compressor.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "croppadd",
+      "units": [
+        {
+          "path": "video_filter/croppadd.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "cvdsub",
+      "units": [
+        {
+          "path": "codec/cvdsub.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "cvpx",
+      "units": [
+        {
+          "path": "codec/vt_utils.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/vt_utils.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_chroma/cvpx.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "dav1d",
+      "units": [
+        {
+          "path": "codec/dav1d.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ddummy",
+      "units": [
+        {
+          "path": "codec/ddummy.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "decomp",
+      "units": [
+        {
+          "path": "stream_filter/decomp.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "deinterlace",
+      "units": [
+        {
+          "path": "video_filter/deinterlace/deinterlace.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/deinterlace.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/mmx.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/merge.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/merge.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/helpers.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/helpers.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_basic.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_basic.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_x.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_x.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_yadif.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_yadif.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/yadif.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "video_filter/deinterlace/yadif_template.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_phosphor.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_phosphor.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_ivtc.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_filter/deinterlace/algo_ivtc.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "demux_cdg",
+      "units": [
+        {
+          "path": "demux/cdg.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "demux_chromecast",
+      "units": [
+        {
+          "path": "stream_out/chromecast/chromecast.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/chromecast/chromecast_common.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "demux_stl",
+      "units": [
+        {
+          "path": "demux/stl.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "demuxdump",
+      "units": [
+        {
+          "path": "demux/demuxdump.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "diracsys",
+      "units": [
+        {
+          "path": "demux/dirac.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "dmxmus",
+      "units": [
+        {
+          "path": "demux/dmxmus.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "dsm",
+      "units": [
+        {
+          "path": "access/dsm/access.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/dsm/sd.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/smb_common.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "dummy",
+      "units": [
+        {
+          "path": "control/dummy.c",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "control/intromsg.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "dvbsub",
+      "units": [
+        {
+          "path": "codec/dvbsub.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ebur128",
+      "units": [
+        {
+          "path": "audio_filter/libebur128.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "edgedetection",
+      "units": [
+        {
+          "path": "video_filter/edgedetection.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "edummy",
+      "units": [
+        {
+          "path": "codec/edummy.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "equalizer",
+      "units": [
+        {
+          "path": "audio_filter/equalizer.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "audio_filter/equalizer_presets.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "es",
+      "units": [
+        {
+          "path": "demux/mpeg/es.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "meta_engine/ID3Tag.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "meta_engine/ID3Text.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/dts_header.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/dts_header.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "filesystem",
+      "units": [
+        {
+          "path": "access/fs.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/file.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/directory.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/fs.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "flac",
+      "units": [
+        {
+          "path": "codec/flac.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "flacsys",
+      "units": [
+        {
+          "path": "demux/flac.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/flac.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "flaschen",
+      "units": [
+        {
+          "path": "video_output/flaschen.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "float_mixer",
+      "units": [
+        {
+          "path": "audio_mixer/float.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "folder",
+      "units": [
+        {
+          "path": "meta_engine/folder.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "fps",
+      "units": [
+        {
+          "path": "video_filter/fps.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "freetype",
+      "units": [
+        {
+          "path": "text_renderer/freetype/platform_fonts.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/platform_fonts.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/freetype.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/freetype.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/text_layout.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/text_layout.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/fonts/win32.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/fonts/fontconfig.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/fonts/android.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "text_renderer/freetype/fonts/darwin.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "freeze",
+      "units": [
+        {
+          "path": "video_filter/freeze.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ftp",
+      "units": [
+        {
+          "path": "access/ftp.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "g711",
+      "units": [
+        {
+          "path": "codec/g711.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "gain",
+      "units": [
+        {
+          "path": "audio_filter/gain.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "glconv_cvpx",
+      "units": [
+        {
+          "path": "video_output/opengl/converter_cvpx.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_output/opengl/converter.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/vt_utils.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/vt_utils.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "grey_yuv",
+      "units": [
+        {
+          "path": "video_chroma/grey_yuv.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "h26x",
+      "units": [
+        {
+          "path": "demux/mpeg/h26x.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/h264_nal.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/hevc_nal.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "hds",
+      "units": [
+        {
+          "path": "stream_filter/hds/hds.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "http",
+      "units": [
+        {
+          "path": "access/http.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "i420_10_p010",
+      "units": [
+        {
+          "path": "video_chroma/i420_10_p010.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "i420_nv12",
+      "units": [
+        {
+          "path": "video_chroma/i420_nv12.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "i420_rgb",
+      "units": [
+        {
+          "path": "video_chroma/i420_rgb.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_chroma/i420_rgb.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_chroma/i420_rgb8.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_chroma/i420_rgb16.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_chroma/i420_rgb_c.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "i420_yuy2",
+      "units": [
+        {
+          "path": "video_chroma/i420_yuy2.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_chroma/i420_yuy2.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "i422_i420",
+      "units": [
+        {
+          "path": "video_chroma/i422_i420.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "i422_yuy2",
+      "units": [
+        {
+          "path": "video_chroma/i422_yuy2.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "video_chroma/i422_yuy2.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "idummy",
+      "units": [
+        {
+          "path": "access/idummy.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "image",
+      "units": [
+        {
+          "path": "demux/image.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mxpeg_helper.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "inflate",
+      "units": [
+        {
+          "path": "stream_filter/inflate.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "integer_mixer",
+      "units": [
+        {
+          "path": "audio_mixer/integer.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "karaoke",
+      "units": [
+        {
+          "path": "audio_filter/karaoke.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "keychain",
+      "units": [
+        {
+          "path": "keystore/keychain.m",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "keystore/list_util.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "keystore/list_util.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "libass",
+      "units": [
+        {
+          "path": "codec/libass.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "live555",
+      "units": [
+        {
+          "path": "access/mms/asf.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/mms/buffer.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/live555_dtsgen.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/opus_header.c",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "codec/opus_header.h",
+          "headerLicense": "other-or-unclassified"
+        }
+      ]
+    },
+    {
+      "module": "logo",
+      "units": [
+        {
+          "path": "spu/logo.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "lpcm",
+      "units": [
+        {
+          "path": "codec/lpcm.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "macosx",
+      "units": [
+        {
+          "path": "gui/macosx/helpers.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAboutWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAboutWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAddonListItem.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAddonListItem.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAddonsWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAddonsWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/applescript.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/applescript.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/AppleRemote.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/AppleRemote.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/CompatibilityFixes.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/CompatibilityFixes.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCControlsBarCommon.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCControlsBarCommon.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCDocumentController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCDocumentController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainWindowControlsBar.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainWindowControlsBar.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCConvertAndSaveWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCConvertAndSaveWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCCoreInteraction.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCCoreInteraction.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCErrorWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCErrorWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCExtensionsDialogProvider.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCExtensionsDialogProvider.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCExtensionsManager.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCExtensionsManager.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCHelpWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCHelpWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMain.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMain.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCApplication.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCApplication.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/iTunes.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCKeyboardBacklightControl.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCKeyboardBacklightControl.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/macosx.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainMenu.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainMenu.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainWindowTitleView.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainWindowTitleView.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/misc.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/misc.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCOpenWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCOpenWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCOutput.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCOutput.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPlaylistView.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPlaylistView.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPlaylist.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPlaylist.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPlaylistInfo.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPlaylistInfo.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPLItem.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPLItem.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPLModel.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPLModel.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/prefs.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/prefs.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/prefs_widgets.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/prefs_widgets.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPopupPanelController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCPopupPanelController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTextfieldPanelController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTextfieldPanelController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSimplePrefsController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSimplePrefsController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSimplePrefsWindow.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSimplePrefsWindow.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCHotkeyChangeWindow.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCHotkeyChangeWindow.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/SPMediaKeyTap.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/SPMediaKeyTap.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/Spotify.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCStringUtility.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCStringUtility.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVoutView.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVoutView.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTimeSelectionPanelController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTimeSelectionPanelController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCUIWidgets.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCUIWidgets.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCScrollingClipView.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCScrollingClipView.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCStatusBarIcon.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCStatusBarIcon.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVoutWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVoutWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/Windows.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/Windows.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAudioEffectsWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCAudioEffectsWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCBookmarksWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCBookmarksWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCBottomBarView.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCBottomBarView.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCCoreDialogProvider.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCCoreDialogProvider.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCLogMessage.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCLogMessage.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCLogWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCLogWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCHUDSliderCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDSliderCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDButtonCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDButtonCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDCheckboxCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDCheckboxCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDTextFieldCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDTextFieldCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDScroller.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDScroller.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDOutlineView.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDOutlineView.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDTableView.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDTableView.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDTableCornerView.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDTableCornerView.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDSegmentedCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDSegmentedCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDStepperCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDStepperCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDPopUpButtonCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCHUDPopUpButtonCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/VLCInputManager.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCInputManager.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainWindow.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCMainWindow.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRendererDiscovery.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRendererDiscovery.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRendererItem.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRendererItem.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRendererMenuController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRendererMenuController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCResumeDialogController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCResumeDialogController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSidebarDataSource.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSidebarDataSource.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSourceListItem.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSourceListItem.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSourceListTableCellView.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSourceListTableCellView.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSourceListBadgeButton.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSourceListBadgeButton.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTrackSynchronizationWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTrackSynchronizationWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVideoEffectsWindowController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVideoEffectsWindowController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCFSPanelController.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCFSPanelController.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCFSPanelDraggableView.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCFSPanelDraggableView.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCDefaultValueSlider.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCDefaultValueSlider.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCDefaultValueSliderCell.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCDefaultValueSliderCell.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCImageButton.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCImageButton.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTintedImageButtonCell.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTintedImageButtonCell.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTimeField.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCTimeField.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCHexNumberFormatter.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCHexNumberFormatter.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSlider.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSlider.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSliderCell.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCSliderCell.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVolumeSlider.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVolumeSlider.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVolumeSliderCell.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCVolumeSliderCell.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCWrappableTextField.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCWrappableTextField.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRemoteControlService.h",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/VLCRemoteControlService.m",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceList.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceList.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListBadgeCell.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListBadgeCell.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListBadgeView.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListBadgeView.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListItem.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListItem.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListTableCellView.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListTableCellView.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/Internal/PXSourceListDelegateDataSourceProxy.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/Internal/PXSourceListDelegateDataSourceProxy.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/Internal/PXSourceListRuntimeAdditions.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/Internal/PXSourceListRuntimeAdditions.m",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/Internal/PXSourceListPrivateConstants.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListDataSource.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "gui/macosx/PXSourceList/PXSourceListDelegate.h",
+          "headerLicense": "other-or-unclassified"
+        }
+      ]
+    },
+    {
+      "module": "magnify",
+      "units": [
+        {
+          "path": "video_filter/magnify.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mjpeg",
+      "units": [
+        {
+          "path": "demux/mjpeg.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mxpeg_helper.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mkv",
+      "units": [
+        {
+          "path": "demux/mp4/libmp4.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/vobsub.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/av1_unpack.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/helpers.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/windows_audio_commons.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/dts_header.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/dts_header.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mod",
+      "units": [
+        {
+          "path": "demux/mod.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mono",
+      "units": [
+        {
+          "path": "audio_filter/channel_mixer/mono.c",
+          "headerLicense": "GPL"
+        }
+      ]
+    },
+    {
+      "module": "mp4",
+      "units": [
+        {
+          "path": "demux/mp4/mp4.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/mp4.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/fragments.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/fragments.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/libmp4.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/libmp4.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/languages.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/mpeg4.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/av1_unpack.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/asfpacket.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/asf/asfpacket.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/avci.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/essetup.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/meta.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/iso_color_tables.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "meta_engine/ID3Genres.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mpg123",
+      "units": [
+        {
+          "path": "codec/mpg123.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mpgv",
+      "units": [
+        {
+          "path": "demux/mpeg/mpgv.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mux_ogg",
+      "units": [
+        {
+          "path": "mux/ogg.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "mux_ts",
+      "units": [
+        {
+          "path": "mux/mpeg/pes.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/pes.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/csa.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/csa.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/streams.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tables.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tables.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tsutil.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tsutil.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/jpeg2000.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/ts.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/bits.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/dvbpsi_compat.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "nfs",
+      "units": [
+        {
+          "path": "access/nfs.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "normvol",
+      "units": [
+        {
+          "path": "audio_filter/normvol.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "noseek",
+      "units": [
+        {
+          "path": "demux/filter/noseek.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "nsc",
+      "units": [
+        {
+          "path": "demux/nsc.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "nsspeechsynthesizer",
+      "units": [
+        {
+          "path": "text_renderer/nsspeechsynthesizer.m",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "nsv",
+      "units": [
+        {
+          "path": "demux/nsv.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "nuv",
+      "units": [
+        {
+          "path": "demux/nuv.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ogg",
+      "units": [
+        {
+          "path": "demux/ogg.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/ogg.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/oggseek.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/oggseek.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/xiph.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/opus.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "oggspots",
+      "units": [
+        {
+          "path": "codec/oggspots.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "opus",
+      "units": [
+        {
+          "path": "codec/opus.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/opus_header.c",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "codec/opus_header.h",
+          "headerLicense": "other-or-unclassified"
+        }
+      ]
+    },
+    {
+      "module": "packetizer_avparser",
+      "units": [
+        {
+          "path": "packetizer/avparser.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/avparser.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/avcodec.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "param_eq",
+      "units": [
+        {
+          "path": "audio_filter/param_eq.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "playlist",
+      "units": [
+        {
+          "path": "demux/playlist/asx.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/b4s.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/dvb.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/ifo.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/itml.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/itml.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/m3u.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/pls.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/podcast.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/qtl.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/ram.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/sgimb.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/shoutcast.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/wpl.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/xspf.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/playlist.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/playlist/playlist.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "png",
+      "units": [
+        {
+          "path": "codec/png.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "prefetch",
+      "units": [
+        {
+          "path": "stream_filter/prefetch.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ps",
+      "units": [
+        {
+          "path": "demux/mpeg/ps.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ps.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/pes.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "pva",
+      "units": [
+        {
+          "path": "demux/pva.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rawaud",
+      "units": [
+        {
+          "path": "demux/rawaud.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rawdv",
+      "units": [
+        {
+          "path": "demux/rawdv.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/rawdv.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rawvid",
+      "units": [
+        {
+          "path": "demux/rawvid.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rawvideo",
+      "units": [
+        {
+          "path": "codec/rawvideo.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "record",
+      "units": [
+        {
+          "path": "stream_filter/record.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rist",
+      "units": [
+        {
+          "path": "access/rist.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/rist.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rotate",
+      "units": [
+        {
+          "path": "video_filter/rotate.c",
+          "headerLicense": "GPL"
+        }
+      ]
+    },
+    {
+      "module": "rtp",
+      "units": [
+        {
+          "path": "access/rtp/input.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/rtp/session.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/rtp/xiph.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/rtp/rtp.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/rtp/rtp.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rtpvideo",
+      "units": [
+        {
+          "path": "codec/rtpvideo.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "rv32",
+      "units": [
+        {
+          "path": "video_chroma/rv32.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "satip",
+      "units": [
+        {
+          "path": "access/satip.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "scale",
+      "units": [
+        {
+          "path": "video_filter/scale.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "scaletempo",
+      "units": [
+        {
+          "path": "audio_filter/scaletempo.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "scte18",
+      "units": [
+        {
+          "path": "codec/scte18.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/scte18.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/atsc_a65.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/atsc_a65.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "scte27",
+      "units": [
+        {
+          "path": "codec/scte27.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "sdp",
+      "units": [
+        {
+          "path": "access/sdp.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "securetransport",
+      "units": [
+        {
+          "path": "misc/securetransport.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "sftp",
+      "units": [
+        {
+          "path": "access/sftp.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "simple_channel_mixer",
+      "units": [
+        {
+          "path": "audio_filter/channel_mixer/simple.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "audio_filter/channel_mixer/simple_neon.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "skiptags",
+      "units": [
+        {
+          "path": "stream_filter/skiptags.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "smb2",
+      "units": [
+        {
+          "path": "access/smb2.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "soxr",
+      "units": [
+        {
+          "path": "audio_filter/resampler/soxr.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "spatialaudio",
+      "units": []
+    },
+    {
+      "module": "spatializer",
+      "units": [
+        {
+          "path": "audio_filter/spatializer/denormals.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "audio_filter/spatializer/denormals.c",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "audio_filter/spatializer/tuning.h",
+          "headerLicense": "other-or-unclassified"
+        }
+      ]
+    },
+    {
+      "module": "spdif",
+      "units": [
+        {
+          "path": "codec/spdif.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "speex",
+      "units": [
+        {
+          "path": "codec/speex.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "spudec",
+      "units": [
+        {
+          "path": "codec/spudec/spudec.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/spudec/parse.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/spudec/spudec.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "stereo_widen",
+      "units": [
+        {
+          "path": "audio_filter/stereo_widen.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "stl",
+      "units": [
+        {
+          "path": "codec/stl.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "stream_out_chromecast",
+      "units": [
+        {
+          "path": "stream_out/chromecast/chromecast.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/chromecast/chromecast_common.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "misc/webservices/json.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "misc/webservices/json.c",
+          "headerLicense": "other-or-unclassified"
+        }
+      ]
+    },
+    {
+      "module": "stream_out_rtp",
+      "units": [
+        {
+          "path": "stream_out/rtp.c",
+          "headerLicense": "GPL"
+        },
+        {
+          "path": "stream_out/rtp.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/rtpfmt.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/rtcp.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/rtsp.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/vod.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "stream_out_standard",
+      "units": [
+        {
+          "path": "stream_out/standard.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "stream_out_transcode",
+      "units": [
+        {
+          "path": "stream_out/transcode/transcode.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/transcode/transcode.h",
+          "headerLicense": "other-or-unclassified"
+        },
+        {
+          "path": "stream_out/transcode/spu.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/transcode/audio.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "stream_out/transcode/video.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "subsdec",
+      "units": [
+        {
+          "path": "codec/subsdec.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/substext.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "subsdelay",
+      "units": [
+        {
+          "path": "spu/subsdelay.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "substx3g",
+      "units": [
+        {
+          "path": "codec/substx3g.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/substext.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "subsusf",
+      "units": [
+        {
+          "path": "codec/subsusf.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "subtitle",
+      "units": [
+        {
+          "path": "demux/subtitle.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "svcdsub",
+      "units": [
+        {
+          "path": "codec/svcdsub.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "swscale",
+      "units": [
+        {
+          "path": "video_chroma/swscale.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/avcodec/chroma.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "syslog",
+      "units": [
+        {
+          "path": "logger/syslog.c",
+          "headerLicense": "GPL"
+        }
+      ]
+    },
+    {
+      "module": "taglib",
+      "units": [
+        {
+          "path": "meta_engine/ID3Pictures.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "tcp",
+      "units": [
+        {
+          "path": "access/tcp.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "tdummy",
+      "units": [
+        {
+          "path": "text_renderer/tdummy.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "telx",
+      "units": [
+        {
+          "path": "codec/telx.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "textst",
+      "units": [
+        {
+          "path": "codec/textst.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "theora",
+      "units": [
+        {
+          "path": "codec/theora.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "timecode",
+      "units": [
+        {
+          "path": "access/timecode.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "tospdif",
+      "units": [
+        {
+          "path": "audio_filter/converter/tospdif.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/a52.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/dts_header.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/dts_header.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "transform",
+      "units": [
+        {
+          "path": "video_filter/transform.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ts",
+      "units": [
+        {
+          "path": "demux/mpeg/ts.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_pid.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_pid_fwd.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_pid.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_psi.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_psi.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_si.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_si.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_psip.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_psip.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_psip_dvbpsi_fixes.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_psip_dvbpsi_fixes.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_decoders.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_decoders.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_streams.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_streams.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_scte.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_scte.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/sections.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/sections.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/mpeg4_iod.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/mpeg4_iod.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_arib.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_arib.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_sl.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_sl.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_metadata.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_metadata.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_hotfixes.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_hotfixes.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_strings.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_streams_private.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_pes.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ts_pes.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/pes.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/timestamps.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/dvb-text.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/opus.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/csa.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/dvbpsi_compat.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/streams.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tables.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tables.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tsutil.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "mux/mpeg/tsutil.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "access/dtv/en50221_capmt.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/jpeg2000.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/scte18.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/atsc_a65.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/atsc_a65.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/opus_header.c",
+          "headerLicense": "other-or-unclassified"
+        }
+      ]
+    },
+    {
+      "module": "tta",
+      "units": [
+        {
+          "path": "demux/tta.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ttml",
+      "units": [
+        {
+          "path": "codec/ttml/substtml.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/ttml.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/ttml/ttml.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/ttml/ttml.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "ty",
+      "units": [
+        {
+          "path": "demux/ty.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/cc.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "udp",
+      "units": [
+        {
+          "path": "access/udp.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "uleaddvaudio",
+      "units": [
+        {
+          "path": "codec/uleaddvaudio.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "upnp",
+      "units": []
+    },
+    {
+      "module": "vc1",
+      "units": [
+        {
+          "path": "demux/vc1.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "vdr",
+      "units": [
+        {
+          "path": "access/vdr.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "vdummy",
+      "units": [
+        {
+          "path": "video_output/vdummy.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "videotoolbox",
+      "units": [
+        {
+          "path": "codec/vt_utils.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/vt_utils.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/videotoolbox.m",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/hxxx_helper.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/hxxx_helper.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/hxxx_nal.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/hxxx_nal.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/hxxx_sei.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/hxxx_sei.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/h264_slice.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/h264_slice.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/h264_nal.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/h264_nal.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/hevc_nal.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "packetizer/hevc_nal.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "vmem",
+      "units": [
+        {
+          "path": "video_output/vmem.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "vobsub",
+      "units": [
+        {
+          "path": "demux/vobsub.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/vobsub.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/ps.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mpeg/pes.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/subtitle_helper.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "voc",
+      "units": [
+        {
+          "path": "demux/voc.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "vorbis",
+      "units": [
+        {
+          "path": "codec/vorbis.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "vpx",
+      "units": [
+        {
+          "path": "codec/vpx.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "wav",
+      "units": [
+        {
+          "path": "demux/wav.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/windows_audio_commons.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "webvtt",
+      "units": [
+        {
+          "path": "codec/webvtt/subsvtt.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/webvtt.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/webvtt.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/webvtt.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "demux/mp4/minibox.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/css_parser.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/css_parser.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/css_style.c",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/css_style.h",
+          "headerLicense": "LGPL"
+        },
+        {
+          "path": "codec/webvtt/css_bridge.h",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "xa",
+      "units": [
+        {
+          "path": "demux/xa.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "xml",
+      "units": [
+        {
+          "path": "misc/xml/libxml.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "yuv",
+      "units": [
+        {
+          "path": "video_output/yuv.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "yuvp",
+      "units": [
+        {
+          "path": "video_chroma/yuvp.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "yuy2_i420",
+      "units": [
+        {
+          "path": "video_chroma/yuy2_i420.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "yuy2_i422",
+      "units": [
+        {
+          "path": "video_chroma/yuy2_i422.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    },
+    {
+      "module": "zvbi",
+      "units": [
+        {
+          "path": "codec/zvbi.c",
+          "headerLicense": "LGPL"
+        }
+      ]
+    }
+  ],
+  "unmapped": [
+    "access",
+    "audiotoolbox_midi",
+    "autodel",
+    "av1",
+    "bridge",
+    "concat",
+    "copy",
+    "core",
+    "cycle",
+    "delay",
+    "description",
+    "dirac",
+    "directory",
+    "display",
+    "dolby",
+    "dts",
+    "duplicate",
+    "file",
+    "gather",
+    "h264",
+    "hevc",
+    "imem_access",
+    "memory",
+    "mlp",
+    "mpeg4audio",
+    "mpeg4video",
+    "mpegaudio",
+    "mpegvideo",
+    "mpjpeg",
+    "rtsp",
+    "scaletempo_pitch",
+    "setid",
+    "smem",
+    "trivial",
+    "ugly"
+  ],
+  "gplHeaderCandidates": [
+    [
+      "deinterlace",
+      "video_filter/deinterlace/yadif.h"
+    ],
+    [
+      "deinterlace",
+      "video_filter/deinterlace/yadif_template.h"
+    ],
+    [
+      "dummy",
+      "control/dummy.c"
+    ],
+    [
+      "macosx",
+      "gui/macosx/helpers.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAboutWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAboutWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAddonListItem.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAddonListItem.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAddonsWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAddonsWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/applescript.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/applescript.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/AppleRemote.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/AppleRemote.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/CompatibilityFixes.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/CompatibilityFixes.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCControlsBarCommon.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCControlsBarCommon.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCDocumentController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCDocumentController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainWindowControlsBar.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainWindowControlsBar.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCConvertAndSaveWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCConvertAndSaveWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCCoreInteraction.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCCoreInteraction.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCErrorWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCErrorWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCExtensionsDialogProvider.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCExtensionsDialogProvider.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCExtensionsManager.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCExtensionsManager.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCHelpWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCHelpWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMain.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMain.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCApplication.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCApplication.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/iTunes.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCKeyboardBacklightControl.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCKeyboardBacklightControl.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/macosx.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainMenu.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainMenu.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainWindowTitleView.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainWindowTitleView.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/misc.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/misc.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCOpenWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCOpenWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCOutput.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCOutput.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPlaylistView.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPlaylistView.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPlaylist.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPlaylist.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPlaylistInfo.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPlaylistInfo.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPLItem.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPLItem.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPLModel.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPLModel.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/prefs.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/prefs.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/prefs_widgets.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/prefs_widgets.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPopupPanelController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCPopupPanelController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTextfieldPanelController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTextfieldPanelController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSimplePrefsController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSimplePrefsController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSimplePrefsWindow.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSimplePrefsWindow.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCHotkeyChangeWindow.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCHotkeyChangeWindow.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/Spotify.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCStringUtility.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCStringUtility.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVoutView.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVoutView.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTimeSelectionPanelController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTimeSelectionPanelController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCUIWidgets.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCUIWidgets.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCScrollingClipView.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCScrollingClipView.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCStatusBarIcon.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCStatusBarIcon.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVoutWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVoutWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/Windows.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/Windows.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAudioEffectsWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCAudioEffectsWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCBookmarksWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCBookmarksWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCBottomBarView.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCBottomBarView.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCCoreDialogProvider.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCCoreDialogProvider.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCLogMessage.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCLogMessage.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCLogWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCLogWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCInputManager.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCInputManager.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainWindow.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCMainWindow.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRendererDiscovery.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRendererDiscovery.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRendererItem.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRendererItem.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRendererMenuController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRendererMenuController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCResumeDialogController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCResumeDialogController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSidebarDataSource.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSidebarDataSource.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSourceListItem.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSourceListItem.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSourceListTableCellView.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSourceListTableCellView.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSourceListBadgeButton.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSourceListBadgeButton.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTrackSynchronizationWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTrackSynchronizationWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVideoEffectsWindowController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVideoEffectsWindowController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCFSPanelController.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCFSPanelController.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCFSPanelDraggableView.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCFSPanelDraggableView.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCDefaultValueSlider.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCDefaultValueSlider.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCDefaultValueSliderCell.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCDefaultValueSliderCell.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCImageButton.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCImageButton.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTintedImageButtonCell.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTintedImageButtonCell.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTimeField.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCTimeField.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCHexNumberFormatter.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCHexNumberFormatter.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSlider.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSlider.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSliderCell.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCSliderCell.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVolumeSlider.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVolumeSlider.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVolumeSliderCell.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCVolumeSliderCell.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCWrappableTextField.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCWrappableTextField.m"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRemoteControlService.h"
+    ],
+    [
+      "macosx",
+      "gui/macosx/VLCRemoteControlService.m"
+    ],
+    [
+      "mono",
+      "audio_filter/channel_mixer/mono.c"
+    ],
+    [
+      "rotate",
+      "video_filter/rotate.c"
+    ],
+    [
+      "stream_out_rtp",
+      "stream_out/rtp.c"
+    ],
+    [
+      "syslog",
+      "logger/syslog.c"
+    ]
+  ]
+}

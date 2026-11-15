@@ -1,0 +1,5 @@
+<network-security-config>
+    <!-- HTTP is restricted to numeric private/local hosts by LanEndpoint and StreamRelay.
+         No remote URL, redirect, cookie, cloud service or media download is allowed. -->
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

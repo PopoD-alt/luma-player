@@ -1,0 +1,11 @@
+Luma Android preview by sdas
+
+Development-only candidate: org.videolan.android:libvlc-all:3.7.7
+Official artifact: https://repo.maven.apache.org/maven2/org/videolan/android/libvlc-all/3.7.7/
+AAR SHA256: b48dab96e0e90e34cce3861963500c144a5aadb1b249d501d6a4b104d849e61b
+
+The AAR POM labels the package LGPL2.1. This does not establish that every bundled native module is LGPL-compatible. Native modules, exact corresponding source, contrib licenses and Android toolchain notices remain under audit in ThirdParty/libvlc. The included license texts are not a complete redistribution notice bundle. Do not publish this APK until the root third-party audit gate clears.
+
+Playback library: VideoLAN libVLC, https://www.videolan.org/vlc/libvlc.html
+Java bindings/source project: https://code.videolan.org/videolan/libvlcjni
+No media downloads, analytics or cloud account are implemented.

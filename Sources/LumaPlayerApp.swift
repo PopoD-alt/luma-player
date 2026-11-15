@@ -62,6 +62,8 @@ func clockLabel(_ time: Double) -> String {
     static let shared = PlayerCoordinator()
     let engine: PlaybackEngine
     let library: LibraryStore
+    let sharing = LocalSharingServer()
+    @Published var showSharing = false
     @Published var showInspector = false
     @Published var showShortcuts = false
     @Published var showFormatSupport = false
@@ -228,7 +230,17 @@ func clockLabel(_ time: Double) -> String {
         isVideoFullscreen = !window.styleMask.contains(.fullScreen)
         window.toggleFullScreen(nil)
     }
-    func shutdown() { saveProgress(); engine.shutdown() }
+    func startSharing() {
+        sharing.start { [weak self] in
+            guard let self else { return [] }
+            return self.library.items.map { item in
+                SharedMedia(id: item.id.uuidString.lowercased(), url: item.url, title: item.title,
+                    durationSeconds: item.id == self.library.selectedID && self.engine.hasMedia ? self.engine.duration : item.duration,
+                    resumeSeconds: item.id == self.library.selectedID && self.engine.hasMedia ? self.engine.currentTime : item.resumeTime)
+            }
+        }
+    }
+    func shutdown() { sharing.stop(); saveProgress(); engine.shutdown() }
 }
 
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -265,13 +277,14 @@ func clockLabel(_ time: Double) -> String {
                 CommandGroup(replacing: .appInfo) {
                     Button("About Luma Player") {
                         NSApp.orderFrontStandardAboutPanel(options: [
-                            .credits: NSAttributedString(string: "Made by sdas\nFree to download\nExperimental Luma codecs · macOS media support · Updates by sdas")
+                            .credits: NSAttributedString(string: "Made by sdas\nFree to download\nPlayback powered by VideoLAN libVLC · Third-party components retain their licenses")
                         ])
                     }
                 }
                 CommandGroup(after: .appInfo) { CheckForUpdatesCommand() }
                 CommandGroup(replacing: .newItem) {
                     Button("Open Media…") { PlayerCoordinator.shared.openFiles() }.keyboardShortcut("o")
+                    Button("Share Playlist on Wi-Fi…") { PlayerCoordinator.shared.showSharing = true }
                 }
                 CommandMenu("Playback") {
                     Button("Play / Pause") { PlayerCoordinator.shared.toggle() }.keyboardShortcut(.space, modifiers: [])
@@ -310,7 +323,10 @@ func clockLabel(_ time: Double) -> String {
 
 @MainActor final class VideoHostView: NSView {
     var onDoubleClick: (() -> Void)?
+    var onTogglePlayback: (() -> Void)?
     private var mouseMonitor: Any?
+    private var keyboardMonitor: Any?
+    override var acceptsFirstResponder: Bool { true }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
@@ -320,33 +336,47 @@ func clockLabel(_ time: Double) -> String {
             // even when the decoder's view is the event recipient.
             mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
                 guard let self, let window = self.window, event.window === window,
-                      event.clickCount == 2,
                       self.bounds.contains(self.convert(event.locationInWindow, from: nil)) else { return event }
+                window.makeFirstResponder(self)
+                guard event.clickCount == 2 else { return event }
                 self.onDoubleClick?()
+                return nil
+            }
+            keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+                guard let self, let window = self.window, event.window === window, window.isKeyWindow,
+                      event.keyCode == 49,
+                      event.modifierFlags.intersection([.command, .control, .option, .shift]).isEmpty,
+                      window.attachedSheet == nil, NSApp.modalWindow == nil,
+                      !((window.firstResponder as? NSTextView)?.isEditable ?? false),
+                      !((window.firstResponder as? NSTextField)?.isEditable ?? false) else { return event }
+                if !event.isARepeat { self.onTogglePlayback?() }
                 return nil
             }
         } else if window == nil, let mouseMonitor {
             NSEvent.removeMonitor(mouseMonitor)
             self.mouseMonitor = nil
+            if let keyboardMonitor { NSEvent.removeMonitor(keyboardMonitor); self.keyboardMonitor = nil }
         }
     }
 
-    deinit { if let mouseMonitor { NSEvent.removeMonitor(mouseMonitor) } }
+    deinit { if let mouseMonitor { NSEvent.removeMonitor(mouseMonitor) }; if let keyboardMonitor { NSEvent.removeMonitor(keyboardMonitor) } }
 }
 
 struct VideoSurface: NSViewRepresentable {
     let engine: PlaybackEngine
     let onDoubleClick: () -> Void
+    let onTogglePlayback: () -> Void
     func makeNSView(context: Context) -> VideoHostView {
         let view = VideoHostView()
         view.identifier = NSUserInterfaceItemIdentifier("LumaVideoHost")
         view.onDoubleClick = onDoubleClick
+        view.onTogglePlayback = onTogglePlayback
         view.wantsLayer = true
         view.layer?.backgroundColor = NSColor.black.cgColor
         engine.attachVideoView(view)
         return view
     }
-    func updateNSView(_ nsView: VideoHostView, context: Context) { nsView.onDoubleClick = onDoubleClick }
+    func updateNSView(_ nsView: VideoHostView, context: Context) { nsView.onDoubleClick = onDoubleClick; nsView.onTogglePlayback = onTogglePlayback }
 }
 
 struct GlyphButton: View {
@@ -409,6 +439,7 @@ struct PlayerView: View {
         .onDrop(of: [UTType.fileURL], isTargeted: $ui.isTargeted, perform: dropFiles)
         .sheet(isPresented: $player.showShortcuts) { shortcutSheet }
         .sheet(isPresented: $player.showFormatSupport) { CodecSupportView() }
+        .sheet(isPresented: $player.showSharing) { LocalSharingView(player: player, server: player.sharing) }
         .onExitCommand { if player.isVideoFullscreen { player.toggleVideoFullscreen() } }
         .onChange(of: engine.currentTime) { _, value in if !ui.isSeeking { ui.seekValue = value } }
     }
@@ -421,6 +452,7 @@ struct PlayerView: View {
                 Text("Media Player").font(.system(size: 10)).foregroundStyle(muted)
             }
             Spacer()
+            GlyphButton(symbol: "wifi", label: "Share playlist with Android on this network") { player.showSharing = true }
             Button(action: player.openFiles) {
                 Label("Open Media", systemImage: "plus").font(.system(size: 12, weight: .medium)).padding(.horizontal, 15).padding(.vertical, 9)
             }.buttonStyle(.plain).glassSurface(cornerRadius: 18).help("Open media · ⌘O")
@@ -493,7 +525,7 @@ struct PlayerView: View {
 
     private var stage: some View {
         ZStack {
-            VideoSurface(engine: engine, onDoubleClick: player.toggleVideoFullscreen)
+            VideoSurface(engine: engine, onDoubleClick: player.toggleVideoFullscreen, onTogglePlayback: player.toggle)
             if !engine.hasMedia {
                 ZStack {
                     LinearGradient(colors: [Color(red: 0.11, green: 0.15, blue: 0.23), Color(red: 0.025, green: 0.035, blue: 0.065)], startPoint: .topLeading, endPoint: .bottomTrailing)

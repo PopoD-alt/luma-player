@@ -6,7 +6,9 @@ internal static class Program
     {
         try
         {
+            if (args.Length == 3 && args[0] == "--sharing-test-host") return SharingTestHost.RunAsync(args[1], args[2]).GetAwaiter().GetResult();
             var root = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath("../Tests/Fixtures");
+            SharingTests.Run(root);
             FoundationTests.Run(root);
             AudioTests.Run(root);
             VideoTests.Run(root);

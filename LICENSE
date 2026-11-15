@@ -11,8 +11,24 @@ Source code
 
 The source is published for inspection. No general license to modify,
 redistribute, sublicense, or sell this source code or derived versions is granted
-without written permission from sdas, except for rights required by applicable
-law or the terms of the hosting platform. This is not an open-source license.
+without written permission from sdas, except for the permissions below, rights
+required by applicable law, or the terms of the hosting platform. This is not an
+open-source license.
+
+Third-party components and library replacement
+
+Third-party components retain their own copyrights and licenses. This license
+does not restrict any rights their licenses grant. See THIRD_PARTY_NOTICES.md and
+the version-specific notices, sources and build information accompanying a build.
+
+Where Luma is combined with a library under the GNU Lesser General Public
+License, you may modify the combined work for your own use and reverse engineer
+it to debug those modifications, as required by the applicable LGPL. This
+includes replacing compatible shared libraries and relinking with modified
+versions. No Luma term overrides the LGPL's modification, debugging, relinking,
+source-access or redistribution rights for the covered components. These
+permissions do not otherwise grant a general license to redistribute Luma's
+proprietary source or derivative app versions.
 
 Warranty
 
@@ -21,5 +37,9 @@ without warranties of any kind. The copyright holder is not liable for claims
 or damages arising from use of the software. Nothing here limits rights or
 liabilities that cannot lawfully be limited.
 
-Apple system frameworks retain their respective ownership and terms. This
-source tree does not include VLC, FFmpeg, or Sparkle implementation code.
+Apple and Microsoft system frameworks retain their respective ownership and
+terms. Luma's original implementation is separate from optional third-party
+playback engines. A separately installed VLC runtime or a development dependency
+does not establish that its files may be bundled in an official Luma release;
+bundled engines require the version-specific source, notice and license checks
+described in THIRD_PARTY_NOTICES.md.

@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "policy": "No stock VLC bundle or candidate becomes redistributable by package label, successful playback, or hash alone. All four technical audit gates and release review are required.",
+  "packages": {
+    "macos-vlckit-3.7.3": {
+      "platform": "macos-arm64-and-x86_64",
+      "declaredLicense": "LGPL-2.1-or-later",
+      "libraryVersion": "3.0.23 Vetinari",
+      "libraryChangeset": "3.0.23-2-47-g4eb3701ba9",
+      "kind": "tar",
+      "archivePrefix": "VLCKit - binary package/VLCKit.xcframework/macos-arm64_x86_64/",
+      "runtimeEntry": "VLCKit.framework/VLCKit",
+      "runtimeSha256": "920dac24fa9fa31d03c3aae4b49bf605d2eec4fa6f35187c46b67242bca2f43a",
+      "artifact": {
+        "filename": "VLCKit-3.7.3-319ed2c0-79128878.tar.xz",
+        "url": "https://download.videolan.org/pub/cocoapods/prod/VLCKit-3.7.3-319ed2c0-79128878.tar.xz",
+        "sha256": "019afdae4e2e2d0f3ac325fac8f7ba0af25dca70b9d157df7d60db88e0be8e5d",
+        "bytes": 88186488,
+        "maximumBytes": 268435456
+      },
+      "sources": [
+        {
+          "filename": "vlckit-319ed2c0.tar.gz",
+          "url": "https://codeload.github.com/videolan/vlckit/tar.gz/319ed2c0",
+          "sha256": "b228ad8bf0f5def10c8aa5ef2343725d4af1e31280acf70b41791a8627a87be2",
+          "bytes": 1605706,
+          "maximumBytes": 268435456
+        },
+        {
+          "filename": "vlc-79128878.tar.gz",
+          "url": "https://codeload.github.com/videolan/vlc/tar.gz/79128878",
+          "sha256": "7d41aa364f4f5e25d8e4b447f1a87caedfbd96973e071f642ba455e9f45df8cf",
+          "bytes": 32816779,
+          "maximumBytes": 268435456
+        }
+      ],
+      "evidence": [
+        "Actual arm64 dlopen and libvlc_new/release succeeded; parent production playback smoke verified separate log.",
+        "Source VLCKit319ed2c0 has47patches and base79128878; exact buildMobileVLCKit.sh passes --disable-gpl --disable-gnuv3 --enable-ad-clauses to contrib bootstrap.",
+        "Framework dynamically links only system libraries; codec dependencies are within replaceable framework.",
+        "Actual --list-verbose module inventory is macos-runtime-modules.txt. Exact source files logger/syslog.c,control/dummy.c,audio_filter/channel_mixer/mono.c,video_filter/rotate.c explicitly declare VLC_MODULE_LICENSE_GPL_2_PLUS.",
+        "All45selected contrib source archives fetched and verified against exact patched recipe SHA512SUMS; see macos-source-inventory.json. Full native rebuild has not yet succeeded."
+      ],
+      "audit": {
+        "status": "development-only",
+        "moduleLicensesReviewed": false,
+        "dependencyLicensesReviewed": false,
+        "completeCorrespondingSources": false,
+        "replacementMechanismVerified": true,
+        "blockers": [
+          "Actual static runtime includes GPL2+ modules (confirmed syslog, dummy interface, mono and rotate); proprietary LGPL-only distribution requires a rebuilt library excluding GPL modules, not relabeling this binary.",
+          "Complete contributed-dependency source archives and exact notices not yet inventoried.",
+          "Actual included-module license mapping and exclusion evidence incomplete."
+        ]
+      }
+    },
+    "windows-x64-libvlc-3.0.24": {
+      "platform": "win-x64",
+      "declaredLicense": "LGPL-2.1-or-later",
+      "libraryVersion": "3.0.24",
+      "kind": "zip",
+      "archivePrefix": "build/x64/",
+      "runtimeEntry": "libvlc.dll",
+      "runtimeSha256": "c0b1bedbc8e11267b39111733920a6af73d08791e333e4f8902eaffe4daf6db9",
+      "artifact": {
+        "filename": "videolan.libvlc.windows.3.0.24.nupkg",
+        "url": "https://api.nuget.org/v3-flatcontainer/videolan.libvlc.windows/3.0.24/videolan.libvlc.windows.3.0.24.nupkg",
+        "sha256": "3da3f37ee2b2b10e5c788d830a3b513658c36521ea1b0f966ed86eb69f41ef3c",
+        "bytes": 145225266,
+        "maximumBytes": 268435456
+      },
+      "sources": [],
+      "evidence": [
+        "Official package is VideoLAN.LibVLC.Windows, distinct from VideoLAN.LibVLC.Windows.GPL.",
+        "Nuspec declares LGPL-2.1-or-later; package contains no complete native source/license collection.",
+        "Core configure string enables features shared with stock VLC; downstream package module selection requires independent inspection.",
+        "Read-only bounded PE metadata audit:321x64plugins,317LGPL license exports,4GPL exports,0unclassified. See windows-plugin-metadata.json and prepare-libvlc-pe-audit.py."
+      ],
+      "audit": {
+        "status": "development-only",
+        "moduleLicensesReviewed": false,
+        "dependencyLicensesReviewed": false,
+        "completeCorrespondingSources": false,
+        "replacementMechanismVerified": false,
+        "blockers": [
+          "Delivered x64package contains4plugins whose actual license exports declareGPL2+:lua,dolby_surround_decoder,headphone_channel_mixer,x26410b. Exclusion and dependency/source audit required.",
+          "Exact retained module/dependency licenses and full corresponding sources not yet inventoried.",
+          "Replaceability and Windows runtime execution must be verified."
+        ]
+      }
+    },
+    "android-libvlc-all-3.7.7": {
+      "platform": "android-arm64-v8a-armeabi-v7a-x86-x86_64",
+      "declaredLicense": "LGPL-2.1",
+      "libraryVersion": "3.x, native changeset pending inspection",
+      "kind": "aar",
+      "runtimeEntry": "libvlc-all-3.7.7.aar",
+      "artifact": {
+        "filename": "libvlc-all-3.7.7.aar",
+        "url": "https://repo.maven.apache.org/maven2/org/videolan/android/libvlc-all/3.7.7/libvlc-all-3.7.7.aar",
+        "sha256": "b48dab96e0e90e34cce3861963500c144a5aadb1b249d501d6a4b104d849e61b",
+        "bytes": 92576688,
+        "maximumBytes": 268435456
+      },
+      "sources": [
+        {
+          "filename": "libvlc-all-3.7.7-sources.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/videolan/android/libvlc-all/3.7.7/libvlc-all-3.7.7-sources.jar",
+          "sha256": "a6ba4732437f1f5359ea4cf44e65a283e245d2fc41b77a1c9784d565b288c407",
+          "bytes": 75388,
+          "maximumBytes": 268435456
+        }
+      ],
+      "evidence": [
+        "Official POM declares LGPL2.1 and VideoLAN SCM.",
+        "AAR contains libvlc.so,libvlcjni.so,libc++_shared.so for four ABIs.",
+        "Published sources.jar contains49Java-related entries and no native C/C++ sources.",
+        "Current upstream development build defaults GPL contrib profile; --license a selects LGPL2.1/noGNUv3. Published release profile still requires evidence."
+      ],
+      "audit": {
+        "status": "development-only",
+        "moduleLicensesReviewed": false,
+        "dependencyLicensesReviewed": false,
+        "completeCorrespondingSources": false,
+        "replacementMechanismVerified": false,
+        "blockers": [
+          "Published native VLC/JNI/contrib build revisions and license profile not yet verified.",
+          "Complete native/dependency sources and notices missing from Java sources.jar.",
+          "APK library replacement/relink procedure and required NDK/runtime notices pending."
+        ]
+      }
+    }
+  },
+  "externalTestOnly": {
+    "windowsVlc": "3.0.24",
+    "url": "https://download.videolan.org/pub/videolan/vlc/3.0.24/win64/vlc-3.0.24-win64.zip",
+    "sha256": "fcf30850371ad10c9373cc4f0f4501e7dee49e3e9ae9f20c72fb2661a1ca6323",
+    "publishedChecksumUrl": "https://download.videolan.org/pub/videolan/vlc/3.0.24/win64/vlc-3.0.24-win64.zip.sha256",
+    "redistributionApproved": false,
+    "instruction": "Install/extract separately for development tests; never copy stock archive modules into Luma artifact."
+  }
+}

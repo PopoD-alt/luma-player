@@ -35,8 +35,19 @@ def config_errors(config):
     if config.get('licenseChoice') == 'pending':
         errors.append('Choose the license for original Luma code before distributing it.')
     # Require an explicit production engine policy.
-    if config.get('engineDistribution') != 'original-and-system':
-        errors.append('Review the original/system decoder distribution before release.')
+    engine = config.get('engineDistribution')
+    if engine == 'libvlc':
+        try:
+            registry = json.loads((ROOT / 'ThirdParty/libvlc/packages.json').read_text())
+            record = registry['packages'][config['libvlcPackage']]
+            audit = record['audit']
+            if audit.get('status') != 'approved-for-redistribution' or not all(audit.get(key) is True for key in (
+                    'moduleLicensesReviewed', 'dependencyLicensesReviewed', 'completeCorrespondingSources', 'replacementMechanismVerified')):
+                errors.append('libVLC distribution is blocked by its incomplete module/dependency/source/replacement audit.')
+        except (OSError, ValueError, KeyError, TypeError):
+            errors.append('Select a registered, audited libVLC package before release.')
+    elif engine != 'original-and-system':
+        errors.append('Review the playback engine distribution before release.')
     return errors
 
 def notarize(artifact, profile, label):
@@ -166,7 +177,15 @@ def main(argv=None):
         'Sources/SignedRelease.swift', 'Scripts/UpdateSigner.swift', '-o', str(signer))
     key = run(str(signer), '--public-key', capture=True).strip()
     if key != config['publicEdKey']: raise RuntimeError('Keychain signing key differs from the app’s pinned public key.')
-    run('bash', 'build.sh')
+    if config.get('engineDistribution') == 'libvlc':
+        runtime = ROOT / 'ThirdParty/runtime' / config['libvlcPackage']
+        verified = json.loads(run('python3', 'Scripts/prepare-libvlc.py', 'verify', '--runtime', str(runtime), '--distribution', capture=True))
+        engine_environment = 'LUMA_LIBVLC_PATH=' + verified['runtimeEntry']
+        run('env', 'LUMA_DISTRIBUTION_BUILD=1', 'LUMA_LIBVLC_RUNTIME_ROOT=' + str(runtime), 'bash', 'build.sh')
+        run('env', engine_environment, 'bash', 'test-vlc.sh')
+        run('env', engine_environment, 'bash', 'test-sharing.sh')
+    else:
+        run('bash', 'build.sh')
     run('bash', 'test.sh')
     run('bash', 'test-updates.sh')
     run('bash', 'test-release-plan.sh')
@@ -188,13 +207,20 @@ def main(argv=None):
     run('bash', 'test-opus.sh')
     run('bash', 'test-matroska.sh')
     run('bash', 'test-video.sh')
-    run('bash', 'test-fullscreen.sh')
+    if config.get('engineDistribution') == 'libvlc':
+        run('env', engine_environment, 'bash', 'test-fullscreen.sh')
+    else:
+        run('bash', 'test-fullscreen.sh')
     app = ROOT / 'build/Luma Player.app'
     info = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
-    # Reject accidental reintroduction of removed playback/updater dependencies.
+    # The updater remains Luma's own implementation. libVLC inputs must pass the
+    # explicit audit gate, rather than being mistaken for an original codec.
     linked = run('otool', '-L', str(app / 'Contents/MacOS/LumaPlayer'), capture=True)
-    if any(name in linked.lower() for name in ['libvlc', 'sparkle']) or '/Applications/VLC.app/' in run('otool', '-l', str(app / 'Contents/MacOS/LumaPlayer'), capture=True):
+    if 'sparkle' in linked.lower() or (config.get('engineDistribution') != 'libvlc' and (
+            'libvlc' in linked.lower() or '/Applications/VLC.app/' in run('otool', '-l', str(app / 'Contents/MacOS/LumaPlayer'), capture=True))):
         raise RuntimeError('The binary still references a removed third-party playback/updater dependency.')
+    if config.get('engineDistribution') == 'libvlc':
+        run('python3', 'Scripts/prepare-libvlc.py', 'verify', '--runtime', str(app / 'Contents/Resources/libvlc-runtime'), '--distribution')
     version, build = info['CFBundleShortVersionString'], int(info['CFBundleVersion'])
     if not re.fullmatch(r'[0-9]+(?:\.[0-9]+){0,2}', version) or build <= 0:
         raise RuntimeError('A numeric release version and positive build are required.')

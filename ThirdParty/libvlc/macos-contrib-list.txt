@@ -1,0 +1,121 @@
+xcrun: error: no utility name specified
+Usage: xcrun [options] <tool name> ... arguments ...
+
+Find and execute the named command line tool from the active developer
+directory.
+
+The active developer directory can be set using `xcode-select`, or via the
+DEVELOPER_DIR environment variable. See the xcrun and xcode-select manual
+pages for more information.
+
+Options:
+  -h, --help                  show this help message and exit
+  --version                   show the xcrun version
+  -v, --verbose               show verbose logging output
+  --sdk <sdk name>            find the tool for the given SDK name
+  --toolchain <name>          find the tool for the given toolchain
+  -l, --log                   show commands to be executed (with --run)
+  -f, --find                  only find and print the tool path
+  -r, --run                   find and execute the tool (the default behavior)
+  -n, --no-cache              do not use the lookup cache
+  -k, --kill-cache            invalidate all existing cache entries
+  --show-sdk-path             show selected SDK install path
+  --show-sdk-version          show selected SDK version
+  --show-sdk-build-version    show selected SDK build version
+  --show-sdk-platform-path    show selected SDK platform path
+  --show-sdk-platform-version show selected SDK platform version
+  --show-toolchain-path       show selected SDK preferred toolchain path
+xcrun: error: no utility name specified
+Usage: xcrun [options] <tool name> ... arguments ...
+
+Find and execute the named command line tool from the active developer
+directory.
+
+The active developer directory can be set using `xcode-select`, or via the
+DEVELOPER_DIR environment variable. See the xcrun and xcode-select manual
+pages for more information.
+
+Options:
+  -h, --help                  show this help message and exit
+  --version                   show the xcrun version
+  -v, --verbose               show verbose logging output
+  --sdk <sdk name>            find the tool for the given SDK name
+  --toolchain <name>          find the tool for the given toolchain
+  -l, --log                   show commands to be executed (with --run)
+  -f, --find                  only find and print the tool path
+  -r, --run                   find and execute the tool (the default behavior)
+  -n, --no-cache              do not use the lookup cache
+  -k, --kill-cache            invalidate all existing cache entries
+  --show-sdk-path             show selected SDK install path
+  --show-sdk-version          show selected SDK version
+  --show-sdk-build-version    show selected SDK build version
+  --show-sdk-platform-path    show selected SDK platform path
+  --show-sdk-platform-version show selected SDK platform version
+  --show-toolchain-path       show selected SDK preferred toolchain path
+xcrun: error: no utility name specified
+Usage: xcrun [options] <tool name> ... arguments ...
+
+Find and execute the named command line tool from the active developer
+directory.
+
+The active developer directory can be set using `xcode-select`, or via the
+DEVELOPER_DIR environment variable. See the xcrun and xcode-select manual
+pages for more information.
+
+Options:
+  -h, --help                  show this help message and exit
+  --version                   show the xcrun version
+  -v, --verbose               show verbose logging output
+  --sdk <sdk name>            find the tool for the given SDK name
+  --toolchain <name>          find the tool for the given toolchain
+  -l, --log                   show commands to be executed (with --run)
+  -f, --find                  only find and print the tool path
+  -r, --run                   find and execute the tool (the default behavior)
+  -n, --no-cache              do not use the lookup cache
+  -k, --kill-cache            invalidate all existing cache entries
+  --show-sdk-path             show selected SDK install path
+  --show-sdk-version          show selected SDK version
+  --show-sdk-build-version    show selected SDK build version
+  --show-sdk-platform-path    show selected SDK platform path
+  --show-sdk-platform-version show selected SDK platform version
+  --show-toolchain-path       show selected SDK preferred toolchain path
+All packages:
+  SDL_image a52 amf aom aribb24 aribb25 asdcplib ass bluray bpg
+  breakpad caca cddb chromaprint crystalhd d3d11 d3d9 daala dav1d
+  dca dvbpsi dvdcss dvdnav dvdread ebml faad2 ffi ffmpeg flac fluid
+  fluidlite fontconfig freetype2 fribidi gcrypt gettext glew glib
+  gme gmp gnutls goom gpg-error growl gsm harfbuzz iconv jack jpeg
+  kate lame libarchive libdsm libebur128 libmpeg2 libplacebo libtasn1
+  libxml2 live555 lua luac mad matroska mfx microdns modplug mpcdec
+  mpg123 mysofa ncurses nettle nfs ogg openjpeg opus orc png projectM
+  protobuf pthreads qt qtsvg regex samplerate schroedinger sdl shout
+  sidplay2 smb2 soxr sparkle spatialaudio speex speexdsp srt ssh2
+  taglib theora tiff tiger tremor twolame upnp vncclient vorbis
+  vorbisenc vpx wix wixlzx x262 x264 x26410b x265 xau xcb xcb-proto
+  xorg-macros xproto zlib zvbi
+Distribution-provided packages:
+   iconv regex
+Automatically selected packages:
+  aom asdcplib ass breakpad chromaprint dav1d dvbpsi ffmpeg flac
+  fontconfig freetype2 fribidi gcrypt gettext gme goom growl harfbuzz
+  kate libarchive libebur128 libplacebo libxml2 live555 lua luac
+  matroska modplug mpcdec mpg123 mysofa ncurses nfs ogg opus png
+  protobuf schroedinger shout sparkle spatialaudio speex speexdsp
+  ssh2 taglib theora twolame upnp vorbis vorbisenc vpx zlib zvbi
+Manually deselected packages:
+  SDL SDL_image SDL_image aribb24 aribb25 asdcplib bghudappkit
+  bluray breakpad caca cddb chromaprint fontconfig fontconfig gettext
+  gme gnutls goom gpg-error growl iconv kate libmpeg2 lua luac mad
+  microdns mpcdec ncurses orc samplerate schroedinger sdl sidplay2
+  sparkle srt tremor twolame vncclient vncserver
+Manually selected packages:
+  ass freetype2 fribidi libdsm libplacebo libxml2 smb2 soxr taglib
+  upnp vorbis vpx zvbi
+Depended-on packages:
+  ebml gpg-error gsm lame libtasn1 openjpeg
+To-be-built packages:
+  aom ass dav1d dvbpsi ebml ffmpeg flac freetype2 fribidi gcrypt
+  gpg-error gsm harfbuzz lame libarchive libdsm libebur128 libplacebo
+  libtasn1 libxml2 live555 matroska modplug mpg123 mysofa nfs ogg
+  openjpeg opus png protobuf shout smb2 soxr spatialaudio speex
+  speexdsp ssh2 taglib theora upnp vorbis vorbisenc vpx zlib zvbi

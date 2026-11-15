@@ -1,0 +1,7 @@
+<resources>
+    <item name="manual_address" type="id" /><item name="connect" type="id" />
+    <item name="pair_code" type="id" /><item name="pair_confirm" type="id" />
+    <item name="media_list" type="id" /><item name="player_play" type="id" />
+    <item name="player_seek" type="id" /><item name="player_back" type="id" />
+    <item name="connection_status" type="id" /><item name="player_status" type="id" />
+</resources>

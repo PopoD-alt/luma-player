@@ -8,6 +8,7 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     let movieLayer = AVPlayerLayer()
     let imageLayer = CALayer()
     let bitmapLayer = CALayer()
+    let vlcView = NSView()
     private var bitmapEvent: PGSDisplayEvent?
     let caption = NSTextField(wrappingLabelWithString: "")
     override init(frame: NSRect) {
@@ -17,6 +18,9 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
         movieLayer.videoGravity = .resizeAspect
         imageLayer.contentsGravity = .resizeAspect
         layer?.addSublayer(movieLayer); layer?.addSublayer(imageLayer); layer?.addSublayer(bitmapLayer)
+        vlcView.frame = bounds; vlcView.autoresizingMask = [.width, .height]
+        vlcView.wantsLayer = true; vlcView.layer?.backgroundColor = NSColor.black.cgColor
+        vlcView.isHidden = true; addSubview(vlcView)
         caption.alignment = .center
         caption.textColor = .white
         caption.font = .systemFont(ofSize: 22, weight: .semibold)
@@ -62,8 +66,9 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     }
 }
 
-/// Own transport/UI implementation. RIFF/FLAC/JPEG codecs are original Luma code;
-/// other supported compressed formats explicitly use macOS's system decoder.
+/// Luma transport and UI using dynamically replaceable libVLC playback.
+/// The old experimental decoder path is retained for its isolated codec tests,
+/// selected only by LUMA_EXPERIMENTAL_ENGINE=1; it is not the normal app route.
 @MainActor final class PlaybackEngine: ObservableObject {
     @Published private(set) var state = "idle"
     @Published private(set) var isPlaying = false
@@ -81,7 +86,7 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     @Published private(set) var subtitleRenderingNote: String?
     @Published private(set) var backendName = "Luma experimental"
     @Published var errorMessage: String?
-    let engineVersion = "Luma experimental"
+    let engineVersion = "libVLC 3 · Luma interface"
     let player = AVPlayer()
     private var canvas: PlaybackCanvas?
     private var ticker: AnyCancellable?
@@ -103,6 +108,15 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     private var bitmapSubtitles: [Int32: PGSSubtitleTrack] = [:]
     private var bitmapEventIndex: Int?
     private let externalTrack: Int32 = 1_000_000
+    private var vlc: VLCBridge?
+    private var usingVLC = false
+    private var tracksPoll = Date.distantPast
+    private var vlcWaitingSince: Date?
+    private var desiredVLCPlaying = false
+    var vlcStatistics: (decodedVideo: Int32, displayedVideo: Int32, decodedAudio: Int32)? { vlc?.statistics }
+    var actualPlaybackRate: Double { usingVLC ? vlc?.actualRate ?? 0 : Double(player.rate) }
+    var vlcRuntimePath: String? { vlc?.runtimePath }
+    func snapshot(to url: URL) -> Bool { usingVLC && vlc?.snapshot(to: url) == true }
 
     init() {
         player.volume = Float(volume / 100)
@@ -119,6 +133,7 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
         output.movieLayer.player = player
         view.addSubview(output)
         canvas = output
+        if usingVLC { output.movieLayer.isHidden = true; output.imageLayer.isHidden = true; output.vlcView.isHidden = false; vlc?.attach(output.vlcView) }
         bitmapEventIndex = nil
         lastFrame = -1
     }
@@ -129,6 +144,17 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
             errorMessage = "Choose an available local media file."; state = "error"; return
         }
         hasMedia = true; state = "opening"
+        if ProcessInfo.processInfo.environment["LUMA_EXPERIMENTAL_ENGINE"] != "1" {
+            usingVLC = true; desiredVLCPlaying = true; vlcWaitingSince = Date(); tracksPoll = .distantPast
+            do {
+                if vlc == nil { vlc = try VLCBridge() }
+                canvas?.movieLayer.isHidden = true; canvas?.imageLayer.isHidden = true; canvas?.vlcView.isHidden = false
+                vlc?.attach(canvas?.vlcView); vlc?.volume(volume); vlc?.rate(rate)
+                try vlc?.load(url); backendName = "libVLC " + (vlc?.version ?? "3")
+            } catch { errorMessage = error.localizedDescription; state = "error"; isPlaying = false }
+            return
+        }
+        canvas?.vlcView.isHidden = true
         let token = generation
         loading = Task { [self] in
             do {
@@ -218,6 +244,7 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     }
 
     private func play() {
+        if usingVLC { desiredVLCPlaying = true; vlcWaitingSince = Date(); vlc?.play(); vlc?.rate(rate); state = "buffering"; return }
         if avi != nil {
             anchor = Date(); anchorTime = currentTime; state = "playing"; isPlaying = true
         } else { player.playImmediately(atRate: Float(rate)); state = "buffering" }
@@ -228,14 +255,17 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
         else { if state == "ended" || state == "stopped" { seek(to: 0) }; play() }
     }
     func pause() {
+        if usingVLC { desiredVLCPlaying = false; vlc?.pause(); currentTime = vlc?.time ?? currentTime; isPlaying = false; state = "paused"; return }
         poll(); player.pause(); anchorTime = currentTime; anchor = Date(); isPlaying = false; state = "paused"
     }
     func stop() {
+        if usingVLC { desiredVLCPlaying = false; vlc?.stop(); isPlaying = false; state = "stopped"; currentTime = 0; return }
         cancelFrame()
         player.pause(); isPlaying = false; state = "stopped"; currentTime = 0; anchorTime = 0
         player.seek(to: .zero); canvas?.caption.stringValue = ""; bitmapEventIndex = nil; canvas?.displayPGS(nil)
     }
     func unload() {
+        if usingVLC { vlc?.unload(); usingVLC = false; desiredVLCPlaying = false; vlcWaitingSince = nil; canvas?.vlcView.isHidden = true }
         generation = UUID(); loading?.cancel(); loading = nil
         cancelFrame()
         player.pause(); player.replaceCurrentItem(with: nil)
@@ -254,20 +284,25 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
         let time = min(duration, max(0, seconds))
         currentTime = time; anchorTime = time; anchor = Date(); lastFrame = -1
         cancelFrame()
+        if usingVLC { vlc?.seek(time); return }
         if avi == nil { player.seek(to: CMTime(seconds: time, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero) }
     }
     func setVolume(_ value: Double) {
         guard value.isFinite else { return }; volume = min(100, max(0, value)); player.volume = Float(volume / 100)
+        if usingVLC { vlc?.volume(volume) }
     }
     func setRate(_ value: Double) {
         guard value.isFinite else { return }; poll(); anchorTime = currentTime; anchor = Date(); rate = min(3, max(0.25, value))
+        if usingVLC { vlc?.rate(rate); return }
         if avi == nil, state == "playing" || state == "buffering" { player.rate = Float(rate) }
     }
     func setAudioTrack(_ id: Int32) {
+        if usingVLC { vlc?.audio(id); selectedAudioTrack = vlc?.selectedAudio ?? -1; return }
         guard let group = audioGroup, let item = player.currentItem, id >= 0, Int(id) < group.options.count else { return }
         item.select(group.options[Int(id)], in: group); selectedAudioTrack = id
     }
     func setSubtitleTrack(_ id: Int32) {
+        if usingVLC { vlc?.subtitle(id); selectedSubtitleTrack = vlc?.selectedSubtitle ?? -1; return }
         bitmapEventIndex = nil; canvas?.displayPGS(nil)
         if let track = bitmapSubtitles[id] {
             if let group = textGroup { player.currentItem?.select(nil, in: group) }
@@ -292,6 +327,11 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
         player.currentItem?.select(group.options[Int(id)], in: group); selectedSubtitleTrack = id; subtitleRenderingNote = nil; cues = []; canvas?.caption.stringValue = ""
     }
     func addSubtitle(_ url: URL) {
+        if usingVLC {
+            guard hasMedia, url.isFileURL, FileManager.default.fileExists(atPath: url.path) else { errorMessage = "Open a video and choose an available subtitle file."; return }
+            if vlc?.addSubtitle(url) != true { errorMessage = "libVLC could not add this subtitle file." }
+            tracksPoll = .distantPast; return
+        }
         do {
             guard hasMedia else { throw CodecFailure.unsupported("Open a video first.") }
             externalCues = try SubtitleCue.read(url)
@@ -303,10 +343,11 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     }
     func setSubtitleDelay(_ seconds: Double) {
         guard seconds.isFinite else { return }
+        if usingVLC { subtitleDelay = min(60, max(-60, seconds)); vlc?.subtitleDelay(subtitleDelay); return }
         guard selectedSubtitleTrack == externalTrack || matroskaSubtitles[selectedSubtitleTrack] != nil || bitmapSubtitles[selectedSubtitleTrack] != nil else { errorMessage = "Timing adjustment is available for Luma-rendered subtitles."; return }
         subtitleDelay = min(60, max(-60, seconds))
     }
-    func shutdown() { unload(); ticker?.cancel(); ticker = nil; canvas?.removeFromSuperview(); canvas = nil }
+    func shutdown() { unload(); vlc?.shutdown(); vlc = nil; ticker?.cancel(); ticker = nil; canvas?.removeFromSuperview(); canvas = nil }
     private func finish() { currentTime = duration; isPlaying = false; state = "ended"; player.pause(); canvas?.caption.stringValue = ""; bitmapEventIndex = nil; canvas?.displayPGS(nil) }
     private func cancelFrame() {
         frameGeneration = UUID()
@@ -337,6 +378,27 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
         }
     }
     private func poll() {
+        if usingVLC {
+            guard hasMedia, !["error", "idle", "stopped", "ended"].contains(state), let vlc else { return }
+            let native = vlc.state
+            duration = vlc.duration; isSeekable = vlc.seekable
+            currentTime = vlc.time
+            if native == 7 { state = "error"; isPlaying = false; errorMessage = "libVLC could not decode this media. Check that the runtime and its codec plugins are installed together."; return }
+            if native == 6 { state = "ended"; isPlaying = false; currentTime = duration; return }
+            if native == 3 { state = desiredVLCPlaying ? "playing" : "paused"; isPlaying = desiredVLCPlaying; if !desiredVLCPlaying { vlc.pause() } }
+            else if native == 4 { state = "paused"; isPlaying = false }
+            else { isPlaying = false; if desiredVLCPlaying { state = "buffering" } }
+            if [0, 1, 2].contains(native) {
+                if vlcWaitingSince == nil { vlcWaitingSince = Date() }
+                if Date().timeIntervalSince(vlcWaitingSince!) > 30 { state = "error"; errorMessage = "Opening timed out. Retry this file or check the libVLC runtime."; return }
+            } else { vlcWaitingSince = nil }
+            if Date().timeIntervalSince(tracksPoll) > 1 {
+                tracksPoll = Date(); audioTracks = vlc.tracks(audio: true); subtitleTracks = vlc.tracks(audio: false)
+                if !subtitleTracks.contains(where: { $0.id == -1 }) { subtitleTracks.insert(PlaybackTrack(id: -1, name: "Off"), at: 0) }
+                selectedAudioTrack = vlc.selectedAudio; selectedSubtitleTrack = vlc.selectedSubtitle
+            }
+            return
+        }
         guard hasMedia, !["opening", "error", "idle", "stopped", "ended"].contains(state) else { return }
         if let avi {
             if isPlaying { currentTime = min(duration, anchorTime + Date().timeIntervalSince(anchor) * rate) }

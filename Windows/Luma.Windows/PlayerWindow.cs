@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using System.IO;
 using System.Globalization;
-using System.Text;
+using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,30 +11,19 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
-using Luma.Core.Audio;
 using Luma.Core.Library;
-using Luma.Core.Subtitles;
+using Luma.Core.Sharing;
 using Luma.Core.Updates;
-using Luma.Core.Video;
-using Luma.Core.Containers;
 
 namespace Luma.WindowsApp;
 
 internal sealed class PlayerWindow : Window
 {
     readonly LibraryStore library;
-    readonly Grid layout = new();
-    readonly Grid viewport = new();
-    MediaElement movie = NewNativeMovie();
-    MediaFoundationPlayer? foundation;
-    NativeCaptionOverlay? nativeCaptions;
-    Mp4Inspection? currentMp4;
-    string? activeNativeSource;
-    readonly Image image = new() { Stretch = Stretch.Uniform };
-    readonly TextBlock captions = new() { TextAlignment = TextAlignment.Center, FontSize = 24, Foreground = Brushes.White, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(30, 0, 30, 34), VerticalAlignment = VerticalAlignment.Bottom };
+    readonly Grid layout = new(), viewport = new();
     readonly StackPanel empty = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock nowTitle = new() { Text = "Make room for a good story", FontSize = 20, FontWeight = FontWeights.SemiBold, TextAlignment = TextAlignment.Center };
-    readonly TextBlock status = new() { FontSize = 11, Text = "Windows preview · ready", Margin = new Thickness(20, 0, 20, 0), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
+    readonly TextBlock status = new() { FontSize = 11, Text = "Windows review · ready", Margin = new Thickness(20, 0, 20, 0), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
     readonly TextBlock timing = new() { Text = "0:00 / 0:00", FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock queueCount = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock backend = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 360 };
@@ -46,35 +35,31 @@ internal sealed class PlayerWindow : Window
     readonly ComboBox speed = new() { Width = 76, VerticalAlignment = VerticalAlignment.Center };
     readonly Button play = new() { Content = "▶", Width = 52, Height = 42, ToolTip = "Play / pause (Space)" };
     readonly Button repeat = new() { Content = "Repeat: off", Width = 95 };
+    readonly Button shareButton = new() { Content = "Share playlist", ToolTip = "Local sharing is off until you start it" };
     readonly Border stage = new() { Margin = new Thickness(14, 14, 14, 0), CornerRadius = new CornerRadius(14), Background = Brushes.Black, ClipToBounds = true };
     readonly MenuItem automatic = new() { Header = "Automatically check for updates", IsCheckable = true };
     readonly MenuItem audioTracksMenu = new() { Header = "Audio tracks", IsEnabled = false };
-    readonly MenuItem embeddedSubtitlesMenu = new() { Header = "Embedded captions", IsEnabled = false };
-    readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(33) };
+    readonly MenuItem embeddedSubtitlesMenu = new() { Header = "Caption tracks", IsEnabled = false };
+    readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     readonly DispatcherTimer updateTimer = new() { Interval = TimeSpan.FromMinutes(1) };
-    readonly Stopwatch clock = new();
-    readonly Stopwatch nativeLoadClock = new();
-    readonly HashSet<string> temporaryMedia = [];
-    readonly HashSet<string> pendingTemporaryMedia = [];
-    string? activeTemporaryMedia, nativeFailureContext, mediaPreparation;
-    ulong? selectedMatroskaAudio;
-    long matroskaOriginNanoseconds;
-    bool activeNativeRequest;
-    readonly string temporaryFolder = Path.Combine(Path.GetTempPath(), "LumaPlayer-" + Guid.NewGuid().ToString("N"));
-    FrameworkElement header = null!, sidebar = null!, controls = null!;
-    AviVideo? original;
-    MediaEntry? current;
-    CancellationTokenSource loadCancellation = new();
     readonly CancellationTokenSource lifetimeCancellation = new();
-    List<SubtitleCue> cues = [];
-    string? lastError;
-    uint? lastNativeError;
-    bool? lastNativeSourceExisted;
+    readonly Stopwatch openingClock = new();
+    static readonly HashSet<string> CaptionExtensions = new(StringComparer.OrdinalIgnoreCase) { ".srt", ".vtt", ".ass", ".ssa", ".sub", ".idx", ".sup" };
+    FrameworkElement header = null!, sidebar = null!, controls = null!;
+    VlcPlayer? vlc;
+    MediaEntry? current;
+    PlaylistSharingServer? sharing;
+    WindowsDnsSdAdvertisement? discovery;
+    Window? sharingWindow;
+    TextBlock? sharingState, pairingText;
+    TextBox? sharingAddresses;
+    Button? startSharing, stopSharing;
     WindowsUpdateConfig? updateConfig;
     WindowsRelease? pendingUpdate;
-    int currentBuild = 1, generation, visualRevision, subtitleRevision, lastFrame = -1, repeatMode;
-    double position, duration, rate = 1, pendingResume, subtitleDelay;
-    bool playing, opening, rendering, dragging, refreshingQueue, updatingSlider, fullscreen, dark = true, checkingUpdate, closing;
+    string? lastError;
+    int currentBuild = 1, generation, repeatMode;
+    double duration, rate = 1, pendingResume, subtitleDelay;
+    bool playing, opening, dragging, refreshingQueue, updatingSlider, fullscreen, dark = true, checkingUpdate, closing, dummyAudioForSmoke;
     Rect normalBounds; WindowState previousState; bool previousTopmost;
     DateTime lastSave = DateTime.UtcNow;
 
@@ -84,42 +69,28 @@ internal sealed class PlayerWindow : Window
         Title = "Luma Player"; Width = Math.Min(1220, SystemParameters.WorkArea.Width - 30); Height = Math.Min(800, SystemParameters.WorkArea.Height - 30); MinWidth = 940; MinHeight = 610; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         FontFamily = new FontFamily("Segoe UI Variable, Segoe UI"); FontSize = 13; AllowDrop = true;
         SetResourceReference(BackgroundProperty, "WindowBrush"); SetResourceReference(ForegroundProperty, "TextBrush");
-        SetupStyles(); SetTheme(true);
-        Content = BuildLayout(); nativeCaptions = new NativeCaptionOverlay(this, viewport); RefreshQueue();
-        WireNativeMovie(movie, generation);
-        timer.Tick += async (_, _) => await TickAsync(); timer.Start();
-        updateTimer.Tick += async (_, _) => await PollUpdatesAsync(false); updateTimer.Start();
-        Activated += async (_, _) => await PollUpdatesAsync(false);
-        SourceInitialized += (_, _) => NativeWindow.Style(this, dark);
-        Closing += (_, _) => Shutdown();
-        SizeChanged += (_, _) => captions.MaxWidth = Math.Max(100, viewport.ActualWidth * .85);
-        PreviewKeyDown += OnKey;
+        SetupStyles(); SetTheme(true); Content = BuildLayout(); RefreshQueue();
+        timer.Tick += (_, _) => Tick(); timer.Start();
+        updateTimer.Tick += async (_, _) => await PollUpdatesAsync(false); updateTimer.Start(); Activated += async (_, _) => await PollUpdatesAsync(false);
+        SourceInitialized += (_, _) => NativeWindow.Style(this, dark); Closing += (_, _) => Shutdown(); PreviewKeyDown += OnKey;
         Drop += async (_, e) => { if (e.Data.GetData(DataFormats.FileDrop) is string[] paths) await ImportAsync(paths); };
         DragOver += (_, e) => { e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; };
         viewport.MouseLeftButtonDown += (_, e) => { if (e.ClickCount == 2) { ToggleFullscreen(); e.Handled = true; } };
-        seek.PreviewMouseLeftButtonDown += (_, _) => dragging = true;
-        seek.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler((_, _) => { dragging = false; Seek(seek.Value); }));
-        seek.PreviewMouseLeftButtonUp += (_, _) => { dragging = false; Seek(seek.Value); };
-        seek.ValueChanged += (_, _) => { if (!updatingSlider && !dragging && seek.IsKeyboardFocusWithin) Seek(seek.Value); };
+        seek.PreviewMouseLeftButtonDown += (_, _) => dragging = true; seek.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler((_, _) => { dragging = false; Seek(seek.Value); }));
+        seek.PreviewMouseLeftButtonUp += (_, _) => { dragging = false; Seek(seek.Value); }; seek.ValueChanged += (_, _) => { if (!updatingSlider && !dragging && seek.IsKeyboardFocusWithin) Seek(seek.Value); };
         queue.SelectionChanged += async (_, _) => { if (!refreshingQueue && queue.SelectedItem is MediaEntry entry && entry.Id != current?.Id) await LoadEntryAsync(entry); };
         queue.MouseDoubleClick += async (_, _) => { if (queue.SelectedItem is MediaEntry entry) await LoadEntryAsync(entry); };
         search.TextChanged += (_, _) => { searchHint.Visibility = search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed; RefreshQueue(); };
-        play.Click += (_, _) => TogglePlayback();
-        volume.ValueChanged += (_, _) => { movie.Volume = volume.Value; if (foundation is not null) foundation.Volume = volume.Value; };
-        speed.SelectionChanged += (_, _) => { if (speed.SelectedItem is ComboBoxItem item) { var time = CurrentTime; rate = (double)item.Tag; position = time; clock.Restart(); movie.SpeedRatio = rate; if (foundation is not null) foundation.Rate = rate; } };
+        play.Click += (_, _) => TogglePlayback(); shareButton.Click += (_, _) => ShowSharing();
+        volume.ValueChanged += (_, _) => { if (vlc is not null) vlc.Volume = volume.Value; };
+        speed.SelectionChanged += (_, _) => { if (speed.SelectedItem is ComboBoxItem item) { rate = (double)item.Tag; if (vlc is not null) vlc.Rate = rate; } };
         repeat.Click += (_, _) => { repeatMode = (repeatMode + 1) % 3; repeat.Content = new[] { "Repeat: off", "Repeat: all", "Repeat: one" }[repeatMode]; };
-        try
-        {
-            var config = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.windows.json"));
-            updateConfig = WindowsUpdateConfig.FromJson(config);
-            using var json = JsonDocument.Parse(config); currentBuild = json.RootElement.GetProperty("build").GetInt32();
-        }
-        catch (Exception e) when (e is IOException or JsonException or InvalidOperationException) { updateConfig = null; }
+        try { var config = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "appsettings.windows.json")); updateConfig = WindowsUpdateConfig.FromJson(config); using var json = JsonDocument.Parse(config); currentBuild = json.RootElement.GetProperty("build").GetInt32(); }
+        catch (Exception error) when (error is IOException or JsonException or InvalidOperationException) { updateConfig = null; }
         automatic.IsChecked = library.Data.AutomaticallyCheckUpdates; automatic.IsEnabled = updateConfig is not null;
         automatic.Click += (_, _) => { library.Data.AutomaticallyCheckUpdates = automatic.IsChecked; if (!automatic.IsChecked) pendingUpdate = null; SaveLibrary(); };
         if (library.RecoveryNotice is not null) Notice(library.RecoveryNotice);
     }
-
     void SetupStyles()
     {
         var buttons = new Style(typeof(Button));
@@ -174,7 +145,7 @@ internal sealed class PlayerWindow : Window
         DockPanel.SetDock(brand, Dock.Left); top.Children.Add(brand);
         var actions = Row(); actions.HorizontalAlignment = HorizontalAlignment.Right;
         actions.Children.Add(Button("Open media", () => _ = OpenMediaAsync(), "Open local media (Ctrl+O)"));
-        actions.Children.Add(Button("Appearance", () => SetTheme(!dark)));
+        actions.Children.Add(shareButton); actions.Children.Add(Button("Appearance", () => SetTheme(!dark)));
         var more = Button("More  ···", () => { }); var menu = BuildMenu(); more.Click += (_, _) => { menu.PlacementTarget = more; menu.IsOpen = true; }; actions.Children.Add(more); DockPanel.SetDock(actions, Dock.Right); top.Children.Add(actions);
         var headerBorder = new Border { Child = top }; headerBorder.SetResourceReference(Border.BackgroundProperty, "PanelBrush"); header = headerBorder; Grid.SetColumnSpan(header, 2); layout.Children.Add(header);
 
@@ -185,7 +156,7 @@ internal sealed class PlayerWindow : Window
         sidebar = Panel(side); sidebar.Margin = new Thickness(12, 14, 0, 0); Grid.SetRow(sidebar, 1); Grid.SetRowSpan(sidebar, 2); layout.Children.Add(sidebar);
 
         var symbol = Text("▶", 58); symbol.HorizontalAlignment = HorizontalAlignment.Center; symbol.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush"); empty.Children.Add(symbol); empty.Children.Add(nowTitle); var welcome = Text("Drop a local video or audio file here", 13); welcome.Foreground = new SolidColorBrush(Color.FromRgb(160, 169, 186)); welcome.HorizontalAlignment = HorizontalAlignment.Center; welcome.Margin = new Thickness(0, 12, 0, 0); empty.Children.Add(welcome);
-        viewport.Children.Add(movie); viewport.Children.Add(image); viewport.Children.Add(empty); viewport.Children.Add(captions); stage.Child = viewport; Grid.SetRow(stage, 1); Grid.SetColumn(stage, 1); layout.Children.Add(stage);
+        viewport.Children.Add(empty); stage.Child = viewport; Grid.SetRow(stage, 1); Grid.SetColumn(stage, 1); layout.Children.Add(stage);
 
         var bottom = new Grid { Margin = new Thickness(18, 12, 18, 10) }; bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new()); bottom.Children.Add(seek);
         var transport = new WrapPanel(); Grid.SetRow(transport, 1); var left = Row(); left.Margin = new Thickness(0, 0, 0, 4); left.Children.Add(Button("│◀", () => _ = NextAsync(-1), "Previous file")); left.Children.Add(Button("−10", () => Seek(CurrentTime - 10))); left.Children.Add(play); play.SetResourceReference(BackgroundProperty, "AccentBrush"); play.Foreground = Brushes.Black; left.Children.Add(Button("+10", () => Seek(CurrentTime + 10))); left.Children.Add(Button("▶│", () => _ = NextAsync(1), "Next file")); timing.Margin = new Thickness(12, 0, 10, 0); left.Children.Add(timing); transport.Children.Add(left);
@@ -202,410 +173,108 @@ internal sealed class PlayerWindow : Window
     {
         var menu = new ContextMenu();
         void Item(string label, Action action) { var item = new MenuItem { Header = label }; item.Click += (_, _) => action(); menu.Items.Add(item); }
-        Item("Format support", () => ShowDocument("FORMAT_SUPPORT.md", "Format support"));
-        Item("Media diagnostics…", () => _ = ShowMediaDiagnosticsAsync());
-        Item("Check for updates…", () => _ = PollUpdatesAsync(true)); menu.Items.Add(automatic); menu.Items.Add(new Separator());
+        Item("Format support", () => ShowDocument("FORMAT_SUPPORT.md", "Format support")); Item("Playback diagnostics…", ShowDiagnostics);
+        Item("Share playlist locally…", ShowSharing); Item("Check for updates…", () => _ = PollUpdatesAsync(true)); menu.Items.Add(automatic); menu.Items.Add(new Separator());
         menu.Items.Add(audioTracksMenu); menu.Items.Add(embeddedSubtitlesMenu);
         Item("Play original video demo", () => _ = ImportAsync([Path.Combine(AppContext.BaseDirectory, "Demos", "Luma-MSVideo1-16.avi")]));
-        Item("Saved bookmarks", ShowBookmarks); Item("Caption timing −0.25s", () => { subtitleDelay -= .25; Notice($"Caption delay: {subtitleDelay:+0.00;-0.00;0.00}s"); }); Item("Caption timing +0.25s", () => { subtitleDelay += .25; Notice($"Caption delay: {subtitleDelay:+0.00;-0.00;0.00}s"); }); Item("Turn captions off", () => { subtitleRevision++; cues.Clear(); captions.Text = ""; });
-        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.6.1 · Windows preview build " + currentBuild + "\n\nMade by sdas · free to download\nOriginal Luma decoders and Windows media playback.\nThis preview is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
+        Item("Saved bookmarks", ShowBookmarks); Item("Caption timing −0.25s", () => ChangeCaptionDelay(-.25)); Item("Caption timing +0.25s", () => ChangeCaptionDelay(.25));
+        Item("Turn captions off", () => TryControl(() => vlc?.SelectSubtitle(-1)));
+        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.6.1 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by separately installed libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
         return menu;
     }
-
     async Task OpenMediaAsync()
     {
-        var picker = new OpenFileDialog { Title = "Open media", Multiselect = true, Filter = "Media files|*.mp4;*.mkv;*.mka;*.mov;*.avi;*.wmv;*.webm;*.m4v;*.mp3;*.wav;*.flac;*.m4a;*.aac;*.aif;*.aiff;*.aifc;*.au;*.snd;*.wma|All files|*.*" };
+        var picker = new OpenFileDialog { Title = "Open media", Multiselect = true, Filter = "Media files|*.mp4;*.mkv;*.mka;*.mov;*.avi;*.wmv;*.webm;*.m4v;*.mp3;*.wav;*.flac;*.m4a;*.aac;*.aif;*.aiff;*.au;*.snd;*.wma;*.ogg;*.opus;*.ts;*.mts;*.m2ts;*.vob;*.mpeg;*.mpg|All files|*.*" };
         if (picker.ShowDialog(this) == true) await ImportAsync(picker.FileNames);
     }
     public async Task ImportAsync(IEnumerable<string> paths)
     {
-        int expectedGeneration = generation;
-        var expectedItem = current?.Id;
+        int expectedGeneration = generation; Guid? expectedItem = current?.Id;
         try
         {
             var list = paths.Take(2000).SelectMany(p => Directory.Exists(p) ? Directory.EnumerateFiles(p).Take(2000) : new[] { p }).Take(2000).ToList();
-            var media = list.Where(p => Path.GetExtension(p).ToLowerInvariant() is not (".srt" or ".vtt"));
-            var added = library.Add(media); RefreshQueue();
+            var added = library.Add(list.Where(p => !CaptionExtensions.Contains(Path.GetExtension(p)))); RefreshQueue();
             if (current is null || lastError is not null)
             {
-                var requested = added.FirstOrDefault() ?? library.Data.Items.FirstOrDefault(entry => list.Any(path => string.Equals(Path.GetFullPath(path), entry.FilePath, StringComparison.OrdinalIgnoreCase)));
-                if (requested is not null)
-                {
-                    var loading = LoadEntryAsync(requested); expectedGeneration = generation; expectedItem = requested.Id;
-                    await loading;
-                }
+                var requested = added.FirstOrDefault() ?? library.Data.Items.FirstOrDefault(item => list.Any(p => string.Equals(Path.GetFullPath(p), item.FilePath, StringComparison.OrdinalIgnoreCase)));
+                if (requested is not null) { var loading = LoadEntryAsync(requested); expectedGeneration = generation; expectedItem = requested.Id; await loading; }
             }
             if (closing || generation != expectedGeneration || current?.Id != expectedItem) return;
-            var subtitle = list.FirstOrDefault(p => Path.GetExtension(p).ToLowerInvariant() is ".srt" or ".vtt"); if (subtitle is not null) ReadSubtitles(subtitle);
+            string? subtitle = list.FirstOrDefault(p => CaptionExtensions.Contains(Path.GetExtension(p))); if (subtitle is not null) ReadSubtitles(subtitle);
         }
-        catch (Exception e) { if (!closing && generation == expectedGeneration) Notice("Could not import: " + e.Message); }
+        catch (Exception error) { Notice(error.Message); }
     }
-    async Task LoadEntryAsync(MediaEntry entry, ulong? audioTrackId = null, bool includeAudio = true, double? resume = null, long? previousOrigin = null, bool forceModern = false)
+    Task LoadEntryAsync(MediaEntry entry, double? resume = null)
     {
-        if (closing) return;
-        var lifetimeToken = lifetimeCancellation.Token;
-        SaveProgress(); loadCancellation.Cancel(); loadCancellation.Dispose(); loadCancellation = new(); var token = loadCancellation.Token; var version = ++generation;
-        ReplaceNativeMovie(version); currentMp4 = null; activeNativeSource = null; activeTemporaryMedia = null; CleanupTemporaryMedia(); nativeLoadClock.Reset(); nativeFailureContext = mediaPreparation = null; ResetTrackMenus(); original = null; playing = false; opening = true; clock.Reset(); position = duration = 0; lastFrame = -1; visualRevision++; cues.Clear(); subtitleDelay = 0; captions.Text = ""; image.Source = null; lastError = null; lastNativeError = null; lastNativeSourceExisted = null;
-        current = entry; library.Data.SelectedId = entry.Id; pendingResume = resume ?? (entry.ResumeTime > 3 ? entry.ResumeTime : 0); RefreshQueue(); nowTitle.Text = entry.Title; empty.Visibility = Visibility.Visible; image.Visibility = Visibility.Collapsed; movie.Visibility = Visibility.Collapsed; backend.Text = "Opening…"; Notice("Opening " + entry.Title);
-        try
-        {
-            if (!File.Exists(entry.FilePath)) throw new FileNotFoundException("This file has moved or is unavailable.");
-            var suffix = Path.GetExtension(entry.FilePath).ToLowerInvariant(); var size = new FileInfo(entry.FilePath).Length;
-            if (suffix == ".avi" && size <= 512L * 1024 * 1024)
-            {
-                var bytes = await File.ReadAllBytesAsync(entry.FilePath, token);
-                try
-                {
-                    var video = await Task.Run(() => AviVideo.Open(bytes, token), token); if (version != generation || closing) return; token.ThrowIfCancellationRequested();
-                    original = video; duration = video.Duration; position = Math.Min(pendingResume, Math.Max(0, duration - 1)); pendingResume = 0; opening = false; backend.Text = video.CodecName; empty.Visibility = Visibility.Collapsed; image.Visibility = Visibility.Visible; playing = true; clock.Restart();
-                    await RenderOriginalAsync(); Notice("Original Luma decoding · AVI video only"); return;
-                }
-                catch (NotSupportedException) { /* Unknown AVI codecs may use installed Windows codecs. */ }
-            }
-            var source = entry.FilePath;
-            if (suffix is ".mkv" or ".mka" or ".webm" && size <= 512L * 1024 * 1024)
-            {
-                try
-                {
-                    var bytes = await File.ReadAllBytesAsync(source, token);
-                    var model = await Task.Run(() => MatroskaDemuxer.Demux(bytes, token), token);
-                    token.ThrowIfCancellationRequested();
-                    string converted = NewTemporaryMedia(".mp4");
-                    MatroskaRemuxResult prepared;
-                    try
-                    {
-                        prepared = await Task.Run(() =>
-                        {
-                            try
-                            {
-                                using var output = new FileStream(converted, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-                                return MatroskaRemuxer.Remux(model, output, audioTrackId, includeAudio, token);
-                            }
-                            finally { if (token.IsCancellationRequested) DiscardWorkerTemporary(converted, lifetimeToken.IsCancellationRequested); }
-                        }, token);
-                    }
-                    finally { pendingTemporaryMedia.Remove(converted); }
-                    if (version != generation || closing) return; token.ThrowIfCancellationRequested();
-                    source = converted; activeTemporaryMedia = converted; selectedMatroskaAudio = prepared.SelectedAudioTrackId;
-                    if (previousOrigin is long oldOrigin) pendingResume = Math.Max(0, pendingResume + ((double)oldOrigin - prepared.OriginNanoseconds) / 1_000_000_000);
-                    matroskaOriginNanoseconds = prepared.OriginNanoseconds;
-                    backend.Text = "Luma MKV remux · Windows " + prepared.VideoCodec + (includeAudio ? "" : " · audio off");
-                    await ConfigureTrackMenusAsync(prepared, version, token);
-                }
-                catch (NotSupportedException e)
-                {
-                    if (version != generation) return;
-                    if (audioTrackId is not null || !includeAudio) throw;
-                    source = entry.FilePath; activeTemporaryMedia = null;
-                    nativeFailureContext = e.Message; ResetTrackMenus(); backend.Text = "Windows media services · installed codecs";
-                }
-            }
-            else if (suffix is ".wav" or ".flac" or ".aif" or ".aiff" or ".aifc" or ".au" or ".snd" && size <= 256L * 1024 * 1024)
-            {
-                var bytes = await File.ReadAllBytesAsync(source, token);
-                try
-                {
-                    var audio = await Task.Run(() => suffix switch { ".flac" => FlacDecoder.Decode(bytes, token), ".wav" => WaveDecoder.Decode(bytes, token), _ => PcmContainerDecoder.Decode(bytes, token) }, token);
-                    token.ThrowIfCancellationRequested(); source = NewTemporaryMedia(".wav");
-                    string wavePath = source;
-                    try
-                    {
-                        await Task.Run(() =>
-                        {
-                            try { var wave = audio.ToWave(); token.ThrowIfCancellationRequested(); File.WriteAllBytes(wavePath, wave); token.ThrowIfCancellationRequested(); }
-                            finally { if (token.IsCancellationRequested) DiscardWorkerTemporary(wavePath, lifetimeToken.IsCancellationRequested); }
-                        }, token);
-                    }
-                    finally { pendingTemporaryMedia.Remove(source); }
-                    backend.Text = audio.CodecName; duration = audio.Duration;
-                }
-                catch (NotSupportedException) { backend.Text = "Windows media services · installed codecs"; }
-            }
-            else backend.Text = "Windows media services · installed codecs";
-            if (version != generation) return; token.ThrowIfCancellationRequested(); activeTemporaryMedia = temporaryMedia.Contains(source) ? source : null;
-            if (Path.GetExtension(source).ToLowerInvariant() is ".mp4" or ".m4v" or ".mov" or ".m4a")
-            {
-                string inspectSource = source;
-                bool ownedInspection = temporaryMedia.Contains(inspectSource);
-                var inspected = await Task.Run(() =>
-                {
-                    try
-                    {
-                        using var input = new FileStream(inspectSource, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.RandomAccess);
-                        try { return (Info: (Mp4Inspection?)Mp4Inspector.Inspect(input, cancellationToken: token), Warning: (string?)null); }
-                        catch (NotSupportedException e) when (e is not Mp4ExternalDataReferenceException)
-                        {
-                            token.ThrowIfCancellationRequested();
-                            try { return (Info: (Mp4Inspection?)Mp4Inspector.Inspect(input, false, token), Warning: (string?)e.Message); }
-                            catch (NotSupportedException retry) when (retry is not Mp4ExternalDataReferenceException) { return (Info: (Mp4Inspection?)null, Warning: (string?)retry.Message); }
-                        }
-                    }
-                    finally { if (ownedInspection && token.IsCancellationRequested) DiscardWorkerTemporary(inspectSource, lifetimeToken.IsCancellationRequested); }
-                }, token);
-                if (version != generation || closing) return; token.ThrowIfCancellationRequested();
-                currentMp4 = inspected.Info;
-                if (inspected.Warning is not null) nativeFailureContext = inspected.Warning;
-                if (currentMp4 is not null) ConfigureMp4Subtitles(currentMp4, version);
-            }
-            if (currentMp4?.VideoTracks.Any(t => t.SampleEntry == "hev1") == true)
-            {
-                string inspectSource = source, converted = NewTemporaryMedia(".mp4");
-                bool ownedInput = temporaryMedia.Contains(inspectSource);
-                (bool Normalized, string? Warning) normalized;
-                try
-                {
-                    normalized = await Task.Run(() =>
-                    {
-                        try
-                        {
-                            using var input = new FileStream(inspectSource, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.RandomAccess);
-                            using var output = new FileStream(converted, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 262144, FileOptions.SequentialScan);
-                            try { return (HevcSampleEntryNormalizer.Normalize(input, output, token), (string?)null); }
-                            catch (NotSupportedException e) { return (false, (string?)e.Message); }
-                        }
-                        finally
-                        {
-                            if (token.IsCancellationRequested)
-                            {
-                                DiscardWorkerTemporary(converted, lifetimeToken.IsCancellationRequested);
-                                if (ownedInput) DiscardWorkerTemporary(inspectSource, lifetimeToken.IsCancellationRequested);
-                            }
-                        }
-                    }, token);
-                }
-                finally { pendingTemporaryMedia.Remove(converted); }
-                if (version != generation || closing) return; token.ThrowIfCancellationRequested();
-                if (normalized.Normalized)
-                {
-                    source = converted; activeTemporaryMedia = converted;
-                    currentMp4 = currentMp4 with { VideoTracks = currentMp4.VideoTracks.Select(t => t.SampleEntry == "hev1" ? t with { SampleEntry = "hvc1" } : t).ToArray() };
-                    mediaPreparation = "Validated hev1 to hvc1 sample-entry compatibility copy; compressed data unchanged; original file unchanged.";
-                }
-                else mediaPreparation = "Original hev1 retained: " + (normalized.Warning ?? "No compatible sample entry required normalization.");
-            }
-            if (version != generation || closing) return; token.ThrowIfCancellationRequested();
-            CleanupTemporaryMedia(); if (!File.Exists(source)) throw new FileNotFoundException("The prepared media file is unavailable.");
-            activeNativeSource = source; activeNativeRequest = true; nativeLoadClock.Restart();
-            bool modern = forceModern || currentMp4?.VideoTracks.Any(t => t.SampleEntry is "hvc1" or "hev1") == true || currentMp4?.AacChannels > 2;
-            if (modern) StartFoundation(source, version);
-            else { movie.Source = new Uri(source); movie.Volume = volume.Value; movie.SpeedRatio = rate; movie.Play(); }
-            playing = true;
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception e) { if (version == generation) Fail(e.Message); }
-        finally { CleanupTemporaryMedia(); if (version == generation) UpdateTransport(); }
-    }
-
-    string NewTemporaryMedia(string suffix)
-    {
-        Directory.CreateDirectory(temporaryFolder);
-        var path = Path.Combine(temporaryFolder, Guid.NewGuid().ToString("N") + suffix);
-        temporaryMedia.Add(path); pendingTemporaryMedia.Add(path); return path;
-    }
-    static void DiscardWorkerTemporary(string path, bool closing)
-    {
-        try { File.Delete(path); var parent = Path.GetDirectoryName(path); if (closing && parent is not null) Directory.Delete(parent, true); }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-    }
-    static MediaElement NewNativeMovie() => new() { LoadedBehavior = MediaState.Manual, UnloadedBehavior = MediaState.Manual, ScrubbingEnabled = true, Stretch = Stretch.Uniform, Volume = .7, Visibility = Visibility.Collapsed };
-    void ReplaceNativeMovie(int version)
-    {
-        activeNativeRequest = false;
-        DisposeFoundation(); nativeCaptions?.Update("", false);
-        var previous = movie; movie = NewNativeMovie();
-        int index = viewport.Children.IndexOf(previous);
-        if (index >= 0) { viewport.Children.RemoveAt(index); viewport.Children.Insert(index, movie); }
-        previous.Close(); previous.Source = null; WireNativeMovie(movie, version);
-    }
-    void WireNativeMovie(MediaElement element, int version)
-    {
-        bool Active() => activeNativeRequest && foundation is null && !closing && version == generation && ReferenceEquals(movie, element);
-        element.MediaOpened += (_, _) => { if (Active()) NativeOpened(); };
-        element.MediaEnded += (_, _) => { if (Active()) Ended(); };
-        element.MediaFailed += (_, e) =>
-        {
-            if (!Active()) return;
-            lastNativeError = unchecked((uint)e.ErrorException.GetBaseException().HResult);
-            lastNativeSourceExisted = element.Source is { IsFile: true } uri ? File.Exists(uri.LocalPath) : null;
-            Fail(lastNativeError == NativeAudio.HardwareProblem
-                ? "Windows could not open an audio output device. Connect or enable speakers or headphones, then reopen the file."
-                : lastNativeError == 0xC00D1197 && lastNativeSourceExisted == true
-                    ? "Windows found the file but could not open its media stream. The installed playback components may not support its codec or profile. (C00D1197)"
-                    : "Windows could not play this file. Its codec may be unavailable. " + e.ErrorException.Message + (nativeFailureContext is null ? "" : " · " + nativeFailureContext));
-        };
-    }
-    void StartFoundation(string source, int version)
-    {
-        var player = new MediaFoundationPlayer(); foundation = player;
-        bool Active() => activeNativeRequest && !closing && version == generation && ReferenceEquals(foundation, player);
-        player.Opened += (_, _) =>
-        {
-            if (!Active()) return;
-            opening = false; nativeLoadClock.Reset(); duration = player.Duration;
-            if (pendingResume > 0) { player.Seek(Math.Min(pendingResume, Math.Max(0, duration - 1))); pendingResume = 0; }
-            player.Rate = rate; player.Volume = volume.Value;
-            player.View.Visibility = player.NaturalVideoWidth > 0 ? Visibility.Visible : Visibility.Hidden;
-            empty.Visibility = player.NaturalVideoWidth > 0 ? Visibility.Collapsed : Visibility.Visible;
-            movie.Visibility = image.Visibility = Visibility.Collapsed; Notice(PlaybackStatus()); UpdateTransport();
-        };
-        player.Ended += (_, _) => { if (Active()) Ended(); };
-        player.Failed += (_, e) =>
-        {
-            if (!Active()) return;
-            lastNativeError = e.NativeHResult; lastNativeSourceExisted = File.Exists(source);
-            string codec = currentMp4?.VideoCodec ?? "this media";
-            Fail(e.NativeHResult == 0xC00D5212
-                ? "Windows found no compatible decoder for " + codec + " (0xC00D5212). " + (codec == "HEVC" ? "An installed Windows HEVC decoder is required. " : "") + "Open More → Media diagnostics for details."
-                : "Windows Media Foundation could not play " + codec + ". " + e.Message + " Open More → Media diagnostics for decoder details.");
-        };
-        viewport.Children.Insert(0, player.View);
-        backend.Text = "Windows Media Foundation · " + (currentMp4?.VideoCodec ?? "media") + (currentMp4?.BitDepth is int depth ? " " + depth + "-bit" : "") + (currentMp4?.AacChannels is int channels ? " · AAC " + channels + "ch" : "");
-        player.Volume = volume.Value; player.Rate = rate; player.Load(source); player.Play();
-    }
-    void DisposeFoundation()
-    {
-        var player = foundation; foundation = null;
-        if (player is null) return; viewport.Children.Remove(player.View); player.Dispose();
-    }
-    void ConfigureMp4Subtitles(Mp4Inspection info, int version)
-    {
-        if (info.SubtitleTracks.Count == 0) return;
-        subtitleRevision++; embeddedSubtitlesMenu.Items.Clear(); embeddedSubtitlesMenu.IsEnabled = true;
-        foreach (var track in info.SubtitleTracks)
-        {
-            var item = new MenuItem { Header = "Track " + track.Id + " · " + track.Language + " · " + track.SampleEntry };
-            item.Click += (_, _) => { if (version != generation) return; subtitleRevision++; cues = track.Cues.ToList(); captions.Text = SubtitleParser.At(cues, CurrentTime - subtitleDelay); };
-            embeddedSubtitlesMenu.Items.Add(item);
-        }
-        cues = info.SubtitleTracks[0].Cues.ToList();
-    }
-    async Task ShowMediaDiagnosticsAsync()
-    {
-        if (current is null) { Notice("Open a media file before checking its decoder details."); return; }
-        string path = File.Exists(activeNativeSource) ? activeNativeSource! : current.FilePath;
+        if (closing) return Task.CompletedTask;
+        SaveProgress(); ++generation; DisposePlayer(); lastError = null; duration = 0; subtitleDelay = 0; playing = false; opening = true;
+        current = entry; library.Data.SelectedId = entry.Id; pendingResume = resume ?? (entry.ResumeTime > 3 ? entry.ResumeTime : 0); RefreshQueue();
+        nowTitle.Text = entry.Title; empty.Visibility = Visibility.Visible; backend.Text = "Opening with libVLC…"; Notice("Opening " + entry.Title);
         int version = generation;
         try
         {
-            Notice("Checking Windows decoders…");
-            var result = await MediaFoundationProbe.ProbeAsync(path, lifetimeCancellation.Token);
-            if (closing || version != generation) return;
-            var details = JsonSerializer.Serialize(new { appBuild=currentBuild,operatingSystem=Environment.OSVersion.VersionString,video=currentMp4?.VideoTracks,audio=currentMp4?.AudioTracks,preparation=mediaPreparation,inspectionWarning=nativeFailureContext,subtitleWarnings=currentMp4?.SubtitleWarnings,probe=result }, new JsonSerializerOptions { WriteIndented = true });
-            var view = new TextBox { Text = details, IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(16), FontFamily = new FontFamily("Consolas"), FontSize = 12 };
-            new Window { Title = "Windows media diagnostics", Owner = this, Width = 860, Height = 650, Content = view, WindowStartupLocation = WindowStartupLocation.CenterOwner }.Show();
-            Notice("Decoder details are shown locally; no media or report was uploaded.");
+            if (!File.Exists(entry.FilePath)) throw new FileNotFoundException("This file has moved or is unavailable.");
+            var player = new VlcPlayer(dummyAudioForSmoke) { IsEnabled = false }; vlc = player;
+            bool Active() => !closing && version == generation && ReferenceEquals(vlc, player);
+            player.Opened += (_, _) =>
+            {
+                if (!Active()) return; opening = false; openingClock.Reset(); duration = player.Duration;
+                if (pendingResume > 0) { player.Seek(Math.Min(pendingResume, Math.Max(0, duration - .2))); pendingResume = 0; }
+                player.Rate = rate; player.Volume = volume.Value; playing = !player.IsPaused; backend.Text = "libVLC " + VlcPlayer.RuntimeVersion.Split(' ')[0];
+                RefreshTracks(); Notice("Playing " + entry.Title); UpdateTransport();
+            };
+            player.TracksChanged += (_, _) => { if (Active()) RefreshTracks(); };
+            player.Ended += (_, _) => { if (Active()) Ended(); };
+            player.Warning += (_, e) => { if (Active()) Notice(e.Message); };
+            player.Failed += (_, e) => { if (Active()) Fail(e.Message); };
+            player.DoubleClicked += (_, _) => { if (Active()) ToggleFullscreen(); };
+            viewport.Children.Insert(0, player.View); player.Volume = volume.Value; player.Rate = rate; player.Load(entry.FilePath); player.Play();
+            playing = true; openingClock.Restart();
         }
-        catch (OperationCanceledException) { }
-        catch (Exception e) { if (!closing && version == generation) Notice("Decoder diagnostics failed: " + e.Message); }
+        catch (Exception error) { Fail(error.Message); }
+        UpdateTransport(); return Task.CompletedTask;
     }
-    string PlaybackStatus() => backend.Text + (currentMp4?.SubtitleWarnings.Count > 0 ? " · Some embedded captions could not be loaded" : "");
-    void CleanupTemporaryMedia()
+    void DisposePlayer()
     {
-        foreach (var path in temporaryMedia.ToArray())
+        var previous = vlc; vlc = null; if (previous is not null) { previous.Dispose(); viewport.Children.Remove(previous.View); }
+        audioTracksMenu.Items.Clear(); embeddedSubtitlesMenu.Items.Clear(); audioTracksMenu.IsEnabled = embeddedSubtitlesMenu.IsEnabled = false;
+    }
+    void RefreshTracks()
+    {
+        var player = vlc; if (player is null) return; int version = generation;
+        void Fill(MenuItem menu, IReadOnlyList<VlcTrack> tracks, bool subtitles)
         {
-            if (path == activeTemporaryMedia || pendingTemporaryMedia.Contains(path)) continue;
-            try { File.Delete(path); temporaryMedia.Remove(path); }
-            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            menu.Items.Clear(); menu.IsEnabled = tracks.Any(t => t.Id >= 0);
+            var available = tracks.Any(t => t.Id == -1) ? tracks : new[] { new VlcTrack(-1, "Off") }.Concat(tracks).ToArray();
+            foreach (var track in available)
+            {
+                var item = new MenuItem { Header = track.Id == -1 ? "Off" : track.Name[..Math.Min(track.Name.Length, 160)], IsCheckable = true, IsChecked = track.Id == (subtitles ? player.SubtitleTrack : player.AudioTrack) };
+                item.Click += (_, _) => { if (version != generation || !ReferenceEquals(vlc, player)) return; TryControl(() => { if (subtitles) player.SelectSubtitle(track.Id); else player.SelectAudio(track.Id); RefreshTracks(); }); };
+                menu.Items.Add(item);
+            }
         }
+        Fill(audioTracksMenu, player.AudioTracks, false); Fill(embeddedSubtitlesMenu, player.SubtitleTracks, true);
     }
-    void ResetTrackMenus()
-    {
-        subtitleRevision++;
-        audioTracksMenu.Items.Clear(); audioTracksMenu.IsEnabled = false;
-        embeddedSubtitlesMenu.Items.Clear(); embeddedSubtitlesMenu.IsEnabled = false; selectedMatroskaAudio = null;
-    }
-    async Task ConfigureTrackMenusAsync(MatroskaRemuxResult result, int version, CancellationToken token)
-    {
-        static string Label(DemuxedTrack track) => (string.IsNullOrWhiteSpace(track.Name) ? "Track " + track.Id : track.Name[..Math.Min(80, track.Name.Length)]) + " · " + track.Language[..Math.Min(24, track.Language.Length)];
-        audioTracksMenu.IsEnabled = result.AudioTracks.Count > 0;
-        var off = new MenuItem { Header = "Audio off", IsCheckable = true, IsChecked = result.SelectedAudioTrackId is null };
-        off.Click += (_, _) => { if (version == generation && current is not null) _ = LoadEntryAsync(current, includeAudio: false, resume: CurrentTime, previousOrigin: matroskaOriginNanoseconds); };
-        audioTracksMenu.Items.Add(off);
-        foreach (var track in result.AudioTracks)
-        {
-            var item = new MenuItem { Header = Label(track), IsCheckable = true, IsChecked = selectedMatroskaAudio == track.Id };
-            item.Click += (_, _) => { if (version == generation && current is not null) _ = LoadEntryAsync(current, track.Id, resume: CurrentTime, previousOrigin: matroskaOriginNanoseconds); };
-            audioTracksMenu.Items.Add(item);
-        }
-        embeddedSubtitlesMenu.IsEnabled = result.SubtitleTracks.Count > 0;
-        foreach (var track in result.SubtitleTracks)
-        {
-            bool supported = EmbeddedTextDecoder.Supports(track.CodecId);
-            var item = new MenuItem { Header = Label(track) + (supported ? "" : " · " + track.CodecId + " unavailable"), IsEnabled = supported };
-            item.Click += async (_, _) => await SelectEmbeddedSubtitlesAsync(track, result.OriginNanoseconds, version, token);
-            embeddedSubtitlesMenu.Items.Add(item);
-        }
-        var selected = result.SubtitleTracks.FirstOrDefault(t => t.IsDefault);
-        if (selected is not null && EmbeddedTextDecoder.Supports(selected.CodecId)) await SelectEmbeddedSubtitlesAsync(selected, result.OriginNanoseconds, version, token);
-    }
-    async Task SelectEmbeddedSubtitlesAsync(DemuxedTrack track, long origin, int version, CancellationToken token)
-    {
-        if (version != generation || closing) return;
-        int revision = ++subtitleRevision; subtitleDelay = 0;
-        try
-        {
-            var decoded = await Task.Run(() => EmbeddedTextDecoder.Decode(track, origin, token), token);
-            if (version != generation || revision != subtitleRevision || closing) return;
-            cues = decoded; captions.Text = SubtitleParser.At(cues, CurrentTime - subtitleDelay);
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception e) { if (version == generation && revision == subtitleRevision && !closing) Notice("This caption track could not be loaded: " + e.Message); }
-    }
-    void NativeOpened()
-    {
-        if (foundation is not null || original is not null || current is null || closing || movie.Source is null) return;
-        nativeLoadClock.Reset(); opening = false; if (movie.NaturalDuration.HasTimeSpan) duration = movie.NaturalDuration.TimeSpan.TotalSeconds;
-        if (pendingResume > 0) { movie.Position = TimeSpan.FromSeconds(Math.Min(pendingResume, Math.Max(0, duration - 1))); pendingResume = 0; }
-        movie.SpeedRatio = rate; movie.Volume = volume.Value; movie.Visibility = movie.NaturalVideoWidth > 0 ? Visibility.Visible : Visibility.Collapsed;
-        empty.Visibility = movie.NaturalVideoWidth > 0 ? Visibility.Collapsed : Visibility.Visible; playing = true; Notice(PlaybackStatus()); UpdateTransport();
-    }
-    double CurrentTime => original is not null ? Math.Clamp(position + (playing ? clock.Elapsed.TotalSeconds * rate : 0), 0, Math.Max(0, duration)) : Math.Max(0, foundation?.CurrentTime ?? movie.Position.TotalSeconds);
+    double CurrentTime => vlc?.CurrentTime ?? 0;
     void TogglePlayback()
     {
         if (lastError is not null && current is not null) { _ = LoadEntryAsync(current); return; }
-        if (current is null)
-        {
-            var entry = queue.SelectedItem as MediaEntry ?? library.Data.Items.Find(x => x.Id == library.Data.SelectedId) ?? library.Data.Items.FirstOrDefault();
-            if (entry is not null) _ = LoadEntryAsync(entry); else _ = OpenMediaAsync();
-            return;
-        }
-        if (opening) return;
-        if (playing) Pause(); else Play();
+        if (current is null) { var entry = queue.SelectedItem as MediaEntry ?? library.Data.Items.Find(i => i.Id == library.Data.SelectedId) ?? library.Data.Items.FirstOrDefault(); if (entry is not null) _ = LoadEntryAsync(entry); else _ = OpenMediaAsync(); return; }
+        if (opening) return; if (playing) Pause(); else Play();
     }
-    void Pause() { position = CurrentTime; playing = false; clock.Reset(); if (foundation is not null) foundation.Pause(); else movie.Pause(); UpdateTransport(); }
-    void Play() { if (duration > 0 && CurrentTime >= duration - .01) Seek(0); if (original is not null) clock.Restart(); else if (foundation is not null) foundation.Play(); else movie.Play(); playing = true; UpdateTransport(); }
-    void Seek(double value)
-    {
-        if (current is null || !double.IsFinite(value) || duration <= 0) return;
-        position = Math.Clamp(value, 0, duration); visualRevision++;
-        if (original is not null) { clock.Restart(); _ = RenderOriginalAsync(); } else if (foundation is not null) foundation.Seek(position); else movie.Position = TimeSpan.FromSeconds(position);
-        UpdateTransport();
-    }
-    async Task RenderOriginalAsync()
-    {
-        if (original is null || rendering || duration <= 0) return;
-        var video = original; var frame = Math.Clamp((int)(CurrentTime * video.FramesPerSecond), 0, video.FrameCount - 1); if (frame == lastFrame) return;
-        rendering = true; var version = generation; var revision = visualRevision; var token = loadCancellation.Token;
-        try
-        {
-            var rgba = await Task.Run(() => video.DecodeFrame(frame, token), token);
-            if (version != generation || revision != visualRevision || closing) return;
-            var bgra = ToBgra(rgba); var bitmap = BitmapSource.Create(video.Width, video.Height, 96, 96, PixelFormats.Bgra32, null, bgra, video.Width * 4); bitmap.Freeze(); image.Source = bitmap; lastFrame = frame;
-        }
-        catch (OperationCanceledException) { }
-        catch (Exception e) { if (version == generation && revision == visualRevision && !closing) Fail(e.Message); }
-        finally { rendering = false; }
-    }
-    static byte[] ToBgra(byte[] rgba) { var output = (byte[])rgba.Clone(); for (var i = 0; i < output.Length; i += 4) (output[i], output[i + 2]) = (output[i + 2], output[i]); return output; }
-    async Task TickAsync()
+    void Pause() { vlc?.Pause(); playing = false; UpdateTransport(); }
+    void Play() { if (duration > 0 && CurrentTime >= duration - .05) vlc?.Seek(0); vlc?.Play(); playing = vlc is not null; UpdateTransport(); }
+    void Seek(double value) { if (current is null || !double.IsFinite(value) || duration <= 0) return; vlc?.Seek(Math.Clamp(value, 0, duration)); UpdateTransport(); }
+    void Tick()
     {
         if (closing) return;
-        if (opening && nativeLoadClock.IsRunning && nativeLoadClock.Elapsed > TimeSpan.FromSeconds(30))
-        { loadCancellation.Cancel(); Fail("Windows took too long to open this file. You can retry or choose another file."); }
-        if (original is not null) { if (playing && CurrentTime >= duration) Ended(); await RenderOriginalAsync(); }
-        var caption = SubtitleParser.At(cues, CurrentTime - subtitleDelay); if (caption != captions.Text) captions.Text = caption;
-        captions.Visibility = foundation is null ? Visibility.Visible : Visibility.Collapsed;
-        nativeCaptions?.Update(caption, foundation is not null && lastError is null && !opening);
-        UpdateTransport();
+        if (opening && openingClock.Elapsed > TimeSpan.FromSeconds(30)) Fail("libVLC took too long to open this file. Retry or choose another file.");
+        if (vlc is not null && !opening)
+        {
+            double latest = vlc.Duration; if (latest > 0) duration = latest;
+            bool video = vlc.NaturalVideoWidth > 0; vlc.Visibility = video ? Visibility.Visible : Visibility.Hidden; empty.Visibility = video ? Visibility.Collapsed : Visibility.Visible;
+        }
+        UpdateTransport(); RefreshSharingUI();
         if ((DateTime.UtcNow - lastSave).TotalSeconds >= 3) { SaveProgress(); lastSave = DateTime.UtcNow; }
     }
     void UpdateTransport()
@@ -613,25 +282,17 @@ internal sealed class PlayerWindow : Window
         play.Content = playing ? "Ⅱ" : "▶"; updatingSlider = true; seek.Maximum = Math.Max(1, duration); if (!dragging) seek.Value = Math.Min(seek.Maximum, CurrentTime); updatingSlider = false;
         timing.Text = MediaEntry.Clock(CurrentTime) + " / " + MediaEntry.Clock(duration); seek.IsEnabled = current is not null && !opening && duration > 0;
     }
-    void Ended()
-    {
-        if (!playing) return; Pause();
-        if (current is not null) library.UpdateProgress(current.Id, duration, duration);
-        if (repeatMode == 2) { Seek(0); Play(); }
-        else _ = NextAsync(1, true);
-    }
+    void Ended() { if (!playing) return; playing = false; if (current is not null) library.UpdateProgress(current.Id, duration, duration); if (repeatMode == 2) { Seek(0); Play(); } else _ = NextAsync(1, true); }
     async Task NextAsync(int delta, bool atEnd = false)
     {
-        if (library.Data.Items.Count == 0) return;
-        if (delta < 0 && CurrentTime > 3) { Seek(0); return; }
-        var index = library.Data.Items.FindIndex(e => e.Id == current?.Id); var next = index + delta;
+        if (library.Data.Items.Count == 0) return; if (delta < 0 && CurrentTime > 3) { Seek(0); return; }
+        int index = library.Data.Items.FindIndex(i => i.Id == current?.Id), next = index + delta;
         if (next >= library.Data.Items.Count) { if (repeatMode == 1) next = 0; else { if (atEnd) Notice("Queue finished"); return; } }
-        if (next < 0) next = 0; await LoadEntryAsync(library.Data.Items[next]);
+        await LoadEntryAsync(library.Data.Items[Math.Max(0, next)]);
     }
     void RefreshQueue()
     {
-        refreshingQueue = true;
-        queue.ItemsSource = library.Data.Items.Where(x => x.Title.Contains(search.Text, StringComparison.OrdinalIgnoreCase)).ToList(); queue.SelectedItem = library.Data.Items.Find(x => x.Id == (current?.Id ?? library.Data.SelectedId)); queueCount.Text = library.Data.Items.Count.ToString(CultureInfo.InvariantCulture); refreshingQueue = false;
+        refreshingQueue = true; queue.ItemsSource = library.Data.Items.Where(i => i.Title.Contains(search.Text, StringComparison.OrdinalIgnoreCase)).ToList(); queue.SelectedItem = library.Data.Items.Find(i => i.Id == (current?.Id ?? library.Data.SelectedId)); queueCount.Text = library.Data.Items.Count.ToString(CultureInfo.InvariantCulture); refreshingQueue = false; PushSharedPlaylist();
     }
     void MoveSelected(int direction) { if (queue.SelectedItem is MediaEntry entry) { library.Move(entry.Id, direction); RefreshQueue(); } }
     void RemoveSelected() { if (queue.SelectedItem is not MediaEntry entry) return; if (entry.Id == current?.Id) Unload(); library.Remove(entry.Id); RefreshQueue(); }
@@ -642,8 +303,14 @@ internal sealed class PlayerWindow : Window
         if (current is null || current.Bookmarks.Count == 0) { Notice("No saved moments for this file yet. Use Ctrl+B to save one."); return; }
         var menu = new ContextMenu(); foreach (var bookmark in current.Bookmarks) { var item = new MenuItem { Header = bookmark.Label }; item.Click += (_, _) => Seek(bookmark.Time); menu.Items.Add(item); } menu.PlacementTarget = play; menu.IsOpen = true;
     }
-    void OpenSubtitles() { var picker = new OpenFileDialog { Title = "Add subtitles", Filter = "UTF-8 captions|*.srt;*.vtt" }; if (picker.ShowDialog(this) == true) try { ReadSubtitles(picker.FileName); } catch (Exception e) { Notice(e.Message); } }
-    void ReadSubtitles(string path) { subtitleRevision++; if (new FileInfo(path).Length > 8 * 1024 * 1024) throw new InvalidDataException("Subtitle file is too large."); cues = SubtitleParser.Parse(File.ReadAllText(path, new UTF8Encoding(false, true))); subtitleDelay = 0; Notice("Captions: " + Path.GetFileName(path)); }
+    void OpenSubtitles()
+    {
+        var picker = new OpenFileDialog { Title = "Add captions", Filter = "Subtitle files|*.srt;*.vtt;*.ass;*.ssa;*.sub;*.idx;*.sup|All files|*.*" };
+        if (picker.ShowDialog(this) == true) TryControl(() => ReadSubtitles(picker.FileName));
+    }
+    void ReadSubtitles(string path) { if (vlc is null) { Notice("Open media before adding captions."); return; } vlc.AddSubtitles(path); subtitleDelay = 0; vlc.SubtitleDelay = 0; Notice("Captions: " + Path.GetFileName(path)); }
+    void ChangeCaptionDelay(double adjustment) { subtitleDelay = Math.Clamp(subtitleDelay + adjustment, -86400, 86400); if (vlc is not null) vlc.SubtitleDelay = subtitleDelay; Notice($"Caption delay: {subtitleDelay:+0.00;-0.00;0.00}s"); }
+    void TryControl(Action action) { try { action(); } catch (Exception error) { Notice(error.Message); } }
     void OnKey(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Escape && fullscreen) { ToggleFullscreen(); e.Handled = true; return; }
@@ -651,9 +318,57 @@ internal sealed class PlayerWindow : Window
         if (e.Key == Key.F11) { ToggleFullscreen(); e.Handled = true; return; }
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O) { _ = OpenMediaAsync(); e.Handled = true; return; }
         if (Keyboard.FocusedElement is TextBox) return;
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.B) Bookmark();
-        else if (e.Key == Key.Space) TogglePlayback(); else if (e.Key == Key.Left) Seek(CurrentTime - 10); else if (e.Key == Key.Right) Seek(CurrentTime + 10); else return;
-        e.Handled = true;
+        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.B) Bookmark(); else if (e.Key == Key.Space) TogglePlayback(); else if (e.Key == Key.Left) Seek(CurrentTime - 10); else if (e.Key == Key.Right) Seek(CurrentTime + 10); else return; e.Handled = true;
+    }
+    void SaveProgress() { if (current is not null && !opening && lastError is null) library.UpdateProgress(current.Id, CurrentTime, duration); SaveLibrary(); PushSharedPlaylist(); }
+    void SaveLibrary() { try { library.Flush(); } catch (IOException error) { Notice("The saved library could not be written: " + error.Message); } }
+    void Unload() { SaveProgress(); ++generation; DisposePlayer(); current = null; playing = opening = false; duration = 0; openingClock.Reset(); empty.Visibility = Visibility.Visible; nowTitle.Text = "Make room for a good story"; backend.Text = ""; UpdateTransport(); }
+    void Fail(string error) { lastError = error; opening = playing = false; ++generation; DisposePlayer(); openingClock.Reset(); if (fullscreen) ToggleFullscreen(); Notice(error); nowTitle.Text = "This file could not be played"; empty.Visibility = Visibility.Visible; }
+    void Notice(string message) => status.Text = message;
+    void ShowDiagnostics()
+    {
+        var details = JsonSerializer.Serialize(new { engine = "libVLC3", version = VlcPlayer.RuntimeVersion, runtime = VlcPlayer.RuntimePath, displayedPictures = vlc?.DisplayedPictures, decodedVideo = vlc?.DecodedVideo, decodedAudio = vlc?.DecodedAudio, playedAudioBuffers = vlc?.PlayedAudioBuffers,
+            audioTracks = vlc?.AudioTracks, captionTracks = vlc?.SubtitleTracks, sharing = sharing?.IsRunning == true, discovery = discovery?.Status, lastError }, new JsonSerializerOptions { WriteIndented = true });
+        var text = new TextBox { Text = details, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(16) };
+        new Window { Owner = this, Title = "Local playback diagnostics", Width = 760, Height = 540, Content = text, WindowStartupLocation = WindowStartupLocation.CenterOwner }.Show();
+    }
+    void PushSharedPlaylist() { sharing?.SetPlaylist(library.Data.Items.Select(i => new SharedMediaItem(i.Id.ToString("N"), i.FilePath, i.Title, i.Duration, i.ResumeTime))); }
+    void StartSharing()
+    {
+        if (sharing?.IsRunning == true) return;
+        try { sharing = new PlaylistSharingServer("Luma on " + Environment.MachineName); PushSharedPlaylist(); sharing.Start(); discovery = new WindowsDnsSdAdvertisement(sharing); Notice("Local playlist sharing is on"); }
+        catch (Exception error) { sharing?.Stop(); discovery?.Dispose(); sharing = null; discovery = null; Notice("Sharing could not start: " + error.Message); }
+        RefreshSharingUI();
+    }
+    void StopSharing() { sharing?.Stop(); discovery?.Dispose(); sharing = null; discovery = null; RefreshSharingUI(); Notice("Sharing stopped; paired devices were revoked"); }
+    void ShowSharing()
+    {
+        if (sharingWindow is not null) { sharingWindow.Activate(); return; }
+        var panel = new StackPanel { Margin = new Thickness(24) };
+        panel.Children.Add(new TextBlock { Text = "Share this playlist", FontSize = 22, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 12) });
+        panel.Children.Add(new TextBlock { Text = "On a trusted home network, open Luma on Android and discover this computer or enter a URL below. Pairing grants access to the current playlist until you stop sharing. Streaming uses local HTTP and buffers media on the phone; this computer must stay awake.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 16) });
+        sharingState = new TextBlock { TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12) }; panel.Children.Add(sharingState);
+        sharingAddresses = new TextBox { IsReadOnly = true, AcceptsReturn = true, MinHeight = 65, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 12) }; panel.Children.Add(sharingAddresses);
+        pairingText = new TextBlock { FontSize = 22, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 12) }; panel.Children.Add(pairingText);
+        var buttons = Row(); startSharing = Button("Start sharing", StartSharing); stopSharing = Button("Stop and revoke", StopSharing); buttons.Children.Add(startSharing); buttons.Children.Add(stopSharing);
+        buttons.Children.Add(Button("Copy connection details", () => { if (sharing?.IsRunning == true) Clipboard.SetText(string.Join(Environment.NewLine, sharing.Addresses) + Environment.NewLine + "Pairing code: " + sharing.PairingCode); })); panel.Children.Add(buttons);
+        sharingWindow = new Window { Owner = this, Title = "Local playlist sharing", Width = 620, Height = 480, Content = panel, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        sharingWindow.Closed += (_, _) => { sharingWindow = null; sharingState = pairingText = null; sharingAddresses = null; startSharing = stopSharing = null; };
+        RefreshSharingUI(); sharingWindow.Show();
+    }
+    void RefreshSharingUI()
+    {
+        bool active = sharing?.IsRunning == true; shareButton.Content = active ? "Sharing on" : "Share playlist";
+        shareButton.SetResourceReference(BackgroundProperty, active ? "AccentBrush" : "ButtonBrush");
+        if (sharingState is null) return;
+        sharingState.Text = active ? $"Active · {sharing!.PairedDevices} paired device(s) · {discovery?.Status ?? "Manual URL entry available"}" : "Sharing is off. No playlist or media is exposed.";
+        sharingAddresses!.Text = active ? string.Join(Environment.NewLine, sharing!.Addresses) : "Start sharing to get local connection URLs.";
+        pairingText!.Text = active ? DateTimeOffset.UtcNow < sharing!.PairingExpiresAt ? "Pairing code: " + sharing.PairingCode + "  (expires " + sharing.PairingExpiresAt.LocalDateTime.ToString("t") + ")" : "Code expired — stop and restart to pair another device" : "";
+        startSharing!.IsEnabled = !active; stopSharing!.IsEnabled = active;
+    }
+    void Shutdown()
+    {
+        if (closing) return; closing = true; SaveProgress(); ++generation; timer.Stop(); updateTimer.Stop(); lifetimeCancellation.Cancel(); StopSharing(); sharingWindow?.Close(); DisposePlayer(); lifetimeCancellation.Dispose();
     }
     void ToggleFullscreen()
     {
@@ -669,11 +384,6 @@ internal sealed class PlayerWindow : Window
             header.Visibility = sidebar.Visibility = controls.Visibility = status.Visibility = Visibility.Visible; layout.ColumnDefinitions[0].Width = new GridLength(260); layout.RowDefinitions[0].Height = new GridLength(68); layout.RowDefinitions[2].Height = new GridLength(160); layout.RowDefinitions[3].Height = new GridLength(28); stage.Margin = new Thickness(14, 14, 14, 0); stage.CornerRadius = new CornerRadius(14); NativeWindow.Style(this, dark);
         }
     }
-    void SaveProgress() { if (current is not null && !opening && lastError is null) library.UpdateProgress(current.Id, CurrentTime, duration); SaveLibrary(); }
-    void SaveLibrary() { try { library.Flush(); } catch (IOException e) { Notice("The saved library could not be written: " + e.Message); } }
-    void Unload() { SaveProgress(); generation++; visualRevision++; activeNativeRequest = false; loadCancellation.Cancel(); DisposeFoundation(); nativeCaptions?.Update("",false); movie.Close(); movie.Source = null; activeTemporaryMedia = null; CleanupTemporaryMedia(); nativeLoadClock.Reset(); ResetTrackMenus(); current = null; original = null; playing = opening = false; image.Source = null; duration = position = 0; clock.Reset(); cues.Clear(); captions.Text = ""; empty.Visibility = Visibility.Visible; nowTitle.Text = "Make room for a good story"; backend.Text = ""; UpdateTransport(); }
-    void Fail(string error) { lastError = error; opening = false; playing = false; activeNativeRequest = false; DisposeFoundation(); nativeCaptions?.Update("",false); original = null; subtitleRevision++; cues.Clear(); captions.Text = ""; image.Source = null; image.Visibility = movie.Visibility = Visibility.Collapsed; clock.Reset(); nativeLoadClock.Reset(); movie.Close(); movie.Source = null; CleanupTemporaryMedia(); if (fullscreen) ToggleFullscreen(); Notice(error); nowTitle.Text = "This file could not be played"; empty.Visibility = Visibility.Visible; }
-    void Notice(string value) => status.Text = value;
     void ShowDocument(string file, string title)
     {
         var text = File.Exists(Path.Combine(AppContext.BaseDirectory, file)) ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory, file)) : "Support information is unavailable in this build.";
@@ -710,165 +420,60 @@ internal sealed class PlayerWindow : Window
         catch (Exception) { if (explicitAction && !closing) MessageBox.Show(this, "The update could not be verified. Nothing was installed.", "Luma Player"); }
         finally { checkingUpdate = false; }
     }
-    void Shutdown()
-    {
-        if (closing) return; closing = true; SaveProgress(); generation++; subtitleRevision++; timer.Stop(); updateTimer.Stop(); loadCancellation.Cancel(); lifetimeCancellation.Cancel(); DisposeFoundation(); nativeCaptions?.Dispose(); movie.Close(); loadCancellation.Dispose(); lifetimeCancellation.Dispose();
-        try { if (Directory.Exists(temporaryFolder)) Directory.Delete(temporaryFolder, true); } catch (IOException) { }
-    }
-
     internal async Task RunSmokeAsync(string fixtures, string output)
     {
         Directory.CreateDirectory(output);
-        void Check(bool value, string message) { if (!value) throw new InvalidOperationException(message); }
-        async Task Until(Func<bool> predicate, string name, int milliseconds = 10000) { var deadline = DateTime.UtcNow.AddMilliseconds(milliseconds); while (!predicate()) { if (DateTime.UtcNow >= deadline) throw new TimeoutException(name); await Task.Delay(40); } }
-        await ImportAsync([Path.Combine(fixtures, "Luma-MSVideo1-16.avi")]); await Until(() => original is not null && image.Source is BitmapSource, "Original AVI output");
-        Pause(); Seek(2.5); await Until(() => lastFrame == 5 && !rendering, "Paused original seek");
-        var bitmap = (BitmapSource)image.Source; var actual = new byte[bitmap.PixelWidth * bitmap.PixelHeight * 4]; bitmap.CopyPixels(actual, bitmap.PixelWidth * 4, 0);
-        var golden = File.ReadAllBytes(Path.Combine(fixtures, "msvideo1", "16-frame-05.rgba")); Check(actual.SequenceEqual(ToBgra(golden)), "WPF image pixels differ from original codec goldens");
-        Console.WriteLine("PASS: production Windows queue/import, original AVI image output and exact paused-seek BGRA pixels");
-        var drawable = image; ToggleFullscreen(); await Task.Delay(500); UpdateLayout(); Check(fullscreen && header.Visibility == Visibility.Collapsed && ReferenceEquals(drawable, image), "Fullscreen replaced the original drawable");
-        Check(Math.Abs(stage.ActualWidth - layout.ActualWidth) < 2 && Math.Abs(stage.ActualHeight - layout.ActualHeight) < 2, "Video does not fill fullscreen client area");
-        ToggleFullscreen(); await Task.Delay(250); Check(!fullscreen && sidebar.Visibility == Visibility.Visible && ReferenceEquals(drawable, image), "Fullscreen exit lost chrome/drawable"); Play(); await Task.Delay(150); Check(CurrentTime > 2.5, "Playback did not resume"); Pause();
-        Console.WriteLine("PASS: native Windows fullscreen entry/exit fills client area, preserves drawable and resumes original playback");
-        var preview = library.Add([Path.Combine(fixtures, "Luma-MJPEG.avi")]).Single(); await LoadEntryAsync(preview); Pause(); Seek(duration * .35);
-        await Until(() => original is not null && image.Source is not null && !rendering && lastFrame == Math.Clamp((int)(CurrentTime * original.FramesPerSecond), 0, original.FrameCount - 1), "Original MJPEG preview render");
-        Console.WriteLine("PASS: production original MJPEG player output and paused seek");
-        foreach (var theme in new[] { true, false })
+        void Check(bool value, string label) { if (!value) throw new InvalidOperationException(label); }
+        async Task Until(Func<bool> condition, string label, int milliseconds = 20000)
+        { var end = DateTime.UtcNow.AddMilliseconds(milliseconds); while (!condition()) { if (DateTime.UtcNow >= end) throw new TimeoutException(label + ": " + lastError); await Task.Delay(40); } }
+        var endpoints = NativeAudio.ActiveRenderEndpoints(); dummyAudioForSmoke = endpoints == 0;
+        Console.WriteLine("INFO: active audio endpoints: " + (endpoints?.ToString() ?? "unknown") + "; audio mode: " + (dummyAudioForSmoke ? "explicit test-only dummy output" : "system output"));
+        async Task<VlcPlayer> Open(string path)
         {
-            SetTheme(theme); await Task.Delay(100); UpdateLayout();
-            var shot = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); shot.Render(layout);
-            var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(shot)); using var file = File.Create(Path.Combine(output, theme ? "Luma-Windows-dark.png" : "Luma-Windows-light.png")); encoder.Save(file);
+            var entry = library.Add([path]).FirstOrDefault() ?? library.Data.Items.Single(i => i.FilePath == Path.GetFullPath(path)); await LoadEntryAsync(entry);
+            await Until(() => !opening || lastError is not null, "libVLC opens " + Path.GetFileName(path)); Check(lastError is null && vlc is not null, "libVLC failed: " + lastError); return vlc!;
         }
-        Console.WriteLine("PASS: production dark/light Windows UI render snapshots saved");
-        var native = library.Add([Path.Combine(fixtures, "Luma-Demo.mp4")]).Single(); await LoadEntryAsync(native);
-        await Until(() => !opening || lastError is not null, "Windows native media load", 20000);
-        if (lastError is null && movie.NaturalVideoWidth > 0 && duration > 0)
-        {
-            Pause(); Seek(duration / 2); Play(); await Task.Delay(300); Check(CurrentTime > duration / 2, "Native media did not advance after seek"); Pause();
-            ReadSubtitles(Path.Combine(fixtures, "Luma-Demo.srt")); Seek(1.2); await Task.Delay(100);
-            Check(captions.Text == SubtitleParser.At(cues, CurrentTime) && captions.Text.Length > 0, "Paused external caption was not displayed");
-            Console.WriteLine("PASS: native Windows MP4 load, video dimensions, seek and resumed clock; paused external caption rendering");
-        }
-        else throw new InvalidOperationException("Windows media-service MP4 route failed: " + lastError);
-        await LoadEntryAsync(native, forceModern: true);
-        await Until(()=>!opening||lastError is not null,"Media Foundation HWND H264 load",20000);
-        Check(lastError is null&&foundation is not null&&foundation.NaturalVideoWidth==960,"Modern native H264 renderer failed: "+lastError);
-        var modern=foundation!;
-        await Until(()=>modern.RenderedFrames is >0,"Media Foundation actual rendered frames",20000);
-        Pause();Seek(3);speed.SelectedIndex=2;volume.Value=.4;Play();await Task.Delay(300);
-        Check(CurrentTime>3&&modern.Rate==1.25&&modern.Volume==.4,"Modern native seek/rate/volume failed");Pause();speed.SelectedIndex=1;
-        ReadSubtitles(Path.Combine(fixtures,"Luma-Demo.srt"));Seek(1.2);Activate();await Task.Delay(150);
-        Check(nativeCaptions is {IsOpen:true}&&nativeCaptions.CaptionText==SubtitleParser.At(cues,CurrentTime),"Native child-window caption overlay was not shown");
-        ToggleFullscreen();await Task.Delay(150);ToggleFullscreen();Check(ReferenceEquals(foundation,modern),"Native fullscreen replaced the Media Foundation engine");
-        Console.WriteLine("PASS: modern Media Foundation HWND H264 actual native rendered-frame counter, seek/rate/volume, owned caption overlay and fullscreen engine retention");
-        var nativeProbe=await MediaFoundationProbe.ProbeAsync(Path.Combine(fixtures,"Luma-Demo.mp4"));
-        File.WriteAllText(Path.Combine(output,"media-foundation-avc.json"),JsonSerializer.Serialize(nativeProbe,new JsonSerializerOptions{WriteIndented=true}));
-        Check(nativeProbe.Streams.Any(s=>s.Kind=="video"&&s.Status=="decoded"&&s.Attempts.Any(a=>a.Status=="decoded"&&a.Samples.Any(p=>p.ByteCount>0))),"Media Foundation Source Reader could not decode the reference AVC");
-        string normalizedCase=Path.Combine(output,"Luma-normalized-hevc10-aac51.mp4");
-        using(var input=File.OpenRead(Path.Combine(fixtures,"Luma-HEVC10-AAC51.mp4")))
-        using(var normalizedOutput=File.Create(normalizedCase))
-            Check(HevcSampleEntryNormalizer.Normalize(input,normalizedOutput),"Reported hev1 fixture was not safely normalized");
-        var rawProbe=await MediaFoundationProbe.ProbeAsync(Path.Combine(fixtures,"Luma-HEVC10-AAC51.mp4"));
-        File.WriteAllText(Path.Combine(output,"media-foundation-original-hev1.json"),JsonSerializer.Serialize(rawProbe,new JsonSerializerOptions{WriteIndented=true}));
-        var matchingProbe=await MediaFoundationProbe.ProbeAsync(normalizedCase);
-        File.WriteAllText(Path.Combine(output,"media-foundation-hevc10-aac51.json"),JsonSerializer.Serialize(matchingProbe,new JsonSerializerOptions{WriteIndented=true}));
-        Check(matchingProbe.Streams.Any(s=>s.Kind=="audio"&&s.Status=="decoded"&&s.Attempts.Any(a=>a.Status=="decoded"&&a.NegotiatedType is {Channels:6,SampleRate:48000}&&a.Samples.Any(p=>p.PcmFrames>0))),"Native Microsoft decoder did not produce 48kHz six-channel PCM from the HEVC/AAC5.1 fixture");
-        Console.WriteLine("PASS: native Microsoft Source Reader decodes AVC pixels and actual AAC-LC48kHz5.1 PCM without an audio device; per-stream HEVC diagnostic retained");
-        var activeAudioRenderEndpoints = NativeAudio.ActiveRenderEndpoints();
-        Console.WriteLine("INFO: active Core Audio render endpoints: " + (activeAudioRenderEndpoints?.ToString() ?? "unknown (probe failed)"));
+        var demo = await Open(Path.Combine(fixtures, "Luma-Demo.mp4"));
+        await Until(() => demo.DisplayedPictures is > 1 && demo.NaturalVideoWidth == 960, "Native libVLC displayed video frames");
+        Pause(); Seek(3); speed.SelectedIndex = 2; volume.Value = .4; Play(); await Task.Delay(400);
+        Check(CurrentTime > 3 && Math.Abs(demo.Rate - 1.25) < .01 && demo.Volume == .4, "libVLC seek/rate/volume"); Pause(); speed.SelectedIndex = 1;
+        ToggleFullscreen(); await Task.Delay(300); Check(fullscreen && ReferenceEquals(vlc, demo) && Math.Abs(stage.ActualWidth - layout.ActualWidth) < 2, "Fullscreen retained player and fills client"); ToggleFullscreen();
+        ReadSubtitles(Path.Combine(fixtures, "Luma-Demo.srt")); await Until(() => demo.SubtitleTracks.Any(t => t.Id >= 0), "External native subtitle track");
+        var subtitle = demo.SubtitleTracks.First(t => t.Id >= 0); demo.SelectSubtitle(subtitle.Id); ChangeCaptionDelay(.25); Check(demo.SubtitleTrack == subtitle.Id && demo.SubtitleDelay == .25, "Native external subtitle selection and delay"); demo.SelectSubtitle(-1);
+        var snapshot = Path.Combine(output, "libvlc-avc-frame.png"); demo.Snapshot(snapshot); await Until(() => File.Exists(snapshot) && new FileInfo(snapshot).Length > 100, "Native libVLC AVC snapshot");
+        Console.WriteLine("PASS: libVLC native displayed frames, snapshot, seek/pause/rate/volume/fullscreen and external caption selection/delay");
+        var hevc = await Open(Path.Combine(fixtures, "Luma-HEVC10-AAC51.mp4"));
+        await Until(() => hevc.DecodedVideo is > 0 && hevc.DecodedAudio is > 0 && hevc.DisplayedPictures is > 0, "HEVC Main10/AAC5.1 decoded audio and displayed video");
+        Pause(); Seek(.75); Play(); await Task.Delay(300); Check(CurrentTime >= .75, "HEVC/AAC seek retained synchronized native clock"); Pause();
+        var hevcShot = Path.Combine(output, "libvlc-hevc10-frame.png"); hevc.Snapshot(hevcShot); await Until(() => File.Exists(hevcShot) && new FileInfo(hevcShot).Length > 100, "HEVC native snapshot");
+        Console.WriteLine("PASS: raw hev1 Main10/AAC5.1 local MP4 reaches libVLC decoded video/audio and native presentation without container normalization");
         var generated = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(output))!, "generated");
-        var mkv = library.Add([Path.Combine(fixtures, "Luma-AVC-AAC.mkv")]).Single();
-        await LoadEntryAsync(mkv, includeAudio: false);
-        await Until(() => !opening || lastError is not null, "Original Matroska remux Windows video load", 20000);
-        Check(lastError is null && movie.NaturalVideoWidth == 960 && movie.NaturalVideoHeight == 540 && backend.Text.Contains("Luma MKV remux") && audioTracksMenu.IsEnabled && selectedMatroskaAudio is null, "Original Matroska video-only route did not reach Windows output: " + lastError);
-        Pause(); Seek(3); Play(); await Task.Delay(250); Check(CurrentTime > 3, "Matroska playback clock did not advance after seek"); Pause();
-        var nativeDrawable = movie; ToggleFullscreen(); await Task.Delay(100); ToggleFullscreen();
-        Check(ReferenceEquals(nativeDrawable, movie) && !fullscreen, "Native Matroska fullscreen replaced the media drawable");
-        Console.WriteLine("PASS: production original Matroska AVC remux reaches native Windows video, audio-off selection, seek/resume clock and fullscreen drawable retention");
-
-        var slowCaptions = new DemuxedTrack(77,"S_TEXT/UTF8",[],0,0,0,0,0,Enumerable.Range(0,50000).Select(i=>new MediaPacket([65],(long)i*1_000_000_000,1_000_000_000,true)).ToList()) { TrackType=17 };
-        var pendingCaptions = SelectEmbeddedSubtitlesAsync(slowCaptions,0,generation,loadCancellation.Token);
-        ReadSubtitles(Path.Combine(fixtures,"Luma-Demo.srt"));
-        var externalCues = cues;
-        await pendingCaptions;
-        Check(ReferenceEquals(cues,externalCues),"An obsolete embedded caption request overwrote the external selection");
-
-        var broken = Path.Combine(output,"retry-fixture.mp4");
-        await File.WriteAllBytesAsync(broken,[0,1,2,3,4,5,6,7]);
-        var brokenEntry = library.Add([broken]).Single(); await LoadEntryAsync(brokenEntry);
-        await Until(()=>lastError is not null,"Malformed native media rejection",20000);
-        Check(!playing&&!activeNativeRequest,"Failed native request stayed active");
-        File.Copy(Path.Combine(fixtures,"Luma-Demo.mp4"),broken,true);
-        TogglePlayback();
-        await Until(()=>!opening&&lastError is null&&movie.NaturalVideoWidth>0,"Retry repaired media from Play",20000);
-        Check(playing,"Play did not recover a repaired file"); Pause();
-        Console.WriteLine("PASS: obsolete caption request cannot overwrite external captions; native malformed-file failure closes request and Play retries repaired media");
-
-        var bframes = library.Add([Path.Combine(generated,"Luma-review-bframes.mkv")]).Single(); await LoadEntryAsync(bframes,includeAudio:false);
-        await Until(()=>!opening||lastError is not null,"Original reordered Matroska native load",20000);
-        Check(lastError is null&&movie.NaturalVideoWidth>0&&backend.Text.Contains("Luma MKV remux"),"Reordered AVC Matroska did not play: "+lastError);
-        Pause(); Seek(duration/2); Play(); await Task.Delay(250); Check(CurrentTime>duration/2,"B-frame Matroska failed after seek");Pause();
-        Console.WriteLine("PASS: actual B-frame AVC MKV through original demux/DTS reconstruction/MP4 mux reaches Windows playback and seek/resume");
-        var textEntry=library.Add([Path.Combine(generated,"Luma-review-text.mkv")]).Single();await LoadEntryAsync(textEntry,includeAudio:false);
-        await Until(()=>!opening||lastError is not null,"Embedded caption Matroska playback",20000);
-        Check(lastError is null&&embeddedSubtitlesMenu.Items.Count==2,"Matroska embedded text tracks were not exposed: "+lastError);
-        Pause();Seek(.75);await Task.Delay(150);Check(captions.Text=="Original\ncaption","Default embedded ASS text was not rendered");
-        ((MenuItem)embeddedSubtitlesMenu.Items[1]).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-        await Until(()=>captions.Text=="<Naruto> 2 < 3 and 4 > 1","Alternate embedded UTF8 text selection");
-        Console.WriteLine("PASS: actual Matroska default ASS readable text, alternate UTF8 menu selection, literal angle text and timed native caption presentation");
-        var hevcRoutes = new Dictionary<string,string>();
-        foreach(var depth in new[]{"8","10"})
+        var mkv = await Open(Path.Combine(generated, "Luma-review-text.mkv")); await Until(() => mkv.SubtitleTracks.Count(t => t.Id >= 0) >= 2, "Matroska native ASS/UTF8 tracks");
+        Pause(); Seek(.75); foreach (var track in mkv.SubtitleTracks.Where(t => t.Id >= 0)) { mkv.SelectSubtitle(track.Id); Check(mkv.SubtitleTrack == track.Id, "Embedded caption track selection"); } mkv.SelectSubtitle(-1);
+        foreach (string file in new[] { "Luma-MSVideo1-16.avi", "Luma-Silence.flac", "Luma-MSADPCM.wav" })
+        { var media = await Open(Path.Combine(fixtures, file)); await Until(() => media.DecodedVideo is > 0 || media.DecodedAudio is > 0, "General local codec " + file); Pause(); }
+        Console.WriteLine("PASS: direct local Matroska ASS/UTF8 selection, AVI, FLAC and ADPCM playback without remux/size gate");
+        Unload(); var pending = library.Add([Path.Combine(fixtures, "Luma-Demo.mp4")]).FirstOrDefault() ?? library.Data.Items.First(i => i.FilePath.EndsWith("Luma-Demo.mp4"));
+        await LoadEntryAsync(pending); var obsolete = vlc; await LoadEntryAsync(pending); await Until(() => !opening, "Replacement player load"); Check(!ReferenceEquals(obsolete, vlc) && lastError is null, "Native generations isolated");
+        Pause(); Seek(5); await Task.Delay(250); SaveProgress(); Check(library.Data.Items.Single(i => i.Id == pending.Id).ResumeTime >= 4.5, "Saved resume position");
+        StartSharing(); Check(sharing?.IsRunning == true && shareButton.Content.ToString() == "Sharing on", "Sharing starts only from explicit UI action");
+        using (var http = new HttpClient())
         {
-            var entry=library.Add([Path.Combine(generated,"Luma-review-hevc"+depth+".mkv")]).Single(); await LoadEntryAsync(entry,includeAudio:false);
-            await Until(()=>!opening||lastError is not null,"HEVC"+depth+" native probe",20000);
-            Check(backend.Text.StartsWith("Windows Media Foundation")&&currentMp4?.VideoCodec=="HEVC","HEVC was not routed to Media Foundation after remux: "+lastError);
-            bool rendered=false;
-            if(lastError is null)
-            {
-                try { await Until(()=>lastError is not null||foundation?.RenderedFrames is >0,"HEVC"+depth+" rendered frames",15000);rendered=foundation?.RenderedFrames is >0; }
-                catch(TimeoutException) { hevcRoutes[depth]="unverified-no-rendered-frame";Console.WriteLine("UNVERIFIED: HEVC"+depth+" opened metadata but returned no rendered frame before the probe deadline");Pause();continue; }
-            }
-            if(lastError is null&&rendered&&foundation?.NaturalVideoWidth>0&&duration>0)
-            { Pause();Seek(duration/2);Play();await Task.Delay(250);Check(CurrentTime>duration/2,"HEVC seek did not resume");Pause();hevcRoutes[depth]="passed";Console.WriteLine("PASS: HEVC"+depth+" MKV native Windows playback and seek"); }
-            else
-            { Check(lastNativeSourceExisted==true,"HEVC temporary source disappeared before the native error");hevcRoutes[depth]="unverified-native-playback-error";Console.WriteLine("UNVERIFIED: HEVC"+depth+" native Windows decode failed while the prepared file still existed; original packet/config/remux checks are separate. HRESULT="+(lastNativeError?.ToString("X8")??"unknown")+" "+lastError); }
+            string address = "http://127.0.0.1:" + sharing!.Port;
+            var paired = await http.PostAsync(address + "/v1/pair", new StringContent(JsonSerializer.Serialize(new { code = sharing.PairingCode }), System.Text.Encoding.UTF8, "application/json")); paired.EnsureSuccessStatusCode();
+            using var json = JsonDocument.Parse(await paired.Content.ReadAsStringAsync()); http.DefaultRequestHeaders.Authorization = new("Bearer", json.RootElement.GetProperty("token").GetString());
+            var playlist = await http.GetStringAsync(address + "/v1/playlist"); Check(!playlist.Contains(fixtures, StringComparison.Ordinal), "Sharing GUI exposes no source paths");
         }
-        var matchingEntry=library.Add([Path.Combine(fixtures,"Luma-HEVC10-AAC51.mp4")]).Single();await LoadEntryAsync(matchingEntry);
-        await Until(()=>!opening||lastError is not null,"HEVC Main10/AAC5.1 MP4 playback probe",20000);
-        Check(currentMp4 is {BitDepth:10,AacChannels:6}&&currentMp4.VideoTracks.Single().SampleEntry=="hvc1"&&mediaPreparation?.StartsWith("Validated hev1") == true&&backend.Text.StartsWith("Windows Media Foundation"),"Reported-format MP4 did not use the validated compatibility copy and modern native backend");
-        string matchingPlayback=lastError is null?"metadata-opened-render-and-audio-unverified":"unverified-native-playback-error";
-        if(lastError is not null)Console.WriteLine("UNVERIFIED: matching hev1Main10/1920x804/25fps/AAC48k5.1 MP4 playback: "+lastError);
-        var originalAudio = "passed";
-        foreach (var audioFile in new[] { Path.Combine(fixtures,"Luma-Silence.flac"), Path.Combine(fixtures,"Luma-MSADPCM.wav"), Path.Combine(generated,"Luma-Windows-Tone.aiff"), Path.Combine(generated,"Luma-Windows-Tone.au") })
+        await Task.Delay(300); string dnsSdRegistration = discovery?.Status ?? "not attempted";
+        Console.WriteLine("INFO: Windows DNS-SD registration: " + dnsSdRegistration + "; network discovery itself is not asserted by this hosted smoke.");
+        StopSharing(); Check(sharing is null && shareButton.Content.ToString() == "Share playlist", "UI stop revokes sharing");
+        foreach (bool theme in new[] { true, false })
         {
-            var entry = library.Add([audioFile]).Single(); await LoadEntryAsync(entry);
-            await Until(() => !opening || lastError is not null, "Original decoded audio output", 20000);
-            Check(backend.Text.StartsWith("Luma original"),"Audio bypassed the original decoder: "+backend.Text);
-            if (lastNativeError == NativeAudio.HardwareProblem && activeAudioRenderEndpoints == 0)
-            {
-                originalAudio = "unverified-no-active-render-endpoint";
-                Console.WriteLine("UNVERIFIED: original " + audioFile + " audio output: NS_E_WMP_AUDIO_HW_PROBLEM and zero active Core Audio render endpoints. Exact decoded samples are checked separately by the core suites.");
-                continue;
-            }
-            Check(lastError is null && duration > 1, "Original audio did not reach Windows output: " + lastError);
-            Pause(); Seek(duration / 2); speed.SelectedIndex = 2; volume.Value = .25; Play(); await Task.Delay(300);
-            Check(CurrentTime > duration / 2 && movie.SpeedRatio == 1.25 && movie.Volume == .25, "Original audio transport did not retain seek/rate/volume"); Pause(); speed.SelectedIndex = 1;
-            Console.WriteLine("PASS: production original " + audioFile + " decode to Windows audio output, pause/seek/rate/volume and resumed clock");
+            SetTheme(theme); await Task.Delay(100); UpdateLayout(); var image = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); image.Render(layout);
+            var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(image)); using var file = File.Create(Path.Combine(output, theme ? "Luma-Windows-dark.png" : "Luma-Windows-light.png")); png.Save(file);
         }
-        Unload();
-        var restoredPath = Path.Combine(output, "restored-library.json");
-        var persisted = new LibraryStore(restoredPath); var saved = persisted.Add([Path.Combine(fixtures, "Luma-MSVideo1-16.avi")]).Single();
-        persisted.UpdateProgress(saved.Id, 4, 6); persisted.Data.SelectedId = saved.Id; persisted.Flush();
-        var restored = new PlayerWindow(restoredPath) { Owner = this }; restored.Show();
-        try
-        {
-            restored.TogglePlayback(); await Until(() => restored.original is not null && restored.image.Source is not null, "Saved selected item starts on relaunch"); restored.Pause();
-            Check(restored.current?.Id == saved.Id && restored.CurrentTime >= 4, "Saved selection or resume position was lost");
-            restored.Unload(); await restored.ImportAsync([saved.FilePath]); await Until(() => restored.original is not null, "Reimport existing queue entry");
-            Check(restored.library.Data.Items.Count == 1 && restored.current?.Id == saved.Id, "Reimport duplicated or failed to select an existing entry");
-            Console.WriteLine("PASS: saved selected queue item starts and resumes on relaunch; reimporting it reuses the existing entry");
-        }
-        finally { restored.Close(); }
-        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { nativeMp4 = "passed", modernRenderer="passed", sourceReaderAvc="passed", aac51Decode="passed", matchingPlayback, matroskaAvc = "passed", matroskaBframes = "passed", embeddedCaptions = "passed", lifecycleRecovery = "passed", hevcRoutes, originalAudio, activeAudioRenderEndpoints }, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeBundled = false, dnsSdRegistration,
+            physicalAudio = endpoints == 0 ? "unverified-no-active-render-endpoint" : "system-output-requested-audibility-not-measured", activeAudioRenderEndpoints = endpoints }, new JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine("PASS: libVLC native lifecycle/resume, opt-in sharing UI pairing/revoke, and native UI theme snapshots; physical audibility remains explicitly separate");
     }
 }

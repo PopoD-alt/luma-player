@@ -12,9 +12,29 @@ xcrun swiftc -swift-version 5 -target arm64-apple-macos14.0 -O -parse-as-library
   Sources/*.swift -o "$APP/Contents/MacOS/LumaPlayer"
 python3 Scripts/configure-bundle.py "$APP/Contents/Info.plist"
 mkdir -p "$APP/Contents/Resources/Licenses"
+RUNTIME_ROOT="${LUMA_LIBVLC_RUNTIME_ROOT:-}"
+if [[ "${LUMA_DISTRIBUTION_BUILD:-0}" == "1" && -z "$RUNTIME_ROOT" ]]; then
+  echo "Distribution needs an explicitly audited libVLC runtime root." >&2
+  exit 1
+fi
+rm -rf "$APP/Contents/Frameworks/libvlc-runtime"
+rm -rf "$APP/Contents/Resources/libvlc-runtime"
+if [[ -n "$RUNTIME_ROOT" ]]; then
+  if [[ "${LUMA_DISTRIBUTION_BUILD:-0}" == "1" ]]; then
+    python3 Scripts/prepare-libvlc.py verify --runtime "$RUNTIME_ROOT" --distribution
+  else
+    python3 Scripts/prepare-libvlc.py verify --runtime "$RUNTIME_ROOT"
+  fi
+  # Keep the manifest/notices alongside this complete replaceable runtime.
+  # Arbitrary metadata under Contents/Frameworks is interpreted as nested code
+  # by codesign. The root signature seals the reviewed runtime as a resource.
+  ditto "$RUNTIME_ROOT" "$APP/Contents/Resources/libvlc-runtime"
+fi
 rm -rf "$APP/Contents/Frameworks/Sparkle.framework"
 rm -f "$APP/Contents/Resources/Licenses/Sparkle.txt"
 cp LICENSE "$APP/Contents/Resources/Licenses/Luma.txt"
+cp THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/Licenses/THIRD_PARTY_NOTICES.md"
+cp ThirdParty/libvlc/COPYING.LIB "$APP/Contents/Resources/Licenses/libVLC-LGPL-2.1.txt"
 cp CodecSupport.json "$APP/Contents/Resources/CodecSupport.json"
 if [[ -f Tests/Fixtures/Luma-Demo.mp4 ]]; then
   cp Tests/Fixtures/Luma-Demo.mp4 "$APP/Contents/Resources/Luma-Demo.mp4"

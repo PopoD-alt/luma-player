@@ -1,0 +1,1663 @@
+  concat                 Concatenated inputs
+   s concast
+   s list
+   c access (0)
+  concat                 Concatenated inputs
+   s concast
+   s list
+   c access (0)
+  access_mms             Microsoft Media Server (MMS) input
+   s mms
+   s mmsu
+   s mmst
+   s mmsh
+   c access (-1)
+  access_mms             Microsoft Media Server (MMS) input
+   s mms
+   s mmsu
+   s mmst
+   s mmsh
+   c access (-1)
+  dummy                  Dummy stream output
+   c sout access (0)
+  dummy                  Dummy stream output
+   c sout access (0)
+  file                   File stream output
+   s stream
+   s fd
+   c sout access (50)
+  file                   File stream output
+   s stream
+   s fd
+   c sout access (50)
+  http                   HTTP stream output
+   s https
+   s mmsh
+   c sout access (0)
+  http                   HTTP stream output
+   s https
+   s mmsh
+   c sout access (0)
+  access_output_rist     RIST stream output
+   s rist
+   s tr06
+   c sout access (0)
+  access_output_rist     RIST stream output
+   s rist
+   s tr06
+   c sout access (0)
+  access_output_shout    IceCAST output
+   s shout
+   c sout access (0)
+  access_output_shout    IceCAST output
+   s shout
+   c sout access (0)
+  adaptive               Unified adaptive streaming for DASH/HLS
+   c demux (12)
+  adaptive               Unified adaptive streaming for DASH/HLS
+   c demux (12)
+  adf                    ADF stream filter
+   c stream_filter (30)
+  adf                    ADF stream filter
+   c stream_filter (30)
+  adjust                 Image properties filter
+   c video filter (0)
+  adjust                 Image properties filter
+   c video filter (0)
+  adpcm                  ADPCM audio decoder
+   c audio decoder (50)
+  adpcm                  ADPCM audio decoder
+   c audio decoder (50)
+  adummy                 Dummy audio output
+   s dummy
+   c audio output (0)
+  adummy                 Dummy audio output
+   s dummy
+   c audio output (0)
+  aes3                   AES3/SMPTE 302M audio decoder
+   c audio decoder (100)
+  aes3                   AES3/SMPTE 302M audio packetizer
+   c packetizer (100)
+  aes3                   AES3/SMPTE 302M audio decoder
+   c audio decoder (100)
+  aes3                   AES3/SMPTE 302M audio packetizer
+   c packetizer (100)
+  afile                  File audio output
+   s file
+   s audiofile
+   c audio output (0)
+  afile                  File audio output
+   s file
+   s audiofile
+   c audio output (0)
+  aiff                   AIFF demuxer
+   c demux (10)
+  aiff                   AIFF demuxer
+   c demux (10)
+  amem                   Audio memory output
+   c audio output (0)
+  amem                   Audio memory output
+   c audio output (0)
+  aom                    AOM video decoder
+   c video decoder (100)
+  aom                    AOM video decoder
+   c video decoder (100)
+  araw                   Raw/Log Audio decoder
+   c audio decoder (100)
+  araw                   Raw audio encoder
+   c encoder (150)
+  araw                   Raw/Log Audio decoder
+   c audio decoder (100)
+  araw                   Raw audio encoder
+   c encoder (150)
+  archive                libarchive based stream directory
+   c stream_directory (99)
+  archive                libarchive based stream extractor
+   c stream_extractor (99)
+  archive                libarchive based stream directory
+   c stream_directory (99)
+  archive                libarchive based stream extractor
+   c stream_extractor (99)
+  asf                    ASF/WMV demuxer
+   s wmv
+   c demux (200)
+  asf                    ASF/WMV demuxer
+   s wmv
+   c demux (200)
+  attachment             Attachment input
+   c access (0)
+  attachment             Attachment input
+   c access (0)
+  au                     AU demuxer
+   c demux (10)
+  au                     AU demuxer
+   c demux (10)
+  audio_format           Audio filter for PCM format conversion
+   c audio converter (1)
+  audio_format           Audio filter for PCM format conversion
+   c audio converter (1)
+  audiotoolbox_midi      AudioToolbox MIDI synthesizer
+   c audio decoder (100)
+  audiotoolbox_midi      AudioToolbox MIDI synthesizer
+   c audio decoder (100)
+  auhal                  HAL AudioUnit output
+   c audio output (101)
+  auhal                  HAL AudioUnit output
+   c audio output (101)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeg
+   c video decoder (70)
+  avcodec                FFmpeg audio/video encoder
+   s ffmpeg
+   c encoder (100)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeg
+   c spu decoder (70)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeg
+   c audio decoder (70)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeghw
+   c video decoder (10001)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeg
+   c video decoder (70)
+  avcodec                FFmpeg audio/video encoder
+   s ffmpeg
+   c encoder (100)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeg
+   c spu decoder (70)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeg
+   c audio decoder (70)
+  avcodec                FFmpeg audio/video decoder
+   s ffmpeghw
+   c video decoder (10001)
+  avformat               Avformat demuxer
+   s ffmpeg
+   c demux (2)
+  avformat               Avformat muxer
+   s ffmpeg
+   c sout mux (2)
+  avformat               Avformat demuxer
+   s ffmpeg
+   c demux (2)
+  avformat               Avformat muxer
+   s ffmpeg
+   c sout mux (2)
+  avi                    AVI demuxer
+   c demux (212)
+  avi                    AVI demuxer
+   c demux (212)
+  avio                   libavformat AVIO access
+   s rtmp
+   s rtmpe
+   s rtmps
+   s rtmpt
+   s rtmpte
+   s rtmpts
+   c access (-1)
+  avio                   libavformat AVIO access output
+   s rtmp
+   c sout access (-1)
+  avio                   libavformat AVIO access
+   s rtmp
+   s rtmpe
+   s rtmps
+   s rtmpt
+   s rtmpte
+   s rtmpts
+   c access (-1)
+  avio                   libavformat AVIO access output
+   s rtmp
+   c sout access (-1)
+  blend                  Video pictures blending
+   c video blending (100)
+  blend                  Video pictures blending
+   c video blending (100)
+  bonjour                Bonjour Network Discovery
+   s mdns
+   c services_discovery (0)
+  bonjour                Bonjour Network Discovery
+   c renderer probe (100)
+  bonjour                Bonjour Renderer Discovery
+   s mdns_renderer
+   s bonjour_renderer
+   c renderer_discovery (0)
+  bonjour                Bonjour Network Discovery
+   c services probe (100)
+  bonjour                Bonjour Network Discovery
+   s mdns
+   c services_discovery (0)
+  bonjour                Bonjour Network Discovery
+   c renderer probe (100)
+  bonjour                Bonjour Renderer Discovery
+   s mdns_renderer
+   s bonjour_renderer
+   c renderer_discovery (0)
+  bonjour                Bonjour Network Discovery
+   c services probe (100)
+  cache_block            Block stream cache
+   c stream_filter (0)
+  cache_block            Block stream cache
+   c stream_filter (0)
+  cache_read             Byte stream cache
+   c stream_filter (0)
+  cache_read             Byte stream cache
+   c stream_filter (0)
+  caf                    CAF demuxer
+   c demux (140)
+  caf                    CAF demuxer
+   c demux (140)
+  canvas                 Canvas video filter
+   c video filter (0)
+  canvas                 Canvas video filter
+   c video filter (0)
+  caopengllayer          Core Animation OpenGL Layer (Mac OS X)
+   c vout display (300)
+  caopengllayer          Core Animation OpenGL Layer (Mac OS X)
+   c vout display (300)
+  cc                     Closed Captions decoder
+   c spu decoder (50)
+  cc                     Closed Captions decoder
+   c spu decoder (50)
+  cdg                    CDG video decoder
+   c video decoder (1000)
+  cdg                    CDG video decoder
+   c video decoder (1000)
+  chain                  Video filtering using a chain of video filter modules
+   c video converter (1)
+  chain                  Video filtering using a chain of video filter modules
+   c video filter (0)
+  chain                  Video filtering using a chain of video filter modules
+   c video converter (1)
+  chain                  Video filtering using a chain of video filter modules
+   c video filter (0)
+  chorus_flanger         Sound Delay
+   s delay
+   c audio filter (0)
+  chorus_flanger         Sound Delay
+   s delay
+   c audio filter (0)
+  ci_filters             Mac OS X hardware video filters
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s ci
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s psychedelic
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s sharpen
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s sepia
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s posterize
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s invert
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s adjust
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s ci
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s psychedelic
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s sharpen
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s sepia
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s posterize
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s invert
+   c video filter (0)
+  ci_filters             Mac OS X hardware video filters
+   s adjust
+   c video filter (0)
+  compressor             Dynamic range compressor
+   c audio filter (0)
+  compressor             Dynamic range compressor
+   c audio filter (0)
+  croppadd               Video cropping filter
+   c video filter (0)
+  croppadd               Video cropping filter
+   c video filter (0)
+  cvdsub                 CVD subtitle decoder
+   c spu decoder (50)
+  cvdsub                 Chaoji VCD subtitle packetizer
+   c packetizer (50)
+  cvdsub                 CVD subtitle decoder
+   c spu decoder (50)
+  cvdsub                 Chaoji VCD subtitle packetizer
+   c packetizer (50)
+  cvpx                   Conversions from/to CoreVideo buffers
+   c video converter (10)
+  cvpx                   Conversions between CoreVideo buffers
+   c video converter (10)
+  cvpx                   Conversions from/to CoreVideo buffers
+   c video converter (10)
+  cvpx                   Conversions between CoreVideo buffers
+   c video converter (10)
+  dav1d                  Dav1d video decoder
+   c video decoder (10000)
+  dav1d                  Dav1d video decoder
+   c video decoder (10000)
+  ddummy                 Dummy decoder
+   s dummy
+   c spu decoder (0)
+  ddummy                 Dummy decoder
+   s dump
+   c audio decoder (0)
+  ddummy                 Dummy decoder
+   s dump
+   c video decoder (0)
+  ddummy                 Dump decoder
+   s dump
+   c spu decoder (-1)
+  ddummy                 Dummy decoder
+   s dummy
+   c audio decoder (0)
+  ddummy                 Dummy decoder
+   s dummy
+   c video decoder (0)
+  ddummy                 Dummy decoder
+   s dummy
+   c spu decoder (0)
+  ddummy                 Dummy decoder
+   s dump
+   c audio decoder (0)
+  ddummy                 Dummy decoder
+   s dump
+   c video decoder (0)
+  ddummy                 Dump decoder
+   s dump
+   c spu decoder (-1)
+  ddummy                 Dummy decoder
+   s dummy
+   c audio decoder (0)
+  ddummy                 Dummy decoder
+   s dummy
+   c video decoder (0)
+  decomp                 LZMA decompression
+   c stream_filter (20)
+  decomp                 gzip decompression
+   c stream_filter (20)
+  decomp                 Burrows-Wheeler decompression
+   c stream_filter (20)
+  decomp                 LZMA decompression
+   c stream_filter (20)
+  decomp                 gzip decompression
+   c stream_filter (20)
+  decomp                 Burrows-Wheeler decompression
+   c stream_filter (20)
+  deinterlace            Deinterlacing video filter
+   c video filter (0)
+  deinterlace            Deinterlacing video filter
+   c video filter (0)
+  demux_cdg              CDG demuxer
+   s cdg
+   s subtitle
+   c demux (3)
+  demux_cdg              CDG demuxer
+   s cdg
+   s subtitle
+   c demux (3)
+  demux_chromecast       Chromecast demux wrapper
+   s cc_demux
+   c demux_filter (0)
+  demux_chromecast       Chromecast demux wrapper
+   s cc_demux
+   c demux_filter (0)
+  demux_stl              EBU STL subtitles parser
+   s stl
+   s subtitle
+   c demux (1)
+  demux_stl              EBU STL subtitles parser
+   s stl
+   s subtitle
+   c demux (1)
+  demuxdump              File dumper
+   s dump
+   c demux (0)
+  demuxdump              File dumper
+   s dump
+   c demux (0)
+  diracsys               Dirac video demuxer
+   s dirac
+   c demux (50)
+  diracsys               Dirac video demuxer
+   s dirac
+   c demux (50)
+  directory              Directory import
+   c demux (10)
+  directory              Directory import
+   c demux (10)
+  dmxmus                 DMX music demuxer
+   c demux (20)
+  dmxmus                 DMX music demuxer
+   c demux (20)
+  dolby                  Simple decoder for Dolby Surround encoded streams
+   c audio converter (5)
+  dolby                  Simple decoder for Dolby Surround encoded streams
+   c audio converter (5)
+  dsm                    libdsm SMB input
+   s smb
+   s cifs
+   c access (22)
+  dsm                    libdsm SMB input
+   c services probe (100)
+  dsm                    libdsm NETBIOS discovery module
+   s dsm-sd
+   c services_discovery (0)
+  dsm                    libdsm SMB input
+   s smb
+   s cifs
+   c access (20)
+  dsm                    libdsm SMB input
+   s smb
+   s cifs
+   c access (22)
+  dsm                    libdsm SMB input
+   c services probe (100)
+  dsm                    libdsm NETBIOS discovery module
+   s dsm-sd
+   c services_discovery (0)
+  dsm                    libdsm SMB input
+   s smb
+   s cifs
+   c access (20)
+  dummy                  Dummy interface
+   c interface (0)
+  dummy                  Dummy interface
+   c interface (0)
+  dvbsub                 DVB subtitles decoder
+   c spu decoder (80)
+  dvbsub                 DVB subtitles encoder
+   c encoder (100)
+  dvbsub                 DVB subtitles decoder
+   c spu decoder (80)
+  dvbsub                 DVB subtitles encoder
+   c encoder (100)
+  ebur128                EBU R128 standard for loudness normalisation
+   c audio meter (0)
+  ebur128                EBU R128 standard for loudness normalisation
+   c audio meter (0)
+  edgedetection          Edge detection video filter
+   c video filter (0)
+  edgedetection          Edge detection video filter
+   c video filter (0)
+  edummy                 Dummy encoder
+   s dummy
+   c encoder (0)
+  edummy                 Dummy encoder
+   s dummy
+   c encoder (0)
+  equalizer              Equalizer with 10 bands
+   c audio filter (0)
+  equalizer              Equalizer with 10 bands
+   c audio filter (0)
+  es                     MPEG-I/II/4 / A52 / DTS / MLP audio
+   s mpga
+   s mp3
+   s m4a
+   s mp4a
+   s aac
+   s ac3
+   s a52
+   s eac3
+   s dts
+   s mlp
+   s thd
+   c demux (155)
+  es                     MPEG-4 video
+   s m4v
+   s mp4v
+   c demux (0)
+  es                     MPEG-I/II/4 / A52 / DTS / MLP audio
+   s mpga
+   s mp3
+   s m4a
+   s mp4a
+   s aac
+   s ac3
+   s a52
+   s eac3
+   s dts
+   s mlp
+   s thd
+   c demux (155)
+  es                     MPEG-4 video
+   s m4v
+   s mp4v
+   c demux (0)
+  file                   Secrets are stored on a file without any encryption
+   s file_plaintext
+   c keystore (0)
+  file                   Secrets are stored on a file without any encryption
+   s file_plaintext
+   c keystore (0)
+  filesystem             File input
+   s file
+   s fd
+   s stream
+   c access (50)
+  filesystem             File input
+   s file
+   s directory
+   s dir
+   c access (55)
+  filesystem             File input
+   s file
+   s fd
+   s stream
+   c access (50)
+  filesystem             File input
+   s file
+   s directory
+   s dir
+   c access (55)
+  flac                   Flac audio decoder
+   c audio decoder (100)
+  flac                   Flac audio encoder
+   c encoder (100)
+  flac                   Flac audio decoder
+   c audio decoder (100)
+  flac                   Flac audio encoder
+   c encoder (100)
+  flacsys                FLAC demuxer
+   s flac
+   c demux (155)
+  flacsys                FLAC demuxer
+   s flac
+   c demux (155)
+  flaschen               Flaschen-Taschen video output
+   c vout display (0)
+  flaschen               Flaschen-Taschen video output
+   c vout display (0)
+  float_mixer            Single precision audio volume
+   c audio volume (10)
+  float_mixer            Single precision audio volume
+   c audio volume (10)
+  folder                 Folder meta data
+   c art finder (90)
+  folder                 Folder meta data
+   c art finder (90)
+  fps                    FPS conversion video filter
+   c video filter (0)
+  fps                    FPS conversion video filter
+   c video filter (0)
+  freetype               Freetype2 font renderer
+   s text
+   c text renderer (100)
+  freetype               Freetype2 font renderer
+   s text
+   c text renderer (100)
+  freeze                 Freezing interactive video filter
+   c video filter (0)
+  freeze                 Freezing interactive video filter
+   c video filter (0)
+  ftp                    FTP input
+   s ftps
+   s ftpes
+   c access (0)
+  ftp                    FTP upload output
+   s ftps
+   s ftpes
+   c sout access (0)
+  ftp                    FTP input
+   s ftps
+   s ftpes
+   c access (0)
+  ftp                    FTP upload output
+   s ftps
+   s ftpes
+   c sout access (0)
+  g711                   G.711 decoder
+   c audio decoder (100)
+  g711                   G.711 encoder
+   c encoder (150)
+  g711                   G.711 decoder
+   c audio decoder (100)
+  g711                   G.711 encoder
+   c encoder (150)
+  gain                   Gain control filter
+   c audio filter (0)
+  gain                   Gain control filter
+   c audio filter (0)
+  glconv_cvpx            Apple OpenGL CVPX converter
+   c glconv (1)
+  glconv_cvpx            Apple OpenGL CVPX converter
+   c glconv (1)
+  grey_yuv               Conversions from GREY to I420,YUY2
+   c video converter (80)
+  grey_yuv               Conversions from GREY to I420,YUY2
+   c video converter (80)
+  h26x                   H264 video demuxer
+   s h264
+   c demux (6)
+  h26x                   HEVC/H.265 video demuxer
+   s hevc
+   s h265
+   c demux (6)
+  h26x                   H264 video demuxer
+   s h264
+   c demux (6)
+  h26x                   HEVC/H.265 video demuxer
+   s hevc
+   s h265
+   c demux (6)
+  hds                    HTTP Dynamic Streaming
+   c stream_filter (30)
+  hds                    HTTP Dynamic Streaming
+   c stream_filter (30)
+  http                   HTTP input
+   s unsv
+   s itpc
+   s icyx
+   c access (0)
+  http                   HTTP input
+   s unsv
+   s itpc
+   s icyx
+   c access (0)
+  access                 HTTPS input
+   s https
+   s http
+   c access (2)
+  access                 HTTPS input
+   s https
+   s http
+   c access (2)
+  i420_10_p010           YUV 10-bits planar to semiplanar 10-bits conversions
+   c video converter (1)
+  i420_10_p010           YUV 10-bits planar to semiplanar 10-bits conversions
+   c video converter (1)
+  i420_nv12              YUV planar to semiplanar conversions
+   c video converter (160)
+  i420_nv12              YUV planar to semiplanar conversions
+   c video converter (160)
+  i420_rgb               I420,IYUV,YV12 to RGB2,RV15,RV16,RV24,RV32 conversions
+   c video converter (80)
+  i420_rgb               I420,IYUV,YV12 to RGB2,RV15,RV16,RV24,RV32 conversions
+   c video converter (80)
+  i420_yuy2              Conversions from I420,IYUV,YV12 to YUY2,YUNV,YVYU,UYVY,UYNV,Y422,IUYV,Y211
+   c video converter (80)
+  i420_yuy2              Conversions from I420,IYUV,YV12 to YUY2,YUNV,YVYU,UYVY,UYNV,Y422,IUYV,Y211
+   c video converter (80)
+  i422_i420              Conversions from I422,J422 to I420,IYUV,J420,YV12,YUVA
+   c video converter (60)
+  i422_i420              Conversions from I422,J422 to I420,IYUV,J420,YV12,YUVA
+   c video converter (60)
+  i422_yuy2              Conversions from I422 to YUY2,YUNV,YVYU,UYVY,UYNV,Y422,IUYV,Y211
+   c video converter (80)
+  i422_yuy2              Conversions from I422 to YUY2,YUNV,YVYU,UYVY,UYNV,Y422,IUYV,Y211
+   c video converter (80)
+  idummy                 Dummy input
+   s dummy
+   s vlc
+   c access_demux (0)
+  idummy                 Dummy input
+   s dummy
+   s vlc
+   c access_demux (0)
+  image                  Image demuxer
+   c demux (10)
+  image                  Image demuxer
+   c demux (10)
+  imem_access            In-memory stream input
+   s imem
+   c access (0)
+  imem_access            In-memory stream input
+   s imem
+   c access (0)
+  inflate                Zlib decompression filter
+   c stream_filter (30)
+  inflate                Zlib decompression filter
+   c stream_filter (30)
+  integer_mixer          Integer audio volume
+   c audio volume (9)
+  integer_mixer          Integer audio volume
+   c audio volume (9)
+  karaoke                Simple Karaoke filter
+   c audio filter (0)
+  karaoke                Simple Karaoke filter
+   c audio filter (0)
+  keychain               Keystore for iOS, Mac OS X and tvOS
+   c keystore (100)
+  keychain               Keystore for iOS, Mac OS X and tvOS
+   c keystore (100)
+  libass                 Subtitle renderers using libass
+   c spu decoder (100)
+  libass                 Subtitle renderers using libass
+   c spu decoder (100)
+  live555                RTP/RTSP/SDP demuxer (using Live555)
+   s live
+   s livedotcom
+   c demux (50)
+  live555                RTSP/RTP access and demux
+   s rtsp
+   s pnm
+   s live
+   s livedotcom
+   c access_demux (0)
+  live555                RTP/RTSP/SDP demuxer (using Live555)
+   s live
+   s livedotcom
+   c demux (50)
+  live555                RTSP/RTP access and demux
+   s rtsp
+   s pnm
+   s live
+   s livedotcom
+   c access_demux (0)
+  logo                   Logo sub source
+   c sub source (0)
+  logo                   Logo video filter
+   c video filter (0)
+  logo                   Logo sub source
+   c sub source (0)
+  logo                   Logo video filter
+   c video filter (0)
+  lpcm                   Linear PCM audio decoder
+   c audio decoder (100)
+  lpcm                   Linear PCM audio encoder
+   c encoder (100)
+  lpcm                   Linear PCM audio packetizer
+   c packetizer (100)
+  lpcm                   Linear PCM audio decoder
+   c audio decoder (100)
+  lpcm                   Linear PCM audio encoder
+   c encoder (100)
+  lpcm                   Linear PCM audio packetizer
+   c packetizer (100)
+  magnify                Magnify/Zoom interactive video filter
+   c video filter (0)
+  magnify                Magnify/Zoom interactive video filter
+   c video filter (0)
+  memory                 Secrets are stored in memory
+   c keystore (0)
+  memory                 Secrets are stored in memory
+   c keystore (0)
+  mjpeg                  M-JPEG camera demuxer
+   c demux (5)
+  mjpeg                  M-JPEG camera demuxer
+   c demux (5)
+  mkv                    Matroska stream demuxer
+   s mka
+   c demux (50)
+  mkv                    Matroska stream demuxer
+   s mka
+   c demux (50)
+  mod                    MOD demuxer (libmodplug)
+   c demux (10)
+  mod                    MOD demuxer (libmodplug)
+   c demux (10)
+  mono                   Stereo to mono downmixer
+   c audio filter (0)
+  mono                   Stereo to mono downmixer
+   c audio filter (0)
+  mp4                    MP4 stream demuxer
+   c demux (240)
+  mp4                    MP4 stream demuxer
+   c demux (240)
+  mpg123                 MPEG audio decoder using mpg123
+   c audio decoder (100)
+  mpg123                 MPEG audio decoder using mpg123
+   c audio decoder (100)
+  mpgv                   MPEG-I/II video demuxer
+   c demux (5)
+  mpgv                   MPEG-I/II video demuxer
+   c demux (5)
+  asf                    ASF muxer
+   s asfh
+   c sout mux (5)
+  asf                    ASF muxer
+   s asfh
+   c sout mux (5)
+  avi                    AVI muxer
+   c sout mux (5)
+  avi                    AVI muxer
+   c sout mux (5)
+  dummy                  Dummy/Raw muxer
+   s raw
+   s es
+   c sout mux (5)
+  dummy                  Dummy/Raw muxer
+   s raw
+   s es
+   c sout mux (5)
+  mp4                    MP4/MOV muxer
+   s mov
+   s 3gp
+   c sout mux (5)
+  mp4                    Fragmented and streamable MP4 muxer
+   s mp4frag
+   s mp4stream
+   c sout mux (0)
+  mp4                    MP4/MOV muxer
+   s mov
+   s 3gp
+   c sout mux (5)
+  mp4                    Fragmented and streamable MP4 muxer
+   s mp4frag
+   s mp4stream
+   c sout mux (0)
+  mpjpeg                 Multipart JPEG muxer
+   c sout mux (5)
+  mpjpeg                 Multipart JPEG muxer
+   c sout mux (5)
+  mux_ogg                Ogg/OGM muxer
+   s ogg
+   s ogm
+   c sout mux (10)
+  mux_ogg                Ogg/OGM muxer
+   s ogg
+   s ogm
+   c sout mux (10)
+  ps                     PS muxer
+   s mpeg1
+   s dvd
+   c sout mux (50)
+  ps                     PS muxer
+   s mpeg1
+   s dvd
+   c sout mux (50)
+  mux_ts                 TS muxer (libdvbpsi)
+   s ts
+   c sout mux (120)
+  mux_ts                 TS muxer (libdvbpsi)
+   s ts
+   c sout mux (120)
+  wav                    WAV muxer
+   c sout mux (5)
+  wav                    WAV muxer
+   c sout mux (5)
+  nfs                    NFS input
+   c access (2)
+  nfs                    NFS input
+   c access (2)
+  normvol                Volume normalizer
+   s volnorm
+   c audio filter (0)
+  normvol                Volume normalizer
+   s volnorm
+   c audio filter (0)
+  noseek                 Seek prevention demux filter
+   c demux_filter (0)
+  noseek                 Seek prevention demux filter
+   c demux_filter (0)
+  nsc                    Windows Media NSC metademux
+   c demux (3)
+  nsc                    Windows Media NSC metademux
+   c demux (3)
+  nsspeechsynthesizer    Speech synthesis for Mac OS X
+   c text renderer (0)
+  nsspeechsynthesizer    Speech synthesis for Mac OS X
+   c text renderer (0)
+  nsv                    NullSoft demuxer
+   c demux (10)
+  nsv                    NullSoft demuxer
+   c demux (10)
+  nuv                    Nuv demuxer
+   c demux (145)
+  nuv                    Nuv demuxer
+   c demux (145)
+  ogg                    OGG demuxer
+   c demux (50)
+  ogg                    OGG demuxer
+   c demux (50)
+  oggspots               OggSpots video decoder
+   c video decoder (10)
+  oggspots               OggSpots video packetizer
+   c packetizer (10)
+  oggspots               OggSpots video decoder
+   c video decoder (10)
+  oggspots               OggSpots video packetizer
+   c packetizer (10)
+  opus                   Opus audio decoder
+   c audio decoder (100)
+  opus                   Opus audio encoder
+   c encoder (150)
+  opus                   Opus audio decoder
+   c audio decoder (100)
+  opus                   Opus audio encoder
+   c encoder (150)
+  a52                    A/52 audio packetizer
+   c packetizer (10)
+  a52                    A/52 audio packetizer
+   c packetizer (10)
+  av1                    AV1 video packetizer
+   c packetizer (50)
+  av1                    AV1 video packetizer
+   c packetizer (50)
+  packetizer_avparser    avparser packetizer
+   c packetizer (20)
+  packetizer_avparser    avparser packetizer
+   c packetizer (20)
+  copy                   Copy packetizer
+   c packetizer (1)
+  copy                   Copy packetizer
+   c packetizer (1)
+  dirac                  Dirac packetizer
+   c packetizer (50)
+  dirac                  Dirac packetizer
+   c packetizer (50)
+  dts                    DTS audio packetizer
+   c packetizer (10)
+  dts                    DTS audio packetizer
+   c packetizer (10)
+  flac                   Flac audio packetizer
+   c packetizer (50)
+  flac                   Flac audio packetizer
+   c packetizer (50)
+  h264                   H.264 video packetizer
+   c packetizer (50)
+  h264                   H.264 video packetizer
+   c packetizer (50)
+  hevc                   HEVC/H.265 video packetizer
+   c packetizer (50)
+  hevc                   HEVC/H.265 video packetizer
+   c packetizer (50)
+  mlp                    MLP/TrueHD parser
+   c packetizer (50)
+  mlp                    MLP/TrueHD parser
+   c packetizer (50)
+  mpeg4audio             MPEG4 audio packetizer
+   c packetizer (50)
+  mpeg4audio             MPEG4 audio packetizer
+   c packetizer (50)
+  mpeg4video             MPEG4 video packetizer
+   c packetizer (50)
+  mpeg4video             MPEG4 video packetizer
+   c packetizer (50)
+  mpegaudio              MPEG audio layer I/II/III packetizer
+   c packetizer (10)
+  mpegaudio              MPEG audio layer I/II/III packetizer
+   c packetizer (10)
+  mpegvideo              MPEG-I/II video packetizer
+   c packetizer (50)
+  mpegvideo              MPEG-I/II video packetizer
+   c packetizer (50)
+  vc1                    VC-1 packetizer
+   c packetizer (50)
+  vc1                    VC-1 packetizer
+   c packetizer (50)
+  param_eq               Parametric Equalizer
+   c audio filter (0)
+  param_eq               Parametric Equalizer
+   c audio filter (0)
+  playlist               Playlist
+  playlist               WPL playlist import
+   s wpl
+   c stream_filter (10)
+  playlist               iTunes Music Library importer
+   s itml
+   c stream_filter (10)
+  playlist               Dummy IFO demux
+   c stream_filter (12)
+  playlist               QuickTime Media Link importer
+   s qtl
+   c stream_filter (10)
+  playlist               Kasenna MediaBase parser
+   s sgimb
+   c stream_filter (10)
+  playlist               ASX playlist import
+   c stream_filter (10)
+  playlist               New winamp 5.2 shoutcast import
+   s shout-winamp
+   c stream_filter (0)
+  playlist               XSPF playlist import
+   c stream_filter (10)
+  playlist               Podcast parser
+   s podcast
+   c stream_filter (10)
+  playlist               DVB playlist import
+   s dvb
+   c stream_filter (10)
+  playlist               B4S playlist import
+   s shout-b4s
+   c stream_filter (10)
+  playlist               PLS playlist import
+   c stream_filter (10)
+  playlist               RAM playlist import
+   c stream_filter (10)
+  playlist               M3U playlist import
+   s m3u
+   s m3u8
+   c stream_filter (10)
+  playlist               Playlist
+  playlist               WPL playlist import
+   s wpl
+   c stream_filter (10)
+  playlist               iTunes Music Library importer
+   s itml
+   c stream_filter (10)
+  playlist               Dummy IFO demux
+   c stream_filter (12)
+  playlist               QuickTime Media Link importer
+   s qtl
+   c stream_filter (10)
+  playlist               Kasenna MediaBase parser
+   s sgimb
+   c stream_filter (10)
+  playlist               ASX playlist import
+   c stream_filter (10)
+  playlist               New winamp 5.2 shoutcast import
+   s shout-winamp
+   c stream_filter (0)
+  playlist               XSPF playlist import
+   c stream_filter (10)
+  playlist               Podcast parser
+   s podcast
+   c stream_filter (10)
+  playlist               DVB playlist import
+   s dvb
+   c stream_filter (10)
+  playlist               B4S playlist import
+   s shout-b4s
+   c stream_filter (10)
+  playlist               PLS playlist import
+   c stream_filter (10)
+  playlist               RAM playlist import
+   c stream_filter (10)
+  playlist               M3U playlist import
+   s m3u
+   s m3u8
+   c stream_filter (10)
+  png                    PNG video decoder
+   c video decoder (1000)
+  png                    PNG video encoder
+   c encoder (1000)
+  png                    PNG video decoder
+   c video decoder (1000)
+  png                    PNG video encoder
+   c encoder (1000)
+  prefetch               Stream prefetch filter
+   c stream_filter (0)
+  prefetch               Stream prefetch filter
+   c stream_filter (0)
+  ps                     MPEG-PS demuxer
+   c demux (1)
+  ps                     MPEG-PS demuxer
+   c demux (8)
+  ps                     MPEG-PS demuxer
+   c demux (1)
+  ps                     MPEG-PS demuxer
+   c demux (8)
+  pva                    PVA demuxer
+   c demux (10)
+  pva                    PVA demuxer
+   c demux (10)
+  rawaud                 Raw audio demuxer
+   c demux (0)
+  rawaud                 Raw audio demuxer
+   c demux (0)
+  rawdv                  DV (Digital Video) demuxer
+   c demux (3)
+  rawdv                  DV (Digital Video) demuxer
+   c demux (3)
+  rawvid                 Raw video demuxer
+   s rawvideo
+   c demux (10)
+  rawvid                 Raw video demuxer
+   s rawvideo
+   c demux (10)
+  rawvideo               Pseudo raw video decoder
+   c video decoder (50)
+  rawvideo               Pseudo raw video packetizer
+   c packetizer (100)
+  rawvideo               Pseudo raw video decoder
+   c video decoder (50)
+  rawvideo               Pseudo raw video packetizer
+   c packetizer (100)
+  record                 Internal stream record
+   c stream_filter (0)
+  record                 Internal stream record
+   c stream_filter (0)
+  rist                   RIST input
+   s tr06
+   c access (0)
+  rist                   RIST input
+   s tr06
+   c access (0)
+  rotate                 Rotate video filter
+   c video filter (0)
+  rotate                 Rotate video filter
+   c video filter (0)
+  rtp                    Real-Time Protocol (RTP) input
+   s dccp
+   s rtptcp
+   s udplite
+   c access_demux (0)
+  rtp                    Real-Time Protocol (RTP) input
+   s dccp
+   s rtptcp
+   s udplite
+   c access_demux (0)
+  rtpvideo               Raw video encoder for RTP
+   c encoder (50)
+  rtpvideo               Raw video encoder for RTP
+   c encoder (50)
+  rv32                   RV32 conversion filter
+   c video converter (1)
+  rv32                   RV32 conversion filter
+   c video converter (1)
+  satip                  SAT>IP Receiver Plugin
+   s rtsp
+   c access (201)
+  satip                  SAT>IP Receiver Plugin
+   s rtsp
+   c access (201)
+  scale                  Video scaling filter
+   c video converter (10)
+  scale                  Video scaling filter
+   c video converter (10)
+  scaletempo_pitch       Pitch Shifter
+   c audio filter (0)
+  scaletempo_pitch       Pitch Shifter
+   c audio filter (0)
+  scaletempo             Audio tempo scaler synched with rate
+   c audio filter (0)
+  scaletempo             Audio tempo scaler synched with rate
+   c audio filter (0)
+  scte18                 SCTE-18 decoder
+   c spu decoder (51)
+  scte18                 SCTE-18 decoder
+   c spu decoder (51)
+  scte27                 SCTE-27 decoder
+   c spu decoder (51)
+  scte27                 SCTE-27 decoder
+   c spu decoder (51)
+  sdp                    Session Description Protocol
+   c access (0)
+  sdp                    Session Description Protocol
+   c access (0)
+  securetransport        TLS support for OS X and iOS
+   c tls client (2)
+  securetransport        TLS server support for OS X
+   c tls server (2)
+  securetransport        TLS support for OS X and iOS
+   c tls client (2)
+  securetransport        TLS server support for OS X
+   c tls server (2)
+  sftp                   SFTP input
+   c access (0)
+  sftp                   SFTP input
+   c access (0)
+  simple_channel_mixer   Audio filter for simple channel mixing
+   c audio converter (10)
+  simple_channel_mixer   Audio filter for simple channel mixing
+   c audio converter (10)
+  skiptags               APE/ID3 tags-skipping filter
+   c stream_filter (30)
+  skiptags               APE/ID3 tags-skipping filter
+   c stream_filter (30)
+  smb2                   SMB2 / SMB3 input
+   s smb
+   c access (21)
+  smb2                   SMB2 / SMB3 input
+   s smb
+   c access (21)
+  soxr                   soxr
+   c audio converter (0)
+  soxr                   soxr
+   c audio resampler (0)
+  soxr                   soxr
+   c audio converter (0)
+  soxr                   soxr
+   c audio resampler (0)
+  spatialaudio           Ambisonics renderer and binauralizer
+   s ambisonics
+   c audio renderer (1)
+  spatialaudio           Ambisonics renderer and binauralizer
+   s binauralizer
+   c audio filter (0)
+  spatialaudio           Ambisonics renderer and binauralizer
+   s ambisonics
+   c audio renderer (1)
+  spatialaudio           Ambisonics renderer and binauralizer
+   s binauralizer
+   c audio filter (0)
+  spatializer            Audio Spatializer
+   c audio filter (0)
+  spatializer            Audio Spatializer
+   c audio filter (0)
+  spdif                  S/PDIF pass-through decoder
+   c audio decoder (120)
+  spdif                  S/PDIF pass-through decoder
+   c audio decoder (120)
+  speex                  Speex audio decoder
+   c audio decoder (100)
+  speex                  Speex audio encoder
+   c encoder (100)
+  speex                  Speex audio packetizer
+   c packetizer (100)
+  speex                  Speex audio decoder
+   c audio decoder (100)
+  speex                  Speex audio encoder
+   c encoder (100)
+  speex                  Speex audio packetizer
+   c packetizer (100)
+  spudec                 DVD subtitles decoder
+   c spu decoder (75)
+  spudec                 DVD subtitles packetizer
+   c packetizer (50)
+  spudec                 DVD subtitles decoder
+   c spu decoder (75)
+  spudec                 DVD subtitles packetizer
+   c packetizer (50)
+  stereo_widen           Simple stereo widening effect
+   c audio filter (0)
+  stereo_widen           Simple stereo widening effect
+   c audio filter (0)
+  stl                    EBU STL subtitles decoder
+   c spu decoder (10)
+  stl                    EBU STL subtitles decoder
+   c spu decoder (10)
+  autodel                Automatically add/delete input streams
+   c sout stream (50)
+  autodel                Automatically add/delete input streams
+   c sout stream (50)
+  bridge                 Bridge stream output
+  bridge                 Bridge stream output
+   s bridge-in
+   c sout stream (50)
+  bridge                 Bridge stream output
+   s bridge-out
+   c sout stream (50)
+  bridge                 Bridge stream output
+  bridge                 Bridge stream output
+   s bridge-in
+   c sout stream (50)
+  bridge                 Bridge stream output
+   s bridge-out
+   c sout stream (50)
+  stream_out_chromecast  Chromecast stream output
+   s chromecast
+   c sout stream (0)
+  stream_out_chromecast  Chromecast stream output
+   s chromecast-http
+   c sout access (0)
+  stream_out_chromecast  Chromecast stream output
+   s chromecast-proxy
+   c sout stream (0)
+  stream_out_chromecast  Chromecast stream output
+   s chromecast
+   c sout stream (0)
+  stream_out_chromecast  Chromecast stream output
+   s chromecast-http
+   c sout access (0)
+  stream_out_chromecast  Chromecast stream output
+   s chromecast-proxy
+   c sout stream (0)
+  cycle                  Cyclic stream output
+   c sout stream (0)
+  cycle                  Cyclic stream output
+   c sout stream (0)
+  delay                  Delay a stream
+   c sout stream (50)
+  delay                  Delay a stream
+   c sout stream (50)
+  description            Description stream output
+   c sout stream (50)
+  description            Description stream output
+   c sout stream (50)
+  display                Display stream output
+   c sout stream (50)
+  display                Display stream output
+   c sout stream (50)
+  dummy                  Dummy stream output
+   s drop
+   c sout stream (50)
+  dummy                  Dummy stream output
+   s drop
+   c sout stream (50)
+  duplicate              Duplicate stream output
+   s dup
+   c sout stream (50)
+  duplicate              Duplicate stream output
+   s dup
+   c sout stream (50)
+  es                     Elementary stream output
+   c sout stream (50)
+  es                     Elementary stream output
+   c sout stream (50)
+  gather                 Gathering stream output
+   c sout stream (50)
+  gather                 Gathering stream output
+   c sout stream (50)
+  record                 Record stream output
+   c sout stream (0)
+  record                 Record stream output
+   c sout stream (0)
+  stream_out_rtp         RTP stream output
+   s rtp
+   s vod
+   c sout stream (0)
+  stream_out_rtp         RTSP VoD server
+   s rtsp
+   c vod server (10)
+  stream_out_rtp         RTP stream output
+   s rtp
+   s vod
+   c sout stream (0)
+  stream_out_rtp         RTSP VoD server
+   s rtsp
+   c vod server (10)
+  setid                  Change the id of an elementary stream
+   c sout stream (50)
+  setid                  Change the language of an elementary stream
+   s setlang
+   c sout stream (50)
+  setid                  Change the id of an elementary stream
+   c sout stream (50)
+  setid                  Change the language of an elementary stream
+   s setlang
+   c sout stream (50)
+  smem                   Stream output to memory buffer
+   c sout stream (0)
+  smem                   Stream output to memory buffer
+   c sout stream (0)
+  stream_out_standard    Standard stream output
+   s standard
+   s std
+   s file
+   s http
+   s udp
+   c sout stream (50)
+  stream_out_standard    Standard stream output
+   s standard
+   s std
+   s file
+   s http
+   s udp
+   c sout stream (50)
+  stream_out_transcode   Transcode stream output
+   s transcode
+   c sout stream (50)
+  stream_out_transcode   Transcode stream output
+   s transcode
+   c sout stream (50)
+  subsdec                Text subtitle decoder
+   c spu decoder (50)
+  subsdec                Text subtitle decoder
+   c spu decoder (50)
+  subsdelay              Subtitle delay
+   c sub filter (0)
+  subsdelay              Subtitle delay
+   c sub filter (0)
+  substx3g               tx3g subtitles decoder
+   c spu decoder (100)
+  substx3g               tx3g subtitles decoder
+   c spu decoder (100)
+  subsusf                USF subtitles decoder
+   c spu decoder (40)
+  subsusf                USF subtitles decoder
+   c spu decoder (40)
+  subtitle               Text subtitle parser
+   c demux (0)
+  subtitle               Text subtitle parser
+   c demux (0)
+  svcdsub                Philips OGT (SVCD subtitle) decoder
+   c spu decoder (50)
+  svcdsub                Philips OGT (SVCD subtitle) packetizer
+   c packetizer (50)
+  svcdsub                Philips OGT (SVCD subtitle) decoder
+   c spu decoder (50)
+  svcdsub                Philips OGT (SVCD subtitle) packetizer
+   c packetizer (50)
+  swscale                Video scaling filter
+   c video converter (150)
+  swscale                Video scaling filter
+   c video converter (150)
+  syslog                 System logger (syslog)
+   c logger (20)
+  syslog                 System logger (syslog)
+   c logger (20)
+  taglib                 taglib
+   c meta reader (1000)
+  taglib                 taglib
+   c meta writer (50)
+  taglib                 taglib
+   c meta reader (1000)
+  taglib                 taglib
+   c meta writer (50)
+  tcp                    TCP input
+   c access (0)
+  tcp                    TCP input
+   c access (0)
+  tdummy                 Dummy font renderer
+   c text renderer (1)
+  tdummy                 Dummy font renderer
+   c text renderer (1)
+  telx                   Teletext subtitles decoder
+   c spu decoder (50)
+  telx                   Teletext subtitles decoder
+   c spu decoder (50)
+  textst                 HDMV TextST subtitles decoder
+   c spu decoder (10)
+  textst                 HDMV TextST subtitles decoder
+   c spu decoder (10)
+  theora                 Theora video decoder
+   c video decoder (100)
+  theora                 Theora video encoder
+   c encoder (150)
+  theora                 Theora video packetizer
+   c packetizer (100)
+  theora                 Theora video decoder
+   c video decoder (100)
+  theora                 Theora video encoder
+   c encoder (150)
+  theora                 Theora video packetizer
+   c packetizer (100)
+  timecode               Time code subpicture elementary stream generator
+   c access_demux (0)
+  timecode               Time code subpicture elementary stream generator
+   c access_demux (0)
+  tospdif                Audio filter for A/52/DTS->S/PDIF encapsulation
+   c audio converter (10)
+  tospdif                Audio filter for A/52/DTS->S/PDIF encapsulation
+   c audio converter (10)
+  transform              Video transformation filter
+   c video filter (0)
+  transform              Video transformation filter
+   c video filter (0)
+  trivial                Audio filter for trivial channel mixing
+   c audio converter (1)
+  trivial                Audio filter for trivial channel mixing
+   c audio converter (1)
+  ts                     MPEG Transport Stream demuxer
+   c demux (10)
+  ts                     MPEG Transport Stream demuxer
+   c demux (10)
+  tta                    TTA demuxer
+   c demux (145)
+  tta                    TTA demuxer
+   c demux (145)
+  ttml                   TTML subtitles decoder
+   c spu decoder (10)
+  ttml                   TTML demuxer
+   c demux (11)
+  ttml                   TTML subtitles decoder
+   c spu decoder (10)
+  ttml                   TTML demuxer
+   c demux (11)
+  ty                     TY Stream audio/video demux
+   s tivo
+   c demux (6)
+  ty                     TY Stream audio/video demux
+   s tivo
+   c demux (6)
+  udp                    UDP input
+   s udpstream
+   s udp4
+   s udp6
+   c access (0)
+  udp                    UDP input
+   s udpstream
+   s udp4
+   s udp6
+   c access (0)
+  ugly                   Nearest-neighbor audio resampler
+   c audio converter (2)
+  ugly                   Nearest-neighbor audio resampler
+   c audio resampler (2)
+  ugly                   Nearest-neighbor audio resampler
+   c audio converter (2)
+  ugly                   Nearest-neighbor audio resampler
+   c audio resampler (2)
+  uleaddvaudio           Ulead DV audio decoder
+   c audio decoder (50)
+  uleaddvaudio           Ulead DV audio decoder
+   c audio decoder (50)
+  upnp                   Universal Plug'n'Play
+   c services_discovery (0)
+  upnp                   Universal Plug'n'Play
+   c services probe (100)
+  upnp                   Universal Plug'n'Play
+   s upnps
+   c access (0)
+  upnp                   Universal Plug'n'Play
+   c services_discovery (0)
+  upnp                   Universal Plug'n'Play
+   c services probe (100)
+  upnp                   Universal Plug'n'Play
+   s upnps
+   c access (0)
+  vc1                    VC1 video demuxer
+   c demux (0)
+  vc1                    VC1 video demuxer
+   c demux (0)
+  vdr                    VDR recordings
+   s directory
+   s dir
+   s file
+   c access (60)
+  vdr                    VDR recordings
+   s directory
+   s dir
+   s file
+   c access (60)
+  vdummy                 Dummy video output
+   s dummy
+   c vout display (0)
+  vdummy                 Statistics video output
+   s stats
+   c vout display (0)
+  vdummy                 Dummy video output
+   s dummy
+   c vout display (0)
+  vdummy                 Statistics video output
+   s stats
+   c vout display (0)
+  videotoolbox           VideoToolbox video decoder
+   c video decoder (800)
+  videotoolbox           VideoToolbox video decoder
+   c video decoder (800)
+  vmem                   Video memory output
+   c vout display (0)
+  vmem                   Video memory output
+   c vout display (0)
+  vobsub                 Vobsub subtitles parser
+   s subtitle
+   c demux (1)
+  vobsub                 Vobsub subtitles parser
+   s subtitle
+   c demux (1)
+  voc                    VOC demuxer
+   c demux (10)
+  voc                    VOC demuxer
+   c demux (10)
+  rtsp                   Legacy RTSP VoD server
+   c vod server (1)
+  rtsp                   Legacy RTSP VoD server
+   c vod server (1)
+  vorbis                 Vorbis audio decoder
+   c audio decoder (100)
+  vorbis                 Vorbis audio encoder
+   c encoder (130)
+  vorbis                 Vorbis audio packetizer
+   c packetizer (100)
+  vorbis                 Vorbis audio decoder
+   c audio decoder (100)
+  vorbis                 Vorbis audio encoder
+   c encoder (130)
+  vorbis                 Vorbis audio packetizer
+   c packetizer (100)
+  macosx                 Mac OS X OpenGL video output
+   s vout_macosx
+   c vout display (250)
+  macosx                 Mac OS X OpenGL video output
+   s vout_macosx
+   c vout display (250)
+  vpx                    WebM video decoder
+   c video decoder (60)
+  vpx                    WebM video encoder
+   c encoder (60)
+  vpx                    WebM video decoder
+   c video decoder (60)
+  vpx                    WebM video encoder
+   c encoder (60)
+  wav                    WAV demuxer
+   c demux (142)
+  wav                    WAV demuxer
+   c demux (142)
+  webvtt                 WEBVTT subtitles decoder
+   c spu decoder (10)
+  webvtt                 WEBVTT subtitles parser
+   s webvttstream
+   c demux (0)
+  webvtt                 WEBVTT subtitles parser
+   c demux (11)
+  webvtt                 WEBVTT subtitles decoder
+   c spu decoder (10)
+  webvtt                 WEBVTT subtitles parser
+   s webvttstream
+   c demux (0)
+  webvtt                 WEBVTT subtitles parser
+   c demux (11)
+  xa                     XA demuxer
+   c demux (10)
+  xa                     XA demuxer
+   c demux (10)
+  xml                    XML Parser (using libxml2)
+   c xml (10)
+  xml                    XML Parser (using libxml2)
+   c xml reader (10)
+  xml                    XML Parser (using libxml2)
+   c xml (10)
+  xml                    XML Parser (using libxml2)
+   c xml reader (10)
+  yuv                    YUV video output
+   c vout display (0)
+  yuv                    YUV video output
+   c vout display (0)
+  yuvp                   YUVP converter
+   c video converter (10)
+  yuvp                   YUVP converter
+   c video converter (10)
+  yuy2_i420              Conversions from YUY2,YUNV,YVYU,UYVY,UYNV,Y422 to I420
+   c video converter (80)
+  yuy2_i420              Conversions from YUY2,YUNV,YVYU,UYVY,UYNV,Y422 to I420
+   c video converter (80)
+  yuy2_i422              Conversions from YUY2,YUNV,YVYU,UYVY,UYNV,Y422 to I422
+   c video converter (80)
+  yuy2_i422              Conversions from YUY2,YUNV,YVYU,UYVY,UYNV,Y422 to I422
+   c video converter (80)
+  zvbi                   VBI and Teletext decoder
+   c spu decoder (51)
+  zvbi                   VBI and Teletext decoder
+   c spu decoder (51)
+  core                   core program
