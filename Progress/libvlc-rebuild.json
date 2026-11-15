@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-11-15T21:34:49+00:00",
-  "branch": "feature/vlc-lan-android \u00b7 checkpoint1f55437 \u00b7 native Windows43762909502",
+  "as_of": "2026-11-15T22:13:21+00:00",
+  "branch": "feature/vlc-lan-android \u00b7 main Android source7cb1a03 \u00b7 quiet CI43767190446 passed",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
@@ -13,22 +13,21 @@
       "name": "Windows \u00b7 x64",
       "playback": "PASS: native Windows CI43759294052, including HEVC Main10 MP4/MKV, AAC, AVC, captions, AVI/FLAC/ADPCM, transport, fullscreen and lifecycle/resume.",
       "sharing": "PASS: production listener, pairing/ranges/revocation, DNS-SD shutdown and real SystemRequired power handle create/release. Physical discovery and speakers remain unverified.",
-      "distribution": "Corrected custom component passes native Windows AVC/HEVC PNG capture, playback, transport, sharing and power-handle checks. Final independent source/module/import audit and central staging are in progress; portable bundled app test follows.",
-      "evidence": "build/windows-sixth-evidence/smoke/smoke-results.json"
+      "distribution": "READY FOR OWNER REVIEW: approved bundled runtime and complete source/notices; native app-local Windows43765447494 passes without an installed VLC fallback. Local self-contained folder has397files, per-file hashes, exact Microsoft notices and matching app/library sources. No installer or public package.",
+      "evidence": "build/windows-bundled-review-evidence/smoke/smoke-results.json"
     },
     {
       "name": "Android \u00b7 API26+",
-      "playback": "PASS true-cold ARM64: standard off-UI font preparation finishes before the first player; quiet and verbose runs pass AVC/HEVC/AAC, pause/seek, real surface restoration and fullscreen. Fresh quiet x64 rerun is next.",
+      "playback": "PASS: true-cold quiet ARM64 and fresh quiet x64 CI43767190446; genuine native clock/precise seeking, pause/play, real surface loss/restoration, fullscreen and AVC/HEVC Main10/AAC5.1 streaming. MP4 uses the retained avformat demuxer; no synthetic clock.",
       "sharing": "PASS: original-file streaming from actual Mac and portable Windows production servers, pairing, live playlist and seeking without a saved movie. Physical Wi-Fi discovery remains unverified.",
-      "distribution": "Approved source-built Java/native ARM64 component, private debug APK, complete matching b8c6d50 application archive and native sources preserved. Re-signed exact app passes real Mac streaming. No production APK published.",
-      "evidence": "build/android-font-preparation-cold-quiet/instrumentation.log"
+      "distribution": "READY FOR OWNER REVIEW: approved source-built ARM64 library; debug APK, exact7cb application archive, native corresponding sources,208notice assets, independent re-signing and verified file inventory. No production APK/store release.",
+      "evidence": "build/owner-review/android-arm64-7cb1a03/private-debug-manifest.json"
     }
   ],
   "next": [
-    "Confirm cold-cache Android font preparation and native playback in fresh quiet x64 CI.",
-    "Finish custom Windows source build, native rendering and independent component verification.",
-    "Test physical Wi-Fi discovery, firewall behavior, speakers and A/V sync on real devices.",
-    "Owner reviews the apps before production packages or update-feed changes."
+    "Owner reviews the Mac app, Windows portable folder and Android ARM64 APK.",
+    "Verify physical Wi-Fi discovery, firewall prompts, speakers/surround and A/V synchronization on target devices.",
+    "After owner review, configure production signing/packages and platform update feeds."
   ],
   "previews": [
     {
@@ -40,14 +39,14 @@
     {
       "id": "windows",
       "name": "Windows \u00b7 native WPF",
-      "path": "build/windows-sixth-evidence/smoke/Luma-Windows-dark.png",
-      "caption": "Native Windows CI interface. This WPF capture omits its separate native video child; decoded/displayed counters and libVLC frame snapshots establish video output separately."
+      "path": "build/windows-bundled-review-evidence/smoke/Luma-Windows-dark.png",
+      "caption": "Actual native Windows app with its approved app-local runtime and no installed VLC fallback. This WPF capture omits its separate native video child; AVC/HEVC snapshot content and native displayed-frame counters passed separately."
     },
     {
       "id": "android",
       "name": "Android \u00b7 streaming playback",
-      "path": "build/android-surface-lifecycle-fixed-review/Luma-Android-fullscreen.png",
-      "caption": "Final ARM64 private debug review: independently re-signed app streaming from the production Mac server, fullscreen after actual surface loss/recovery. Fresh x64 native-output issue remains under diagnosis."
+      "path": "build/owner-review/android-arm64-7cb1a03/Evidence/resigned-cold-mac-recovery/luma-android-fullscreen.png",
+      "caption": "Actual independently re-signed ARM64 owner-review app streaming from the production Mac server after cold preparation, native clock/seek checks and actual surface restoration. Quiet fresh x64 application verification also passes; physical phones remain a separate review."
     }
   ]
 }

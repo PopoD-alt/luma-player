@@ -34,16 +34,17 @@ public class LanPlaybackTest {
             boolean avcSoftwareRetry=value(app,MainActivity::debugSoftwarePlayback);if(exerciseRecovery)assertTrue("Missing hardware output did not recover through one software retry",avcSoftwareRetry);
             if(exerciseRecovery)assertTrue("Software recovery reused the retired player's surface tree",value(app,MainActivity::debugVideoGraphSequence)>=2);
             await(app,a->a.debugSeekable()&&a.debugTime()>200,12000,"Range-seekable HTTP media");
-            awaitInitialResume(app,expectedResumeMs);
+            awaitSettledResume(app,expectedResumeMs,"initial-resume");
             ClockSnapshot beforeRapid=snapshot(app);android.util.Log.i("LumaPlayback","test-rapid-before: "+beforeRapid);
             app.onActivity(a->{a.debugToggle();a.debugToggle();assertFalse("Queued native pause overwrote newer Play intent",a.debugPauseRequested());});
             await(app,a->a.debugPlaying()&&!a.debugPauseRequested()&&a.debugTime()>beforeRapid.time+200&&a.debugStats()!=null&&a.debugStats().displayedPictures>beforeRapid.displayed,6000,"Rapid Pause then Play retains newer intent and advances native clock/display; before="+beforeRapid);
             android.util.Log.i("LumaPlayback","test-rapid-after: "+snapshot(app));
-            int surfacePlayer=value(app,MainActivity::debugPlayerIdentity),surfaceView=value(app,MainActivity::debugVideoViewIdentity),beforeSurfaceFrames=value(app,a->a.debugStats().displayedPictures);
+            int surfacePlayer=value(app,MainActivity::debugPlayerIdentity),surfaceView=value(app,MainActivity::debugVideoViewIdentity),beforeSurfaceFrames=value(app,a->a.debugStats().displayedPictures);long surfaceResume=value(app,MainActivity::debugTime);
             app.onActivity(MainActivity::debugRecreateSurface);await(app,a->a.debugSurfaceDestroyedEvents()>0&&!a.debugNativeSurfaceReady(),2000,"Actual SurfaceView destruction callback");
             app.onActivity(a->{a.debugToggle();assertTrue("Pause during surface repair lost its intent",a.debugPauseRequested());});
             await(app,a->a.debugNativeSurfaceReady()&&a.debugPauseIntentUi()&&a.debugPlayerIdentity()==surfacePlayer&&a.debugVideoViewIdentity()==surfaceView,5000,"Surface restoration preserves Pause intent and graph");
             app.onActivity(MainActivity::debugToggle);await(app,a->a.debugNativeSurfaceReady()&&a.debugPlaying()&&a.debugPlayerIdentity()==surfacePlayer&&a.debugVideoViewIdentity()==surfaceView&&a.debugStats()!=null&&a.debugStats().displayedPictures>beforeSurfaceFrames,7000,"Actual SurfaceView destruction/recreation restores same graph and displayed frames");
+            awaitSettledResume(app,surfaceResume,"surface-recovery");
             app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Native pause and matching button/status UI");long paused=value(app,MainActivity::debugTime);saveReviewScreenshot("luma-android-review.png");Thread.sleep(350);assertTrue("Paused clock advanced",Math.abs(value(app,MainActivity::debugTime)-paused)<350);
             app.onActivity(a->a.debugSeek(3000));app.onActivity(MainActivity::debugToggle);await(app,a->a.debugPlaying()&&a.debugTime()>=2500,10000,"Native byte-range seek/resume");
             app.onActivity(a->a.debugVolume(37));assertEquals(37,(int)value(app,MainActivity::debugVolume));
@@ -77,18 +78,18 @@ public class LanPlaybackTest {
         public String toString(){return "timeMs="+time+", resumeApplied="+resumed+", pauseRequested="+paused+", playing="+playing+", displayed="+displayed+"; "+phase;}
     }
     private static ClockSnapshot snapshot(ActivityScenario<MainActivity> app){return value(app,ClockSnapshot::new);}
-    private static void awaitInitialResume(ActivityScenario<MainActivity> app,long expected)throws Exception{
+    private static void awaitSettledResume(ActivityScenario<MainActivity> app,long expected,String phase)throws Exception{
         long deadline=System.currentTimeMillis()+12000,anchor=-1,last=-1;int anchorFrames=0,stableSamples=0;ClockSnapshot observed=snapshot(app);
-        android.util.Log.i("LumaPlayback","test-initial-resume-wait: expectedMs="+expected+"; before="+observed);
+        android.util.Log.i("LumaPlayback","test-"+phase+"-wait: expectedMs="+expected+"; before="+observed);
         while(System.currentTimeMillis()<deadline){observed=snapshot(app);long time=observed.time;
             if(observed.resumed&&observed.playing&&!observed.paused&&time>=Math.max(0,expected-350)&&time<=expected+1800){
                 if(anchor<0||time<last||time-last>1000){anchor=time;anchorFrames=observed.displayed;stableSamples=0;}
                 else stableSamples++;
-                last=time;if(stableSamples>=3&&time-anchor>=300&&observed.displayed>anchorFrames){android.util.Log.i("LumaPlayback","test-initial-resume-settled: expectedMs="+expected+"; "+observed);return;}
+                last=time;if(stableSamples>=3&&time-anchor>=300&&observed.displayed>anchorFrames){android.util.Log.i("LumaPlayback","test-"+phase+"-settled: expectedMs="+expected+"; "+observed);return;}
             }else{anchor=-1;last=-1;stableSamples=0;}
-            String error=value(app,MainActivity::debugError);if(error!=null)fail("Initial bookmark: "+error);Thread.sleep(100);
+            String error=value(app,MainActivity::debugError);if(error!=null)fail(phase+": "+error);Thread.sleep(100);
         }
-        fail("Initial bookmark did not settle before transport checks; expectedMs="+expected+"; after="+observed);
+        fail(phase+" did not settle before transport checks; expectedMs="+expected+"; after="+observed);
     }
     private static void dismissSystemFullscreenHint()throws Exception{
         // A clean Android image may show its own first-use immersive tutorial.

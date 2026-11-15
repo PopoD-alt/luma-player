@@ -62,13 +62,11 @@ metadata in a temporary private file. `--exercise-video-recovery` is a debug-onl
 negative test that withholds initial video output once and requires successful
 software recovery; normal playback tests keep the hardware-first path.
 
-Verification is checkpoint-specific. Mac's approved bundled runtime and Windows
-checkpoint `df964b2` have native sharing/playback evidence, including the Windows
-active-stream power request. Windows custom runtime's compiler/linker probe
-passed; its full source build and native/independent audit remain pending.
-Android's custom ARM64 library component is
-independently approved for private owner review, but the later stock-runtime x64
-diagnostics identified blocking first-use font initialization. The background
-preparation fix passes cold-cache ARM64 tests; its fresh quiet x64 rerun remains
-pending. Component approval does not imply production publication approval or
-universal format/device compatibility.
+Verification is checkpoint-specific. Mac's approved bundled runtime and Windows'
+actual app-local route pass playback/sharing checks without an installed VLC
+fallback. Android's approved ARM64 debug owner copy passes both production
+servers, true-cold preparation, real native clock/seeking, surface restoration,
+fullscreen and independent re-signing. Fresh quiet x64 application checks also
+pass in workflow43767190446. Physical Wi-Fi discovery, firewalls and speaker/A/V
+synchronization remain target-device review; these fixture checks do not imply
+universal format/device compatibility or production publication approval.

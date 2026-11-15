@@ -9,7 +9,7 @@ replace third-party license obligations.
 
 ## libVLC development runtimes
 
-Luma has an optional dynamically loaded libVLC backend. The current package audit
+Luma uses a dynamically loaded libVLC backend. The current package audit
 is recorded in [ThirdParty/libvlc/packages.json](ThirdParty/libvlc/packages.json).
 **A development candidate is not approved for redistribution.** The registry
 blocks unreviewed stock candidates in public release artifacts. A separately
@@ -24,7 +24,7 @@ LGPL-only dependency. The LGPL-labelled Windows NuGet package and the Android
 Maven POM are useful provenance, but their labels alone do not complete an audit
 of the delivered native files and their dependencies.
 
-Candidate versions under inspection:
+Stock development candidates:
 
 - macOS: official VLCKit 3.7.3 framework, reporting libVLC 3.0.23 and changeset
   `3.0.23-2-47-g4eb3701ba9`; upstream VLCKit snapshot `319ed2c0`, VLC base
@@ -71,6 +71,29 @@ are in the registry. Hashes identify the inspected bytes; they are not a legal
 clearance or a substitute for a publisher signature. Native codec coverage,
 patent rights, trademarks, region-specific requirements and media rights require
 separate consideration. VideoLAN does not endorse Luma.
+
+## Curated Windows and Android libraries
+
+The Windows x64 component `windows-lgpl-x64-3.0.24-r1` is built from pinned
+VLC source `6de05adcba` with separately recorded module, dependency, source and
+replacement checks. Its upstream PNG image framework is enabled; all FFmpeg
+encoders remain disabled. Output and recording modules are excluded from the
+curated component. Its complete native sources, patches, configuration, build
+helpers and verbatim dependency notices accompany the runtime. See the exact
+registry record and `windows-custom-independent-audit.json`.
+
+The Android ARM64 component `android-lgpl-arm64-3.7.7-r2` contains JNI/native
+libraries and Java bindings rebuilt from pinned sources. Its recorded exclusion
+patches retain the selected LGPL/permissive profile; the original third-party
+licenses and copyrights still apply. The native corresponding-source archive
+is not a substitute for the matching Luma application source/object inputs
+needed to rebuild or relink Java bindings merged into an APK. Both inputs are
+provided with the private review copy.
+
+These exact components have passed technical review for private owner-review
+apps. Their registry records bind complete inventories and source hashes;
+modified rebuilds need their own verification. This does not authorize a
+production app publication or establish universal format/device coverage.
 
 ## Source and replacement information
 
