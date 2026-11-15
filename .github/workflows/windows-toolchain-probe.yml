@@ -6,7 +6,7 @@ on:
     branches: [feature/vlc-lan-android]
     paths:
       - 'Scripts/prepare-libvlc-windows*'
-      - 'Tests/test_windows_runtime_helpers.py'
+      - 'Tests/test_windows_*.py'
       - '.github/workflows/windows-toolchain-probe.yml'
 
 permissions:
@@ -31,7 +31,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Exercise helper regressions
-        run: python3 -m unittest discover -s Tests -p test_windows_runtime_helpers.py -v
+        run: python3 -m unittest discover -s Tests -p 'test_windows_*.py' -v
       - name: Check direct and libtool C/C++ DLL linking before any media build
         run: |
           mkdir -p build

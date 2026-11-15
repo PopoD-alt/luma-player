@@ -1,0 +1,76 @@
+name: Bundled Windows owner review
+
+on:
+  workflow_dispatch:
+    inputs:
+      component_run_id:
+        description: Completed custom Windows component review run
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: luma-bundled-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundled-windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.404'
+      - name: Validate component run input
+        shell: pwsh
+        env:
+          COMPONENT_RUN_ID: ${{ inputs.component_run_id }}
+        run: |
+          if ($env:COMPONENT_RUN_ID -notmatch '^[1-9][0-9]{0,19}$') { throw 'Expected a numeric workflow run ID.' }
+      - uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.component_run_id }}
+          pattern: Luma-Windows-native-component-development-*
+          merge-multiple: true
+          path: ThirdParty/work/windows-original-ci-component
+          digest-mismatch: error
+      - name: Recreate immutable component and apply central approval
+        shell: pwsh
+        run: |
+          ./Windows/Test-BundleBuild.ps1
+          python -m unittest discover -s Tests -p test_windows_component_archive.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Archive reconstruction regressions failed.' }
+          python Scripts/prepare-libvlc-windows-archive.py --component ThirdParty/work/windows-original-ci-component --output ThirdParty/downloads/windows-lgpl-x64-3.0.24-r1-runtime.tar
+          if ($LASTEXITCODE -ne 0) { throw 'Original component reconstruction failed.' }
+          python Scripts/prepare-libvlc.py prepare --package windows-lgpl-x64-3.0.24-r1 --runtime ThirdParty/runtime/windows-lgpl-x64-3.0.24-r1 --distribution
+          if ($LASTEXITCODE -ne 0) { throw 'Central component approval, archive or source hash did not match.' }
+      - name: Exercise the actual app-local runtime without an installed VLC fallback
+        shell: pwsh
+        run: |
+          Remove-Item Env:LUMA_LIBVLC_PATH -ErrorAction SilentlyContinue
+          ./Windows/build.ps1 -Configuration Release -SmokeTimeoutSeconds 600 -BundledRuntimeRoot "$PWD/ThirdParty/runtime/windows-lgpl-x64-3.0.24-r1" -SkipReviewZip
+          $result = Get-Content -Raw Windows/artifacts/review/smoke/smoke-results.json | ConvertFrom-Json
+          $record = (Get-Content -Raw ThirdParty/libvlc/packages.json | ConvertFrom-Json).packages.'windows-lgpl-x64-3.0.24-r1'
+          if ($result.runtimeBundled -ne $true -or $result.runtimeChangeset -cne $record.libraryChangeset) { throw 'Actual app did not load its approved bundled library.' }
+      - name: Preserve native review evidence only
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Luma-Windows-bundled-review-evidence-${{ github.sha }}
+          path: Windows/artifacts/review/
+          if-no-files-found: warn
+          retention-days: 14
+
+# Native component/source artifacts are carried by the separate component review
+# workflow. This job publishes evidence only, never an EXE, installer or feed.

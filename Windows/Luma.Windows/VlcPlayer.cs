@@ -28,6 +28,7 @@ internal sealed class VlcPlayer : HwndHost
     public FrameworkElement View => this;
     public static string RuntimeVersion => VlcRuntime.Version;
     public static string RuntimeChangeset => VlcRuntime.Changeset;
+    public static bool RuntimeBundled => VlcRuntime.Bundled;
     public static string RuntimePath => VlcRuntime.Path;
     public event EventHandler? Opened;
     public event EventHandler? Ended;
@@ -246,6 +247,7 @@ internal static class VlcRuntime
     public static string Path { get; private set; } = "";
     public static string Version { get; private set; } = "";
     public static string Changeset { get; private set; } = "";
+    public static bool Bundled { get; private set; }
     static VlcRuntime() => NativeLibrary.SetDllImportResolver(typeof(VlcRuntime).Assembly, Resolve);
     static IntPtr Resolve(string name, Assembly assembly, DllImportSearchPath? search) => name == "Luma.LibVLC3" ? library : IntPtr.Zero;
     public static void Initialize()
@@ -270,6 +272,7 @@ internal static class VlcRuntime
                 Changeset = Marshal.PtrToStringUTF8(Marshal.GetDelegateForFunctionPointer<VersionCall>(NativeLibrary.GetExport(library, "libvlc_get_changeset"))()) ?? "";
                 if (!Version.StartsWith("3.", StringComparison.Ordinal)) throw new DllNotFoundException("This adapter requires the stable libVLC 3 C ABI; the selected runtime has another major version.");
                 Environment.SetEnvironmentVariable("VLC_PLUGIN_PATH", plugins); Path = selected;
+                Bundled = string.IsNullOrWhiteSpace(requested) && System.IO.Path.GetFullPath(selected).Equals(System.IO.Path.Combine(bundledFolder, "libvlc.dll"), StringComparison.OrdinalIgnoreCase);
             }
             catch { if (library != IntPtr.Zero) NativeLibrary.Free(library); if (core != IntPtr.Zero) NativeLibrary.Free(core); library = core = IntPtr.Zero; RemoveDllDirectory(directoryCookie); directoryCookie = IntPtr.Zero; throw; }
         }

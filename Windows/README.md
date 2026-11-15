@@ -55,6 +55,17 @@ pwsh -File .\Windows\build.ps1 -AcquireTestVlc -SmokeTimeoutSeconds 600
 
 That flag verifies the VLC 3.0.24 archive SHA-256 before extraction, sets the process runtime path and records `libvlc-runtime-gate.json`. It never copies the runtime/plugins into the publish folder or ZIP. The script rejects such DLLs/plugins in the current review artifact. Runtime binaries are not installed automatically by the app.
 
+An explicitly approved custom component can instead be included in a **local owner-review folder**:
+
+```powershell
+pwsh -File .\Windows\Test-BundleBuild.ps1
+pwsh -File .\Windows\build.ps1 -BundledRuntimeRoot 'C:\LumaReview\approved-component' -SkipReviewZip -SmokeTimeoutSeconds 600
+```
+
+The input must be a final centrally prepared component that passes `Scripts/prepare-libvlc.py verify --distribution`. A raw development artifact or a locally edited approval flag is insufficient. This option verifies approval before replacing old outputs, embeds the exact package/manifest/source pins, copies the entire approved component into `Windows/artifacts/win-x64/libvlc`, and verifies the copied tree before and after native playback. The native test clears inherited runtime overrides and requires the app-local route. The folder retains the component's source companion and notices; keep it complete when moving it. `-SkipReviewZip` creates no review archive or installer. A compatible personal replacement remains available through `LUMA_LIBVLC_PATH` during normal use.
+
+This is an opt-in build path. Its existence does not approve a component, publish an app or establish a native Windows result for bytes that have not passed the separate review.
+
 The script runs the original portable core suites plus sharing tests, publishes the WPF app, and runs its native smoke mode. The new smoke requires native displayed-picture counters, snapshots, seeking, raw `hev1` Main10/AAC 5.1 decode, caption selection, lifecycle/resume, fullscreen and opt-in sharing UI checks. Native Windows results must be read from the matching CI run; cross-compilation alone cannot validate these operations.
 
 When Core Audio reports zero active output endpoints, only the explicit smoke path requests `--aout=adummy`. Actual AAC decoding is still checked, while physical sound is recorded as unverified. Production playback uses normal output. Neither a decoded-audio counter nor a hosted CI run establishes sound at a speaker or audible A/V synchronization.

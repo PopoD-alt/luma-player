@@ -6,10 +6,19 @@ internal static class Program
     {
         try
         {
+            if (args.Length == 6 && args[0] == "--stage-owner-runtime")
+            {
+                var pins = new Luma.Core.Runtime.LibVlcRuntimeApproval(args[3], args[4], args[5]);
+                var staged = Luma.Core.Runtime.OwnerReviewRuntimeBundle.CopyApproved(args[1], args[2], pins);
+                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(staged)); return 0;
+            }
+            if (args.Length == 1 && args[0] == "--runtime-bundle-tests")
+            { RuntimeManifestTests.Run(); OwnerReviewBundleTests.Run(); return 0; }
             if (args.Length == 3 && args[0] == "--sharing-test-host") return SharingTestHost.RunAsync(args[1], args[2]).GetAwaiter().GetResult();
             var root = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath("../Tests/Fixtures");
             PowerRequestTests.Run();
             RuntimeManifestTests.Run();
+            OwnerReviewBundleTests.Run();
             SharingNetworkTests.Run();
             DnsSdLifecycleTests.Run();
             SharingTests.Run(root);

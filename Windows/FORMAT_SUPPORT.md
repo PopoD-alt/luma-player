@@ -1,6 +1,6 @@
 # Windows playback and verification scope
 
-The current Windows GUI sends general local media **directly to an independently installed libVLC 3 runtime**. libVLC performs container parsing, compressed decoding, video and subtitle rendering, audio output and A/V synchronization. It supplies its own codec modules; this route does not depend on Microsoft Media Foundation having an optional HEVC extension installed.
+The current Windows GUI sends general local media **directly to its selected libVLC 3 runtime**: independently installed by default, or an exact centrally approved app-local component in an explicit owner-review build. libVLC performs container parsing, compressed decoding, video and subtitle rendering, audio output and A/V synchronization. It supplies its own codec modules; this route does not depend on Microsoft Media Foundation having an optional HEVC extension installed.
 
 The previous 256/512 MiB whole-file prototype limits, AVC/HEVC-to-MP4 remux gate and `hev1` compatibility-copy step are no longer the GUI playback path. Files are opened by path and native seeking is used. Broad runtime compatibility is not a guarantee for every profile, malformed file, protected/DRM stream, plugin configuration, GPU or audio device. No exact codec count or VLC feature-parity percentage is claimed.
 

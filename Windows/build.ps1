@@ -3,7 +3,9 @@
 param(
     [ValidateSet('Debug', 'Release')][string]$Configuration = 'Release',
     [ValidateRange(30, 600)][int]$SmokeTimeoutSeconds = 600,
-    [switch]$AcquireTestVlc
+    [switch]$AcquireTestVlc,
+    [string]$BundledRuntimeRoot,
+    [switch]$SkipReviewZip
 )
 
 Set-StrictMode -Version Latest
@@ -25,6 +27,62 @@ $pendingArchive = $archive + '.pending'
 $fixturesRoot = Join-Path $repoRoot 'Tests/Fixtures'
 $appProject = Join-Path $windowsRoot 'Luma.Windows/Luma.Windows.csproj'
 $testsProject = Join-Path $windowsRoot 'Luma.Core.Tests/Luma.Core.Tests.csproj'
+$bundle = $null
+$outputsInitialized = $false
+
+function Invoke-CentralRuntimeVerification([string]$RuntimeRoot) {
+    $python = Get-Command python -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($null -eq $python) { $python = Get-Command python3 -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1 }
+    if ($null -eq $python) { throw 'Python 3 is required for the central approved-component verifier.' }
+    $verifier = Join-Path $repoRoot 'Scripts/prepare-libvlc.py'
+    $lines = @(& $python.Source $verifier verify --runtime $RuntimeRoot --distribution 2>&1)
+    if ($LASTEXITCODE -ne 0) { throw ('Central runtime approval failed: ' + ($lines -join [Environment]::NewLine)) }
+    $verified = ($lines -join [Environment]::NewLine) | ConvertFrom-Json -AsHashtable
+    if ($verified -isnot [System.Collections.IDictionary] -or $verified['status'] -cne 'verified' -or
+        $verified['redistributionApproved'] -ne $true -or $verified['developmentOnly'] -ne $false) {
+        throw 'The central verifier did not return an approved distribution component.'
+    }
+    return $verified
+}
+
+function Resolve-ApprovedBundle {
+    if ($AcquireTestVlc) { throw '-BundledRuntimeRoot cannot be combined with -AcquireTestVlc.' }
+    if (-not [IO.Path]::IsPathFullyQualified($BundledRuntimeRoot)) { throw '-BundledRuntimeRoot must be an absolute centrally prepared runtime folder.' }
+    $root = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($BundledRuntimeRoot))
+    $outputs = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($artifactsRoot))
+    $separator = [IO.Path]::DirectorySeparatorChar
+    if ($root.Equals($outputs, [StringComparison]::OrdinalIgnoreCase) -or
+        $root.StartsWith($outputs + $separator, [StringComparison]::OrdinalIgnoreCase) -or
+        $outputs.StartsWith($root + $separator, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'The approved source component must not overlap the regenerable Windows/artifacts folder.'
+    }
+    # This registry-backed approval is deliberately performed before clearing or
+    # creating any app/review output. A self-declared local manifest is insufficient.
+    $verified = Invoke-CentralRuntimeVerification $root
+    $canonicalRoot = $verified['runtimeRoot']
+    if ($canonicalRoot -isnot [string] -or -not [IO.Path]::IsPathFullyQualified($canonicalRoot)) { throw 'The verifier did not identify a canonical runtime folder.' }
+    $root = [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($canonicalRoot))
+    if ($root.Equals($outputs, [StringComparison]::OrdinalIgnoreCase) -or
+        $root.StartsWith($outputs + $separator, [StringComparison]::OrdinalIgnoreCase) -or
+        $outputs.StartsWith($root + $separator, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'The resolved approved component must not overlap the regenerable Windows/artifacts folder.'
+    }
+    $manifestPath = Join-Path $root 'luma-libvlc-runtime.json'
+    if ((Get-Item -LiteralPath $manifestPath).Length -gt 4MB) { throw 'The approved manifest exceeds its size limit.' }
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json -AsHashtable
+    $package = $manifest['package']
+    if ($package -isnot [string] -or $package -cnotmatch '^windows-[a-z0-9][a-z0-9.-]{0,119}$' -or
+        $verified['package'] -cne $package -or ($manifest['schema'] -isnot [int] -and $manifest['schema'] -isnot [long]) -or $manifest['schema'] -ne 1 -or
+        $manifest['redistributionApproved'] -isnot [bool] -or $manifest['redistributionApproved'] -ne $true -or
+        $manifest['developmentOnly'] -isnot [bool] -or $manifest['developmentOnly'] -ne $false) {
+        throw 'The approved component does not describe a supported Windows package.'
+    }
+    return @{
+        Root = $root; Package = $package
+        ManifestSha256 = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        SourceSha256 = (Get-FileHash -LiteralPath (Join-Path $root 'Sources/CorrespondingSource.tar') -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+}
 
 function Invoke-Dotnet([string[]]$Arguments) {
     & dotnet @Arguments 2>&1 | ForEach-Object { "$_" } | Tee-Object -FilePath (Join-Path $reportsRoot 'dotnet.log') -Append
@@ -173,6 +231,13 @@ function Invoke-VisualSmoke([string]$Executable) {
     $start.UseShellExecute = $false
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
+    $expectBundled = $null -ne $bundle
+    $start.Environment['LUMA_EXPECT_BUNDLED_RUNTIME'] = $expectBundled.ToString().ToLowerInvariant()
+    if ($expectBundled) {
+        # An inherited developer override must never hide a broken bundled route.
+        [void]$start.Environment.Remove('LUMA_LIBVLC_PATH')
+        [void]$start.Environment.Remove('VLC_PLUGIN_PATH')
+    }
     foreach ($argument in @('--smoke-test', $fixturesRoot, $smokeRoot)) { $start.ArgumentList.Add($argument) }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
@@ -195,10 +260,10 @@ function Invoke-VisualSmoke([string]$Executable) {
         }
         $results = Get-Content -LiteralPath $resultsPath -Raw | ConvertFrom-Json -AsHashtable
         if ($results -isnot [System.Collections.IDictionary]) { throw 'Native smoke did not produce a result object.' }
-        foreach ($required in @('libvlcPlayback', 'hevc10Aac51', 'subtitleSelection', 'lifecycleRecovery', 'sharingUi')) {
+        foreach ($required in @('libvlcPlayback', 'hevc10Aac51', 'hevc10Matroska', 'subtitleSelection', 'lifecycleRecovery', 'sharingUi')) {
             if (-not $results.Contains($required) -or $results[$required] -cne 'passed') { throw "Missing native libVLC verification: $required." }
         }
-        if ($results['runtimeVersion'] -notmatch '^3\.' -or $results['runtimeBundled'] -ne $false) { throw 'Unexpected or bundled libVLC runtime in this external-runtime review.' }
+        if ($results['runtimeVersion'] -notmatch '^3\.' -or $results['runtimeBundled'] -ne $expectBundled) { throw 'The smoke process did not use the selected libVLC deployment route.' }
         $endpoints = $results['activeAudioRenderEndpoints']
         if ($null -ne $endpoints -and (($endpoints -isnot [int] -and $endpoints -isnot [long] -and $endpoints -isnot [uint32] -and $endpoints -isnot [uint64]) -or $endpoints -lt 0)) { throw 'Invalid native audio endpoint diagnostic.' }
         if ($results['physicalAudio'] -cnotin @('unverified-no-active-render-endpoint', 'system-output-requested-audibility-not-measured')) { throw 'Physical audio status must not invent an audible-output pass.' }
@@ -212,6 +277,8 @@ Push-Location $windowsRoot
 try {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
     $env:DOTNET_NOLOGO = '1'
+    if (-not [string]::IsNullOrWhiteSpace($BundledRuntimeRoot)) { $bundle = Resolve-ApprovedBundle }
+    $outputsInitialized = $true
     New-Item -ItemType Directory -Path $artifactsRoot -Force | Out-Null
     # These fixed folders contain only regenerable outputs owned by this script.
     foreach ($folder in @($publishRoot, $reportsRoot)) {
@@ -224,14 +291,31 @@ try {
     $actualSdk = (& dotnet --version).Trim()
     if ($LASTEXITCODE -ne 0 -or $actualSdk -ne $requiredSdk) { throw "Install the pinned .NET SDK $requiredSdk; selected SDK: $actualSdk." }
     if (-not (Test-Path -LiteralPath (Join-Path $fixturesRoot 'flac/manifest.json'))) { throw 'Run from a complete source checkout containing Tests/Fixtures.' }
-    Resolve-TestVlcRuntime
+    if ($null -eq $bundle) { Resolve-TestVlcRuntime }
+    else {
+        @{ mode = 'approved-app-local-owner-review'; runtimeBundled = $true; approvedForRedistribution = $true
+            package = $bundle.Package; manifestSha256 = $bundle.ManifestSha256; sourceBundleSha256 = $bundle.SourceSha256 } |
+            ConvertTo-Json | Set-Content -LiteralPath (Join-Path $reportsRoot 'libvlc-runtime-gate.json') -Encoding utf8
+    }
     Invoke-Dotnet @('restore', $testsProject)
     $env:LUMA_WINDOWS_MEDIA_EXPORT = Join-Path $reportsRoot 'generated'
     Invoke-Dotnet @('run', '--project', $testsProject, '--configuration', $Configuration, '--no-restore', '--', $fixturesRoot)
     Invoke-Dotnet @('restore', $appProject, '--runtime', 'win-x64', '-p:SelfContained=true', '-p:PublishSingleFile=true')
-    Invoke-Dotnet @('publish', $appProject, '--configuration', $Configuration, '--runtime', 'win-x64', '--self-contained', 'true', '--no-restore',
+    $publishArguments = @('publish', $appProject, '--configuration', $Configuration, '--runtime', 'win-x64', '--self-contained', 'true', '--no-restore',
         '-p:PublishSingleFile=true', '-p:IncludeNativeLibrariesForSelfExtract=true', '-p:PublishTrimmed=false', '-p:PublishReadyToRun=false', '--output', $publishRoot)
+    if ($null -ne $bundle) {
+        $publishArguments += @("-p:LumaBundledVlcPackage=$($bundle.Package)", "-p:LumaBundledVlcManifestSha256=$($bundle.ManifestSha256)", "-p:LumaBundledVlcSourceSha256=$($bundle.SourceSha256)")
+    }
+    Invoke-Dotnet $publishArguments
     if (@(Get-ChildItem -LiteralPath $publishRoot -Filter 'libvlc*.dll' -File -Recurse).Count -gt 0 -or (Test-Path -LiteralPath (Join-Path $publishRoot 'libvlc/plugins'))) { throw 'Unapproved VLC runtime must remain outside the publish artifact.' }
+    if ($null -ne $bundle) {
+        [void](Invoke-CentralRuntimeVerification $bundle.Root)
+        $bundledTarget = Join-Path $publishRoot 'libvlc'
+        Invoke-Dotnet @('run', '--project', $testsProject, '--configuration', $Configuration, '--no-build', '--', '--stage-owner-runtime',
+            $bundle.Root, $bundledTarget, $bundle.Package, $bundle.ManifestSha256, $bundle.SourceSha256)
+        [void](Invoke-CentralRuntimeVerification $bundledTarget)
+        if ((Get-FileHash -LiteralPath (Join-Path $bundledTarget 'luma-libvlc-runtime.json') -Algorithm SHA256).Hash.ToLowerInvariant() -cne $bundle.ManifestSha256) { throw 'The copied runtime manifest does not match the embedded app pin.' }
+    }
     Copy-Item -LiteralPath (Join-Path $repoRoot 'LICENSE') -Destination (Join-Path $publishRoot 'LICENSE.txt')
     Copy-Item -LiteralPath (Join-Path $windowsRoot 'README.md') -Destination (Join-Path $publishRoot 'README-WINDOWS.md')
     foreach ($file in @('FORMAT_SUPPORT.md', 'THIRD_PARTY_NOTICES.md')) {
@@ -249,13 +333,24 @@ try {
     $executable = Join-Path $publishRoot 'Luma Player.exe'
     if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) { throw 'The published WPF executable is missing.' }
     $smokeResults = Invoke-VisualSmoke $executable
+    if ($null -ne $bundle) { [void](Invoke-CentralRuntimeVerification (Join-Path $publishRoot 'libvlc')) }
     $metadata = [ordered]@{
-        distribution = 'unsigned-windows-review'; sdk = $actualSdk; runtimeIdentifier = 'win-x64'; configuration = $Configuration
+        distribution = 'unsigned-windows-owner-review'; sdk = $actualSdk; runtimeIdentifier = 'win-x64'; configuration = $Configuration
         commit = $env:GITHUB_SHA; operatingSystem = [Environment]::OSVersion.VersionString
         coreTestsPassed = $true; visualSmokePassed = $true; smokeResults = $smokeResults; runtimePackages = $runtimePackages
+        runtimeBundled = $null -ne $bundle
+        bundledComponent = $(if ($null -ne $bundle) { @{ package = $bundle.Package; manifestSha256 = $bundle.ManifestSha256; sourceBundleSha256 = $bundle.SourceSha256 } } else { $null })
+        archiveCreated = -not [bool]$SkipReviewZip
         createdUtc = [DateTime]::UtcNow.ToString('o')
     }
     $metadata | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $publishRoot 'BUILD-INFO.json') -Encoding utf8
+    if ($SkipReviewZip) {
+        $metadata['archiveCreated'] = $false
+        $metadata | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reportsRoot 'review.json') -Encoding utf8
+        Write-Host "Owner-review folder prepared: $publishRoot"
+        Write-Host 'No review ZIP, installer, tag, release, upload, signing or feed update was created.'
+        return
+    }
     # Never expose a partially created ZIP to the workflow's always-upload step.
     [IO.Compression.ZipFile]::CreateFromDirectory($publishRoot, $pendingArchive, [IO.Compression.CompressionLevel]::Optimal, $false)
     $hash = (Get-FileHash -LiteralPath $pendingArchive -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -268,8 +363,10 @@ try {
     Write-Host 'Unsigned Windows review artifact only. No tag, release, upload, feed update or publication was performed.'
 }
 catch {
-    foreach ($file in @($archive, $pendingArchive, ($archive + '.sha256'), ($archive + '.sha256.pending'))) {
-        if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file -Force }
+    if ($outputsInitialized) {
+        foreach ($file in @($archive, $pendingArchive, ($archive + '.sha256'), ($archive + '.sha256.pending'))) {
+            if (Test-Path -LiteralPath $file) { Remove-Item -LiteralPath $file -Force }
+        }
     }
     throw
 }

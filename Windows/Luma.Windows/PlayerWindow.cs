@@ -182,7 +182,7 @@ internal sealed class PlayerWindow : Window
         Item("Play original video demo", () => _ = ImportAsync([Path.Combine(AppContext.BaseDirectory, "Demos", "Luma-MSVideo1-16.avi")]));
         Item("Saved bookmarks", ShowBookmarks); Item("Caption timing −0.25s", () => ChangeCaptionDelay(-.25)); Item("Caption timing +0.25s", () => ChangeCaptionDelay(.25));
         Item("Turn captions off", () => TryControl(() => vlc?.SelectSubtitle(-1)));
-        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.7.0 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by separately installed libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
+        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.7.0 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
         return menu;
     }
     async Task OpenMediaAsync()
@@ -331,7 +331,7 @@ internal sealed class PlayerWindow : Window
     void Notice(string message) => status.Text = message;
     void ShowDiagnostics()
     {
-        var details = JsonSerializer.Serialize(new { engine = "libVLC3", version = VlcPlayer.RuntimeVersion, changeset = VlcPlayer.RuntimeChangeset, runtime = VlcPlayer.RuntimePath, displayedPictures = vlc?.DisplayedPictures, decodedVideo = vlc?.DecodedVideo, decodedAudio = vlc?.DecodedAudio, playedAudioBuffers = vlc?.PlayedAudioBuffers,
+        var details = JsonSerializer.Serialize(new { engine = "libVLC3", version = VlcPlayer.RuntimeVersion, changeset = VlcPlayer.RuntimeChangeset, runtime = VlcPlayer.RuntimePath, runtimeBundled = VlcPlayer.RuntimeBundled, displayedPictures = vlc?.DisplayedPictures, decodedVideo = vlc?.DecodedVideo, decodedAudio = vlc?.DecodedAudio, playedAudioBuffers = vlc?.PlayedAudioBuffers,
             audioTracks = vlc?.AudioTracks, captionTracks = vlc?.SubtitleTracks, sharing = sharing?.IsRunning == true, activeSharedStreams = sharing?.ActiveMediaStreams, sharingPower = SharingPowerStatus, discovery = discovery?.Status, lastError }, new JsonSerializerOptions { WriteIndented = true });
         var text = new TextBox { Text = details, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Margin = new Thickness(16) };
         new Window { Owner = this, Title = "Local playback diagnostics", Width = 760, Height = 540, Content = text, WindowStartupLocation = WindowStartupLocation.CenterOwner }.Show();
@@ -449,6 +449,8 @@ internal sealed class PlayerWindow : Window
             await Until(() => !opening || lastError is not null, "libVLC opens " + Path.GetFileName(path)); Check(lastError is null && vlc is not null, "libVLC failed: " + lastError); return vlc!;
         }
         var demo = await Open(Path.Combine(fixtures, "Luma-Demo.mp4"));
+        string? expectedRoute = Environment.GetEnvironmentVariable("LUMA_EXPECT_BUNDLED_RUNTIME");
+        if (expectedRoute is not null) Check(bool.TryParse(expectedRoute, out bool expectedBundled) && VlcPlayer.RuntimeBundled == expectedBundled, "The native player uses the requested bundled/external runtime route");
         await Until(() => demo.DisplayedPictures is > 1 && demo.NaturalVideoWidth == 960, "Native libVLC displayed video frames");
         Pause(); Seek(3); speed.SelectedIndex = 2; volume.Value = .4; Play(); await Task.Delay(400);
         Check(CurrentTime > 3 && Math.Abs(demo.Rate - 1.25) < .01 && demo.Volume == .4, "libVLC seek/rate/volume"); Pause(); speed.SelectedIndex = 1;
@@ -522,7 +524,7 @@ internal sealed class PlayerWindow : Window
             SetTheme(theme); await Task.Delay(100); UpdateLayout(); var image = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); image.Render(layout);
             var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(image)); using var file = File.Create(Path.Combine(output, theme ? "Luma-Windows-dark.png" : "Luma-Windows-light.png")); png.Save(file);
         }
-        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", hevc10Matroska = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeChangeset = VlcPlayer.RuntimeChangeset, runtimeBundled = false, dnsSdRegistration, idleSleepPrevention,
+        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", hevc10Matroska = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeChangeset = VlcPlayer.RuntimeChangeset, runtimeBundled = VlcPlayer.RuntimeBundled, dnsSdRegistration, idleSleepPrevention,
             physicalAudio = endpoints == 0 ? "unverified-no-active-render-endpoint" : "system-output-requested-audibility-not-measured", activeAudioRenderEndpoints = endpoints }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine("PASS: libVLC native lifecycle/resume, opt-in sharing UI pairing/revoke, and native UI theme snapshots; physical audibility remains explicitly separate");
     }
