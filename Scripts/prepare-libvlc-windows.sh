@@ -99,7 +99,10 @@ printf '%s\n' 'Luma-LGPL-Windows-6de05adcba-r1' > src/revision.txt
 ./bootstrap 2>&1 | tee "$LUMA_WORK/logs/core-bootstrap.log"
 mkdir -p build-luma-windows && cd build-luma-windows
 export PKG_CONFIG_LIBDIR="$LUMA_PREFIX/lib/pkgconfig"
-../configure --build="$LUMA_BUILD_TRIPLET" --host=x86_64-w64-mingw32 --prefix="$LUMA_INSTALL" \
+# Upstream3.0.24 has no --disable-sapi switch. Its optional speech-synthesis
+# renderer is selected by this AC_CHECK_TYPES probe. Exclude it explicitly;
+# visual ASS/FreeType rendering and every required playback module stay selected.
+have_sapi=no ac_cv_type_ISpObjectToken=no ../configure --build="$LUMA_BUILD_TRIPLET" --host=x86_64-w64-mingw32 --prefix="$LUMA_INSTALL" \
  --with-contrib="$LUMA_PREFIX" --enable-shared --disable-static --disable-vlc --disable-qt --disable-skins2 \
  --disable-lua --disable-nls --disable-dbus --disable-vlm --disable-sout --disable-update-check --disable-notify \
  --disable-dvdread --disable-dvdnav --disable-bluray --disable-vcd --disable-addonmanagermodules \

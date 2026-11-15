@@ -95,7 +95,7 @@ jobs:
             if ($file.PSIsContainer -or $file.Length -ne $manifest.files[$relative].bytes -or (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $manifest.files[$relative].sha256) { throw "Component inventory mismatch: $relative" }
           }
           foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse) {
-            $relative = [IO.Path]::GetRelativePath($root, $file.FullName).Replace('\', '/')
+            $relative = [IO.Path]::GetRelativePath($root, $file.FullName).Replace([IO.Path]::DirectorySeparatorChar, '/')
             if ($relative -ne 'luma-libvlc-runtime.json' -and -not $manifest.files.ContainsKey($relative)) { throw 'Uninventoried component file.' }
           }
           Add-Type 'using System; using System.Runtime.InteropServices; [UnmanagedFunctionPointer(CallingConvention.Cdecl)] public delegate IntPtr LumaNativeText();'

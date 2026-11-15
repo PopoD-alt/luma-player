@@ -74,6 +74,13 @@ separate consideration. VideoLAN does not endorse Luma.
 
 ## Source and replacement information
 
+Bundled playback components are based in part on the work of the FreeType Team.
+FreeType is used under its FreeType License (FTL) option. Configurations that
+include libjpeg are based in part on the work of the Independent JPEG Group.
+The original license texts, copyright notices and source archives are retained
+with the versioned component materials. These acknowledgements do not imply
+endorsement of Luma by either project.
+
 The original LGPL text is retained in [COPYING.LIB](ThirdParty/libvlc/COPYING.LIB),
 and its referenced GPL text in [COPYING.GPL-2.0](ThirdParty/libvlc/COPYING.GPL-2.0).
 For any approved bundled version, keep its complete corresponding source,

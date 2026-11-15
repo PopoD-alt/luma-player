@@ -168,6 +168,8 @@ def audit_modules(source: Path, build: Path, prefix: Path, audit: Path) -> dict:
         names = mapping.get(path.stem, [])
         sources = module_sources(source, names)
         reasons = []
+        if path.name == 'libsapi_plugin.dll':
+            reasons.append('Optional SAPI speech-synthesis module is excluded from the playback profile')
         if not license_ or 'GNU Lesser General Public License, version 2.1 or later' not in license_:
             reasons.append('Metadata is not inspected LGPL2.1+')
         if not names or not sources:
@@ -178,7 +180,7 @@ def audit_modules(source: Path, build: Path, prefix: Path, audit: Path) -> dict:
                      'retained': not reasons, 'reasons': reasons, 'sources': sources})
     report = save(audit, 'modules.json', {'sourceCommit': SOURCE_COMMIT, 'scope': 'Custom x64 PE metadata plus source/convenience-library/quoted-header census',
         'retained': sum(row['retained'] for row in rows), 'excluded': sum(not row['retained'] for row in rows), 'modules': rows})
-    required = {'libavcodec_plugin.dll', 'libmkv_plugin.dll', 'libavi_plugin.dll', 'liblibass_plugin.dll', 'libdirect3d11_plugin.dll', 'libwasapi_plugin.dll', 'libpng_plugin.dll'}
+    required = {'libavcodec_plugin.dll', 'libmkv_plugin.dll', 'libavi_plugin.dll', 'liblibass_plugin.dll', 'libfreetype_plugin.dll', 'libdirect3d11_plugin.dll', 'libwasapi_plugin.dll', 'libpng_plugin.dll'}
     retained = {Path(row['path']).name for row in rows if row['retained']}
     if not rows or required-retained:
         raise ValueError('Required playback modules not retained: '+str(sorted(required-retained)))

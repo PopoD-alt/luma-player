@@ -40,6 +40,8 @@ public final class StreamRelay implements AutoCloseable {
     private final Set<HttpURLConnection> requests=Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final ThreadPoolExecutor workers=new ThreadPoolExecutor(3,3,0,TimeUnit.SECONDS,new ArrayBlockingQueue<>(6),r->{Thread t=new Thread(r,"luma-stream");t.setDaemon(true);return t;});
     private volatile boolean closed;
+    private final java.util.concurrent.atomic.AtomicLong forwardedBytes=new java.util.concurrent.atomic.AtomicLong();
+    public long forwardedBytes(){return forwardedBytes.get();}
 
     public StreamRelay(LanApi.Session session,LanApi.Item item,LanApi.Connections connections,Listener listener) throws IOException {
         this.upstream=session.endpoint.media(item.streamPath,item.id,session.token);
@@ -89,7 +91,7 @@ public final class StreamRelay implements AutoCloseable {
             if(head||length==0||status==416)return;
             try(InputStream media=remote.getInputStream()){
                 byte[] buffer=new byte[65536];long remaining=length;
-                while(!closed&&remaining>0){int read=media.read(buffer,0,(int)Math.min(buffer.length,remaining));if(read<0)throw new IOException("Incomplete LAN stream");output.write(buffer,0,read);output.flush();remaining-=read;}
+                while(!closed&&remaining>0){int read=media.read(buffer,0,(int)Math.min(buffer.length,remaining));if(read<0)throw new IOException("Incomplete LAN stream");output.write(buffer,0,read);output.flush();forwardedBytes.addAndGet(read);remaining-=read;}
             }
         }catch(SocketTimeoutException e){if(!closed)fail(Failure.OFFLINE);}
         catch(IOException ignored){/* A VLC seek closes its old range; do not turn that into a false host-offline alert. */}

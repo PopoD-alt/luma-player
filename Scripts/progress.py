@@ -5,6 +5,7 @@ This does not start background codec work or publish anything. A canvas is a
 snapshot, rewritten when this command runs. Native checks need media services.
 """
 import argparse
+import base64
 import datetime as dt
 import fcntl
 import hashlib
@@ -82,6 +83,14 @@ def snapshot():
     built = ROOT / 'build/Luma Player.app/Contents/Info.plist'
     version = plistlib.loads(built.read_bytes()).get('CFBundleShortVersionString') if built.exists() else None
     evidence = read(PROGRESS / 'native-format-evidence.json', {})
+    rebuild = read(PROGRESS / 'libvlc-rebuild.json', None)
+    previews = []
+    for preview in (rebuild or {}).get('previews', []):
+        path = (ROOT / preview['path']).resolve()
+        if path.is_relative_to(ROOT) and path.is_file() and path.stat().st_size <= 3 * 1024 * 1024:
+            content = path.read_bytes()
+            if content.startswith(b'\x89PNG\r\n\x1a\n'):
+                previews.append({**preview, 'image': 'data:image/png;base64,' + base64.b64encode(content).decode()})
     for item in plan['items']:
         item['source_exists'] = (ROOT / item['source']).is_file()
     baseline = []
@@ -97,7 +106,7 @@ def snapshot():
             'work': plan['items'], 'checks': list(records.values()), 'baseline': baseline,
             'history': history[-20:][::-1], 'baseline_count': plan.get('baseline_inventory_count', len(catalog['entries'])),
             'native_evidence': evidence.get('verified_formats', []),
-            'rebuild': read(PROGRESS / 'libvlc-rebuild.json', None),
+            'rebuild': rebuild, 'previews': previews,
             'native_notes': evidence.get('not_verified', []), 'native_as_of': evidence.get('generated_at')}
     atomic(PROGRESS / 'snapshot.json', json.dumps(data, indent=2) + '\n')
     rendered = CANVAS.replace('__SNAPSHOT__', json.dumps(data, ensure_ascii=True).replace('<', '\\u003c'))
@@ -145,7 +154,8 @@ type Entry = { id:string; name:string; status:string; category:string; coverage:
 type Work = { id:string; name:string; implementation:string; stage:string; detail:string; next:string; source:string; source_exists:boolean };
 type Check = { id:string; status:string; started_at:string; duration_seconds?:number; log:string; summary?:string[]; matches_current_source:boolean; source_scope?:string; source_changed_during_check?:boolean };
 type Rebuild = {as_of:string; branch:string; platforms:{name:string;playback:string;sharing:string;distribution:string;evidence:string}[]; next:string[]};
-type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; windows_entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null; rebuild:Rebuild|null };
+type Preview = {id:string; name:string; path:string; caption:string; image:string};
+type Snapshot = { generated_at:string; root:string; built_version:string|null; entries:Entry[]; windows_entries:Entry[]; work:Work[]; checks:Check[]; history:Check[]; baseline_count:number; baseline:{name:string; log:string; checks:string[]}[]; native_evidence:{name:string;container:string;frames:number}[]; native_as_of:string|null; rebuild:Rebuild|null; previews:Preview[] };
 const snapshot = __SNAPSHOT__ as unknown as Snapshot;
 const names: Record<string,string> = { independent: "Luma decoder", system: "Verified system route", experimental: "Partial", unimplemented: "Missing", unverified: "Unverified" };
 const stages: Record<string,string> = { planned: "Queued", implementation: "Implementing", verification: "Verifying", integrated: "Integrated" };
@@ -160,6 +170,8 @@ export default function LumaCodecProgress() {
   const [category,setCategory] = useCanvasState("luma-codecs-category", "all");
   const [detail,setDetail] = useCanvasState<string|null>("luma-codecs-detail", null);
   const [platform,setPlatform] = useCanvasState("luma-codecs-platform", "windows");
+  const [previewId,setPreviewId] = useCanvasState("luma-rebuild-preview", "macos");
+  const preview = snapshot.previews.find(p=>p.id===previewId) ?? snapshot.previews[0];
   const windows = platform === "windows";
   const entries = windows ? snapshot.windows_entries : snapshot.entries;
   const work = snapshot.work.filter(w => windows ? w.id.startsWith("windows-") : !w.id.startsWith("windows-"));
@@ -181,6 +193,13 @@ export default function LumaCodecProgress() {
       <Text size="small" tone="tertiary">Source: local native test logs and CI evidence · {snapshot.rebuild.branch} · recorded {date(snapshot.rebuild.as_of)}. Synthetic fixtures do not establish every VLC format or physical audio output.</Text>
       <H2>Remaining before packaging</H2>
       {snapshot.rebuild.next.map(item=><Text key={item} size="small">{item}</Text>)}
+      <Divider/>
+    </Stack>}
+    {preview && <Stack gap={12}>
+      <Row justify="space-between" wrap><H2>Review the app interfaces</H2><Select value={preview.id} onChange={setPreviewId} options={snapshot.previews.map(p=>({value:p.id,label:p.name}))}/></Row>
+      <img src={preview.image} alt={preview.name} style={{width:"100%",maxHeight:600,objectFit:"contain",background:theme.bg.editor}}/>
+      <Text size="small" tone="secondary">{preview.caption}</Text>
+      <Row><Button variant="ghost" onClick={()=>open(preview.path)}>Open full image</Button><Text size="small" tone="tertiary">Source: native app test capture · original synthetic media only</Text></Row>
       <Divider/>
     </Stack>}
     <H2>Historical original-codec work</H2>

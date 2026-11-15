@@ -24,14 +24,16 @@ public class LanPlaybackTest {
             app.onActivity(a->a.debugConnect(url));await(app,MainActivity::debugPairVisible,15000,"Actual desktop info/pair dialog");
             app.onActivity(a->a.debugPair(code));await(app,a->a.debugPaired()&&a.debugPlaylistSize()>=2,15000,"Actual six-digit pairing and production playlist");
             boolean exerciseRecovery="true".equals(args.getString("exerciseVideoRecovery"));if(exerciseRecovery)app.onActivity(MainActivity::debugFailInitialOutputOnce);
-            app.onActivity(a->a.debugPlay(demo));await(app,a->{Media.Stats s=a.debugStats();return s!=null&&s.decodedVideo>0&&s.displayedPictures>0;},25000,"Actual AVC streaming decode/rendered-frame statistics");
+            app.onActivity(a->{a.debugPlay(demo);if(!exerciseRecovery){a.debugToggle();assertTrue("Opening pause intent lost",a.debugPauseRequested());assertFalse("Opening pause applied an early resume seek",a.debugResumeApplied());}});
+            if(!exerciseRecovery){await(app,MainActivity::debugPauseIntentUi,5000,"Opening pause button/status intent");app.onActivity(MainActivity::debugToggle);}
+            await(app,a->{Media.Stats s=a.debugStats();return s!=null&&s.decodedVideo>0&&s.displayedPictures>0;},25000,"Actual AVC streaming decode/rendered-frame statistics");
             boolean avcSoftwareRetry=value(app,MainActivity::debugSoftwarePlayback);if(exerciseRecovery)assertTrue("Missing hardware output did not recover through one software retry",avcSoftwareRetry);
             await(app,a->a.debugSeekable()&&a.debugTime()>200,12000,"Range-seekable HTTP media");
             app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Native pause and matching button/status UI");long paused=value(app,MainActivity::debugTime);saveReviewScreenshot("luma-android-review.png");Thread.sleep(350);assertTrue("Paused clock advanced",Math.abs(value(app,MainActivity::debugTime)-paused)<350);
             app.onActivity(a->a.debugSeek(3000));app.onActivity(MainActivity::debugToggle);await(app,a->a.debugPlaying()&&a.debugTime()>=2500,10000,"Native byte-range seek/resume");
             app.onActivity(a->a.debugVolume(37));assertEquals(37,(int)value(app,MainActivity::debugVolume));
             int playerIdentity=value(app,MainActivity::debugPlayerIdentity),viewIdentity=value(app,MainActivity::debugVideoViewIdentity),displayedBefore=value(app,a->a.debugStats().displayedPictures);
-            app.onActivity(a->a.debugFull(true));await(app,a->a.debugIsFull()&&!a.debugChromeVisible()&&a.debugPlayerIdentity()==playerIdentity&&a.debugVideoViewIdentity()==viewIdentity&&a.debugVideoOutputs()>0&&a.debugStats()!=null&&a.debugStats().displayedPictures>displayedBefore,8000,"Video-only fullscreen retains player/view and advances displayed frames");
+            app.onActivity(a->a.debugFull(true));await(app,a->a.debugIsFull()&&!a.debugChromeVisible()&&a.getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE&&a.getWindow().getDecorView().getWidth()>a.getWindow().getDecorView().getHeight()&&(Build.VERSION.SDK_INT<30||a.getWindow().getDecorView().getRootWindowInsets()!=null&&!a.getWindow().getDecorView().getRootWindowInsets().isVisible(android.view.WindowInsets.Type.systemBars()))&&a.debugPlayerIdentity()==playerIdentity&&a.debugVideoViewIdentity()==viewIdentity&&a.debugVideoOutputs()>0&&a.debugStats()!=null&&a.debugStats().displayedPictures>displayedBefore,8000,"Video-only fullscreen retains player/view and advances displayed frames");
             saveReviewScreenshot("luma-android-fullscreen.png");
             app.onActivity(MainActivity::debugTapVideo);await(app,a->a.debugChromeVisible()&&a.debugExitFullLabel(),5000,"Tap shows playback controls and explicit fullscreen exit");
             app.onActivity(MainActivity::debugTapVideo);await(app,a->!a.debugChromeVisible(),5000,"Tap hides fullscreen chrome");
@@ -47,7 +49,7 @@ public class LanPlaybackTest {
     }
     private static void saveReviewScreenshot(String name)throws Exception{
         // Text properties become observable before the next rendered frame.
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();Thread.sleep(150);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();Thread.sleep(name.contains("fullscreen")?700:150);
         android.graphics.Bitmap bitmap=InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();assertNotNull("Review screenshot unavailable",bitmap);
         java.io.File file=new java.io.File(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir(),name);
         try(java.io.FileOutputStream output=new java.io.FileOutputStream(file)){assertTrue("Review PNG encoding failed",bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,output));}finally{bitmap.recycle();}

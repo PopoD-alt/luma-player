@@ -1,0 +1,472 @@
+{
+  "schema": 1,
+  "scope": "Application Java runtime dependencies, separate from the native component audit",
+  "license": "Apache-2.0",
+  "components": [
+    {
+      "coordinate": "androidx.annotation:annotation-jvm:1.7.1",
+      "sha256": "e36b8e4b8393a4adc74e3d4ab22ad5a36396f0cea2e40b5734eae14937dfd224",
+      "pomSha256": "386dc40ca6dce7045a6889fb46c53c99c849b6a5584a482971129f1f4ac77255",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/jetpack/androidx/releases/annotation#1.7.1"
+    },
+    {
+      "coordinate": "androidx.arch.core:core-common:2.0.0",
+      "sha256": "4b80b337779b526e64b0ee0ca9e0df43b808344d145f8e9b1c42a134dac57ad8",
+      "pomSha256": "4b6f1d459ddd146b4e85ed6d46e86eb8c2639c5de47904e6db4d698721334220",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/topic/libraries/architecture/index.html"
+    },
+    {
+      "coordinate": "androidx.arch.core:core-runtime:2.0.0",
+      "sha256": "87e65fc767c712b437649c7cee2431ebb4bed6daef82e501d4125b3ed3f65f8e",
+      "pomSha256": "e2007d41ddc69ee2a77fed7b5c1dc5a41e01122926ba59696aab7b18d2264411",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/topic/libraries/architecture/index.html"
+    },
+    {
+      "coordinate": "androidx.asynclayoutinflater:asynclayoutinflater:1.0.0",
+      "sha256": "f7eab60c57addd94bb06275832fe7600611beaaae1a1ec597c231956faf96c8b",
+      "pomSha256": "48167eeedc8da79c4d29deaf0d0cd9b5d8fedcae01f1a6efb3f28f08e8982f71",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.collection:collection:1.0.0",
+      "sha256": "9c8d117b5c2bc120a1cdfeb857e05b495b16c36013570372a708f7827e3ac9f9",
+      "pomSha256": "a7913a5275ad68e555d2612ebe8c14c367b153e14ca48a1872a64899020e54ef",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.coordinatorlayout:coordinatorlayout:1.0.0",
+      "sha256": "e508c695489493374d942bf7b4ee02abf7571d25aac4c622e57d6cd5cd29eb73",
+      "pomSha256": "3e44e4de2fee6debc33d23626ee906e54e1bb3c1749b19e02bb667b614ab9392",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.core:core:1.0.0",
+      "sha256": "d7672358fc0d46de678968bcddfd3bdfe1618574299a753477b16116cfec74f5",
+      "pomSha256": "384d529ad668ada4808de29b29a6348f0007c2841ad79cae9a5a089bd68810f5",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.cursoradapter:cursoradapter:1.0.0",
+      "sha256": "a81c8fe78815fa47df5b749deb52727ad11f9397da58b16017f4eb2c11e28564",
+      "pomSha256": "62d95c89850af21030b19f14d5f7ecd6d8bcc9a3014c59002ec99624caac8100",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.customview:customview:1.0.0",
+      "sha256": "20e5b8f6526a34595a604f56718da81167c0b40a7a94a57daa355663f2594df2",
+      "pomSha256": "ce9e47b87184f5bd5e139e9becd5b26476d42d78c31bf2fdedc37acb41b9ad49",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.documentfile:documentfile:1.0.0",
+      "sha256": "865a061ef2fad16522f8433536b8d47208c46ff7c7745197dfa1eeb481869487",
+      "pomSha256": "013288a9317a552706ce625fb24493e8223288529223ec578cf855a5ae9c16e5",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.drawerlayout:drawerlayout:1.0.0",
+      "sha256": "9402442cdc5a43cf62fb14f8cf98c63342d4d9d9b805c8033c6cf7e802749ac1",
+      "pomSha256": "da6733425a83f5ce850878fa7201082345fed7c668dd58550fdd19c0396c6fa4",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.fragment:fragment:1.0.0",
+      "sha256": "65dd32d71fe65a32e77989a6cfb1ad09307038927f82a740c7611162d0b518f8",
+      "pomSha256": "e329d673361e94d2e8f4d4d14e1f0586368bd43fb19efd5766ce7498bcccd162",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.interpolator:interpolator:1.0.0",
+      "sha256": "33193135a64fe21fa2c35eec6688f1a76e512606c0fc83dc1b689e37add7732a",
+      "pomSha256": "0ddc07cc39699f48ecd9ec894b5830c0f09e22e82959294edf37217224c88b7b",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.legacy:legacy-support-core-ui:1.0.0",
+      "sha256": "0d1260c6e7e6a337f875df71b516931e703f716e90889817cd3a20fa5ac3d947",
+      "pomSha256": "2baaf7f17551765524bd1e4d2f954a2a0178a112039cf549ba8b7d4b41e66931",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.legacy:legacy-support-core-utils:1.0.0",
+      "sha256": "a7edcf01d5b52b3034073027bc4775b78a4764bb6202bb91d61c829add8dd1c7",
+      "pomSha256": "8fd093008b3ee7c06e52c78da2af980a7b47b69b967fa91dad7af466f7a00a38",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.legacy:legacy-support-v4:1.0.0",
+      "sha256": "78fec1485f0f388a4749022dd51416857127cd2544ae1c3fd0b16589055480b0",
+      "pomSha256": "ed88fb124cfb70f2bb928ede1357874374aa45881bcb6d9744c1dc6680fa7c58",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.lifecycle:lifecycle-common:2.0.0",
+      "sha256": "7bad7a188804adea6fa1f35d5ef99b705f20bd93ecadde484760ff86b535fefc",
+      "pomSha256": "04d525073469214d0c99e81aaa875dd548ba32b82945abd8326bc50229df700d",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/topic/libraries/architecture/index.html"
+    },
+    {
+      "coordinate": "androidx.lifecycle:lifecycle-livedata:2.0.0",
+      "sha256": "c82609ced8c498f0a701a30fb6771bb7480860daee84d82e0a81ee86edf7ba39",
+      "pomSha256": "a84842ffc0f14e518db75c05cc112680a8a4a164fa78395be32d88304a439423",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/topic/libraries/architecture/index.html"
+    },
+    {
+      "coordinate": "androidx.lifecycle:lifecycle-livedata-core:2.0.0",
+      "sha256": "fde334ec7e22744c0f5bfe7caf1a84c9d717327044400577bdf9bd921ec4f7bc",
+      "pomSha256": "650fda1a232f5669742140571570ccad2f47a71225ab0f02179bc8d144b982c8",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/topic/libraries/architecture/index.html"
+    },
+    {
+      "coordinate": "androidx.lifecycle:lifecycle-runtime:2.0.0",
+      "sha256": "e4afc9e636183f6f3e0edf1cf46121a492ffd2c673075bb07f55c7a99dd43cfb",
+      "pomSha256": "a92a46fa7aec8ac326a5d578734a2d5b63206976996b9e06cae171b35b0ab6de",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/topic/libraries/architecture/index.html"
+    },
+    {
+      "coordinate": "androidx.lifecycle:lifecycle-viewmodel:2.0.0",
+      "sha256": "d6460aea1b6bad80ab14cf88297e9e43bfde8d87c3e5c28f2c508233ffbcc062",
+      "pomSha256": "60b758fd1c664089f82d1c018ed4ff7955c14a2b1620af7aa106591f733e0827",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "https://developer.android.com/topic/libraries/architecture/index.html"
+    },
+    {
+      "coordinate": "androidx.loader:loader:1.0.0",
+      "sha256": "11f735cb3b55c458d470bed9e25254375b518b4b1bad6926783a7026db0f5025",
+      "pomSha256": "c978d550808b47434aa49a63164110a50b55b0bcc6160a93a2e37d5110df8c5e",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.localbroadcastmanager:localbroadcastmanager:1.0.0",
+      "sha256": "e71c328ceef5c4a7d76f2d86df1b65d65fe2acf868b1a4efd84a3f34336186d8",
+      "pomSha256": "a000041f5a1f79283c5175e1bb60cf3683780f401c6a9d34fbe9751253fa6ff9",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.media:media:1.0.0",
+      "sha256": "b23b527b2bac870c4a7451e6982d7132e413e88d7f27dbeb1fc7640a720cd9ee",
+      "pomSha256": "9cdfe5f7849069ad84dc4fb0407b3677fb8c22d3d66fd2b8fdb8dec8c5dc7411",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.print:print:1.0.0",
+      "sha256": "1d5c7f3135a1bba661fc373fd72e11eb0a4adbb3396787826dd8e4190d5d9edd",
+      "pomSha256": "62482c0594841bee24bb996abb6cb7b320a6a3b77dca9f0a0ba4fe3be5530aa7",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.slidingpanelayout:slidingpanelayout:1.0.0",
+      "sha256": "76bffb7cefbf780794d8817002dad1562f3e27c0a9f746d62401c8edb30aeede",
+      "pomSha256": "40e90f96838c2a8156ab51b181400767049f387cec8c695e412d3d9205b0745b",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0",
+      "sha256": "9761b3a809c9b093fd06a3c4bbc645756dec0e95b5c9da419bc9f2a3f3026e8d",
+      "pomSha256": "8fe4b5db332af33cde899ba571ee866ad977be38114d3ab600edaca454ea8299",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.versionedparcelable:versionedparcelable:1.0.0",
+      "sha256": "f6438a93ed8016ccddca0e140a70be0b0110e0424edaa1472f84f98fed2e1ce3",
+      "pomSha256": "47ee7c5543239a651f8fb81310cadeeaab8e38a2d844d7bb92dd086e4ffbb320",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "androidx.viewpager:viewpager:1.0.0",
+      "sha256": "147af4e14a1984010d8f155e5e19d781f03c1d70dfed02a8e0d18428b8fc8682",
+      "pomSha256": "1f72f836339d03c6eb013f65075e76ca87075a577578eb4f95f74a3a5d253128",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "The Android Open Source Project"
+      ],
+      "projectUrl": "http://developer.android.com/tools/extras/support-library.html"
+    },
+    {
+      "coordinate": "org.jetbrains:annotations:13.0",
+      "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+      "pomSha256": "965aeb2bedff369819bdde1bf7a0b3b89b8247dd69c88b86375d76163bb8c397",
+      "licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "JetBrains Team"
+      ],
+      "projectUrl": "http://www.jetbrains.org"
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+      "sha256": "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a",
+      "pomSha256": "454ba507a3d36b4ac253df6df96f8739bd26ea19df3f332b10b13f2c5715f787",
+      "licenses": [
+        {
+          "name": "The Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "upstreamDevelopers": [
+        "Kotlin Team"
+      ],
+      "projectUrl": "https://kotlinlang.org/"
+    }
+  ]
+}

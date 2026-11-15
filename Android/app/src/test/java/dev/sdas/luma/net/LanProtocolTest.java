@@ -85,8 +85,9 @@ public class LanProtocolTest {
             try(StreamRelay relay=new StreamRelay(session,item,LanApi.DIRECT,f->{})){
                 assertFalse(relay.playbackUrl().contains(TOKEN));server.responses.add(new Response(206,"2345",Map.of("Content-Range","bytes 2-5/10")));
                 HttpURLConnection client=(HttpURLConnection)new URL(relay.playbackUrl()).openConnection();client.setRequestProperty("Range","bytes=2-5");assertEquals(206,client.getResponseCode());assertEquals("bytes 2-5/10",client.getHeaderField("Content-Range"));assertEquals("2345",new String(client.getInputStream().readAllBytes(),StandardCharsets.US_ASCII));client.disconnect();
+                long countDeadline=System.currentTimeMillis()+1000;while(relay.forwardedBytes()<4&&System.currentTimeMillis()<countDeadline)Thread.sleep(5);assertEquals("Only forwarded media body counts",4,relay.forwardedBytes());
                 Request upstream=server.request();assertEquals("bytes=2-5",upstream.headers.get("range"));assertEquals("GET /v1/media/episode-1?token="+TOKEN+" HTTP/1.1",upstream.line);
-                server.responses.add(new Response(200,"",Map.of("Content-Length","10")));client=(HttpURLConnection)new URL(relay.playbackUrl()).openConnection();client.setRequestMethod("HEAD");assertEquals(200,client.getResponseCode());assertEquals(10,client.getContentLengthLong());client.disconnect();assertTrue(server.request().line.startsWith("HEAD "));
+                server.responses.add(new Response(200,"",Map.of("Content-Length","10")));client=(HttpURLConnection)new URL(relay.playbackUrl()).openConnection();client.setRequestMethod("HEAD");assertEquals(200,client.getResponseCode());assertEquals(10,client.getContentLengthLong());client.disconnect();assertTrue(server.request().line.startsWith("HEAD "));assertEquals("HEAD adds no forwarded media bytes",4,relay.forwardedBytes());
             }
         }
     }

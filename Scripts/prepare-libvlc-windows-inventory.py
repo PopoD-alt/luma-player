@@ -109,10 +109,39 @@ def collect(work: Path, output: Path, toolchain_license: Path | None) -> dict:
         compiler_notices = stage / "Notices/LLVM-MinGW"
         compiler_notices.mkdir(parents=True)
         shutil.copyfile(toolchain_license, compiler_notices / "LICENSE.TXT")
+        supplements = []
+        # These licenses use unusual filenames. FreeType's FTL also requires
+        # an explicit acknowledgement in binary distribution documentation.
+        for package in ("freetype2", "jpeg"):
+            record = next(item for item in records.values() if item["recipePackage"] == package)
+            matches = []
+            with tarfile.open(cache / record["filename"]) as tar:
+                for member in tar:
+                    selected = member.name.endswith(("/docs/FTL.TXT", "/docs/GPLv2.TXT")) if package == "freetype2" else PurePosixPath(member.name).name in ("README", "README.ijg")
+                    if not member.isfile() or not selected:
+                        continue
+                    name = PurePosixPath(member.name)
+                    if name.is_absolute() or ".." in name.parts or "\\" in member.name or member.size > 2 * 1024 * 1024:
+                        raise ValueError("Unsafe supplemental notice")
+                    value = tar.extractfile(member).read()
+                    target = stage / "Notices/supplemental" / record["filename"] / name
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(value)
+                    matches.append(member.name)
+                    supplements.append({"archive": record["filename"], "sourcePath": member.name,
+                                        "bytes": len(value), "sha256": hashlib.sha256(value).hexdigest()})
+            if len(matches) != (2 if package == "freetype2" else 1):
+                raise ValueError("Expected exact FreeType FTL/GPL and IJG license notices")
+        (stage / "Notices/ACKNOWLEDGEMENTS.txt").write_text(
+            "This software is based in part on the work of the FreeType Team.\n"
+            "FreeType is used under the FreeType License (FTL).\n"
+            "This software is based in part on the work of the Independent JPEG Group.\n"
+            "Original license and copyright texts are included with the notices and source materials.\n")
         result = {"schema": 1, "sourceCommit": "6de05adcba", "selectedRecipePackages": packages,
                   "selectedPackageCount": len(packages), "sourceAliases": aliases,
                   "archiveCount": len(records), "archives": list(records.values()), "issues": [],
                   "noticeFiles": sum(len(item["notices"]) for item in records.values()),
+                  "supplementalNoticeFiles": len(supplements), "supplementalNotices": supplements,
                   "totalSourceBytes": sum(item["bytes"] for item in records.values()),
                   "toolchainLicenseSha256": digest(toolchain_license),
                   "scope": "Completed exact source recipe inputs and verbatim notices. Compiler/toolchain provenance, module/core/dependency review and native execution are separate; this is not redistribution approval or legal clearance."}
@@ -124,6 +153,7 @@ def collect(work: Path, output: Path, toolchain_license: Path | None) -> dict:
             os.replace(stage, output)
         return {"output": str(output.resolve()), "sourcePackages": len(packages),
                 "archives": len(records), "noticeFiles": result["noticeFiles"],
+                "supplementalNoticeFiles": len(supplements),
                 "sourceBytes": result["totalSourceBytes"], "status": "inventoried-not-approved"}
     finally:
         if stage.exists():

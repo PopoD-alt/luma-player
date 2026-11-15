@@ -74,7 +74,7 @@ public final class MainActivity extends Activity {
     private int generation,mediaGeneration;private long initialResume;private LanApi.Item current;private String lastError;
     private boolean permissionAsked;
     private final java.util.Set<String> softwareItems=new java.util.HashSet<>();
-    private boolean softwarePlayback,videoWasDisplayed,hadVideoTracks,videoOutputWasCreated,userPaused,debugSkipSurfaceOnce;private int videoOutputs;private long nativeStartedAt;
+    private boolean softwarePlayback,videoWasDisplayed,hadVideoTracks,videoOutputWasCreated,userPaused,debugSkipSurfaceOnce,nativePlayingSeen;private int videoOutputs;private long nativeStartedAt,playRequestedAt,lastOpeningDiagnostic;
     private Media.Stats lastStats;private SeekBar.OnSeekBarChangeListener seekListener;
     private final Runnable pulse=new Runnable(){public void run(){if(!foreground||destroyed)return;updatePlayer();main.postDelayed(this,500);}};
     private final Runnable poll=new Runnable(){public void run(){if(!foreground||destroyed)return;refresh(false);main.postDelayed(this,5000);}};
@@ -131,7 +131,7 @@ public final class MainActivity extends Activity {
         seekListener=new SeekBar.OnSeekBarChangeListener(){
             public void onProgressChanged(SeekBar bar,int value,boolean user){}
             public void onStartTrackingTouch(SeekBar bar){dragging=true;}
-            public void onStopTrackingTouch(SeekBar bar){dragging=false;if(player!=null&&player.isSeekable()&&player.getLength()>0)player.setTime(player.getLength()*bar.getProgress()/1000,false);}
+            public void onStopTrackingTouch(SeekBar bar){dragging=false;if(player!=null&&player.isSeekable()&&player.getLength()>0){autoResumeApplied=true;player.setTime((long)(player.getLength()*(bar.getProgress()/1000.0)),false);}}
         };seek.setOnSeekBarChangeListener(seekListener);
         LinearLayout transport=row();transport.addView(button("−10",()->jump(-10000),false));playButton=button("Pause",this::togglePlay,true);playButton.setId(R.id.player_play);transport.addView(playButton);transport.addView(button("+10",()->jump(10000),false));
         clock=text("0:00 / 0:00",12,TEXT);clock.setGravity(Gravity.CENTER);transport.addView(clock,new LinearLayout.LayoutParams(0,-2,1));playerControls.addView(transport);
@@ -176,7 +176,7 @@ public final class MainActivity extends Activity {
         });}catch(Exception error){main.post(()->{if(stale(version))return;polling=false;status.setText(safe(error));if(error instanceof LanApi.ApiException&&((LanApi.ApiException)error).status==401){disconnect(false);status.setText("Sharing restarted or pairing expired. Connect again to pair.");}});}});
     }
     private void startMedia(LanApi.Item item){
-        if(session==null){status.setText("Pair again before streaming.");return;}stopPlayback();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if(session==null){status.setText("Pair again before streaming.");return;}stopPlayback();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;lastOpeningDiagnostic=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playButton.setText("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try{
             if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList("--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
             int version=generation,clip=mediaGeneration;LanApi.Session active=session;
@@ -184,9 +184,9 @@ public final class MainActivity extends Activity {
             player=new MediaPlayer(engine);MediaPlayer activePlayer=player;player.setVolume(volume.getProgress());
             player.setEventListener(event->main.post(()->{
                 if(destroyed||player!=activePlayer||current!=item)return;
-                if(event.type==MediaPlayer.Event.Playing){if(userPaused){activePlayer.pause();playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");return;}nativeStartedAt=android.os.SystemClock.uptimeMillis();hadVideoTracks|=activePlayer.getVideoTracksCount()>0;applyResume();playerStatus.setText((softwarePlayback?"Software playback · ":"Streaming · ")+active.host.name);playButton.setText("Pause");logPlayback("playing");}
+                if(event.type==MediaPlayer.Event.Playing){nativePlayingSeen=true;if(userPaused){activePlayer.pause();playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");return;}nativeStartedAt=android.os.SystemClock.uptimeMillis();hadVideoTracks|=hasKnownVideoTrack();applyResume();playerStatus.setText((softwarePlayback?"Software playback · ":"Streaming · ")+active.host.name);playButton.setText("Pause");logPlayback("playing");}
                 else if(event.type==MediaPlayer.Event.Vout){videoOutputs=event.getVoutCount();videoOutputWasCreated|=videoOutputs>0;logPlayback("video-output");}
-                else if(event.type==MediaPlayer.Event.Paused){if(!activePlayer.isPlaying()){playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");}}
+                else if(event.type==MediaPlayer.Event.Paused){if(!activePlayer.isPlaying()){userPaused=true;playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");}}
                 else if(event.type==MediaPlayer.Event.Buffering&&!userPaused&&lastError==null&&event.getBuffering()<100)playerStatus.setText("Buffering "+Math.round(event.getBuffering())+"% · keep the desktop awake");
                 else if(event.type==MediaPlayer.Event.EncounteredError){if(retrySoftware())return;lastError=lastError==null?"Could not play this stream. Check that the desktop is awake and sharing, then retry.":lastError;playerStatus.setText(lastError);playButton.setText("Play");}
                 else if(event.type==MediaPlayer.Event.EndReached){lastStats=stats();if(!videoWasDisplayed&&retrySoftware())return;logPlayback("ended");playerStatus.setText("Finished · choose another item from your playlist");playButton.setText("Play");}
@@ -205,31 +205,60 @@ public final class MainActivity extends Activity {
                 if(BuildConfig.DEBUG&&debugSkipSurfaceOnce&&!softwarePlayback){debugSkipSurfaceOnce=false;logPlayback("test-missing-native-output");}else activePlayer.attachViews(video,null,true,false);
                 Media media=new Media(engine,Uri.parse(localUrl));media.setHWDecoderEnabled(!softwarePlayback,false);
                 media.addOption(":network-caching=1200");media.addOption(":http-reconnect");activePlayer.setMedia(media);media.release();
-                logPlayback("surface-ready");activePlayer.play();
+                playRequestedAt=android.os.SystemClock.uptimeMillis();logPlayback("surface-ready");activePlayer.play();
             }catch(RuntimeException error){lastError="Playback could not initialize its video view. Return to the playlist and retry.";playerStatus.setText(lastError);logPlayback("surface-error");stopPlayback();}
         });
     }
+    private boolean hasKnownVideoTrack(){
+        if(player==null)return false;MediaPlayer.TrackDescription[] tracks=player.getVideoTracks();if(tracks==null)return false;
+        for(MediaPlayer.TrackDescription track:tracks)if(track.id>=0)return true;return false;
+    }
+    private boolean videoSurfaceReady(){return video.isAttachedToWindow()&&video.isShown()&&video.getWidth()>0&&video.getHeight()>0;}
     private boolean retrySoftware(){
-        if(player==null||current==null||session==null||softwarePlayback||lastError!=null||!foreground||videoWasDisplayed||videoOutputWasCreated||!(hadVideoTracks||player.getVideoTracksCount()>0))return false;
+        if(player==null||current==null||session==null||softwarePlayback||lastError!=null||!foreground||userPaused||videoWasDisplayed||videoOutputWasCreated||!(hadVideoTracks||hasKnownVideoTrack()))return false;
         LanApi.Item item=current;logPlayback("retry-software-once");softwareItems.add(item.id);localResume.put(item.id,initialResume);startMedia(item);return true;
     }
     private String playbackDiagnostics(){
-        Media.Stats value=stats();return "software="+softwarePlayback+", surfaceReady="+(video.isAttachedToWindow()&&video.isShown()&&video.getWidth()>0&&video.getHeight()>0)+", size="+video.getWidth()+"x"+video.getHeight()+", videoTracks="+(player==null?-1:player.getVideoTracksCount())+", outputs="+videoOutputs+", outputCreated="+videoOutputWasCreated+", decodedVideo="+(value==null?0:value.decodedVideo)+", displayed="+(value==null?0:value.displayedPictures)+", decodedAudio="+(value==null?0:value.decodedAudio)+", playing="+(player!=null&&player.isPlaying());
+        Media.Stats value=stats();return "software="+softwarePlayback+", nativeState="+(player==null?-1:player.getPlayerState())+", openingAgeMs="+(playRequestedAt==0?0:android.os.SystemClock.uptimeMillis()-playRequestedAt)+", playingEventSeen="+nativePlayingSeen+", resumeApplied="+autoResumeApplied+", forwardedBytes="+(relay==null?0:relay.forwardedBytes())+", surfaceReady="+videoSurfaceReady()+", size="+video.getWidth()+"x"+video.getHeight()+", videoTracks="+(player==null?-1:player.getVideoTracksCount())+", outputs="+videoOutputs+", outputCreated="+videoOutputWasCreated+", decodedVideo="+(value==null?0:value.decodedVideo)+", displayed="+(value==null?0:value.displayedPictures)+", decodedAudio="+(value==null?0:value.decodedAudio)+", playing="+(player!=null&&player.isPlaying());
     }
     private void logPlayback(String reason){android.util.Log.i("LumaPlayback",reason+": "+playbackDiagnostics());}
     private void updatePlayer(){
         if(player==null||current==null)return;applyResume();long length=player.getLength(),time=Math.max(0,player.getTime());
         clock.setText(time(time)+" / "+time(length));if(!dragging&&length>0)seek.setProgress((int)Math.min(1000,time*1000/length));seek.setEnabled(player.isSeekable());
         if(time>0)localResume.put(current.id,time);Media.Stats value=stats();if(value!=null){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}
-        if(nativeStartedAt>0&&player.isPlaying()&&!videoWasDisplayed&&videoOutputs==0&&(hadVideoTracks||player.getVideoTracksCount()>0)&&android.os.SystemClock.uptimeMillis()-nativeStartedAt>3500){
+        hadVideoTracks|=hasKnownVideoTrack();
+        long now=android.os.SystemClock.uptimeMillis(),openingAge=playRequestedAt==0?0:now-playRequestedAt;
+        if(!nativePlayingSeen&&playRequestedAt>0&&now-lastOpeningDiagnostic>2000){lastOpeningDiagnostic=now;logPlayback("waiting-for-playing");}
+        // Let the relay's10s read timeout report network errors first. Only a
+        // proven video input with delivered bytes and no output gets one retry.
+        if(playRequestedAt>0&&!nativePlayingSeen&&!userPaused&&hadVideoTracks&&!videoOutputWasCreated&&!videoWasDisplayed&&videoSurfaceReady()&&lastError==null&&relay!=null&&relay.forwardedBytes()>0&&openingAge>12000){
+            if(retrySoftware())return;
+            if(softwarePlayback&&openingAge>15000){lastError="The video decoder could not start on this device. Retry or try another device.";playerStatus.setText(lastError);logPlayback("opening-unavailable");player.pause();}
+        }
+        if(nativeStartedAt>0&&player.isPlaying()&&!videoWasDisplayed&&videoOutputs==0&&(hadVideoTracks||hasKnownVideoTrack())&&android.os.SystemClock.uptimeMillis()-nativeStartedAt>3500){
             if(retrySoftware())return;
             if(softwarePlayback&&lastError==null){lastError="This device could not create video output, including software playback. Retry or try another device.";playerStatus.setText(lastError);logPlayback("video-unavailable");player.pause();}
         }
     }
-    private void applyResume(){if(player!=null&&!autoResumeApplied&&(initialResume<=0||player.isSeekable()&&player.getLength()>0)){autoResumeApplied=true;if(initialResume>0)player.setTime(Math.min(initialResume,Math.max(0,player.getLength()-1000)),false);}}
+    private void applyResume(){
+        if(player==null||!nativePlayingSeen||userPaused||autoResumeApplied)return;
+        if(initialResume<=0){autoResumeApplied=true;return;}
+        // Starting a seek while the first decoder/output graph is still being
+        // created can strand slow MediaCodec implementations in Opening.
+        if(android.os.SystemClock.uptimeMillis()-nativeStartedAt<250)return;
+        if((hadVideoTracks||hasKnownVideoTrack())&&!videoWasDisplayed)return;
+        if(player.isSeekable()&&player.getLength()>0){autoResumeApplied=true;player.setTime(Math.min(initialResume,Math.max(0,player.getLength()-1000)),false);logPlayback("resume-after-playing");}
+    }
     private Media.Stats stats(){if(player==null)return lastStats;IMedia media=player.getMedia();if(media==null)return lastStats;try{Media.Stats value=media.getStats();if(value!=null&&(value.decodedVideo>0||value.decodedAudio>0)){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}return lastStats==null?value:lastStats;}finally{media.release();}}
-    private void togglePlay(){if(player==null){if(current!=null)startMedia(current);return;}if(player.isPlaying()){userPaused=true;playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");player.pause();}else if(lastError!=null)startMedia(current);else{userPaused=false;playButton.setText("Pause");playerStatus.setText("Resuming stream…");player.play();}}
-    private void jump(long amount){if(player!=null&&player.isSeekable())player.setTime(Math.max(0,Math.min(player.getLength(),player.getTime()+amount)),false);}
+    private void togglePlay(){
+        if(player==null){if(current!=null)startMedia(current);return;}
+        if(lastError!=null){startMedia(current);return;}
+        int nativeState=player.getPlayerState();
+        if(nativeState==Media.State.Ended||nativeState==Media.State.Stopped){localResume.put(current.id,0L);startMedia(current);return;}
+        if(!userPaused){userPaused=true;playButton.setText("Play");playerStatus.setText("Paused");if(nativePlayingSeen||player.isPlaying())player.pause();}
+        else{userPaused=false;if(!nativePlayingSeen)playRequestedAt=android.os.SystemClock.uptimeMillis();playButton.setText("Pause");playerStatus.setText("Resuming stream…");player.play();}
+    }
+    private void jump(long amount){if(player!=null&&player.isSeekable()){autoResumeApplied=true;player.setTime(Math.max(0,Math.min(player.getLength(),player.getTime()+amount)),false);}}
     private void stopPlayback(){
         mediaGeneration++;
         if(relay!=null){relay.close();relay=null;}
@@ -247,7 +276,7 @@ public final class MainActivity extends Activity {
     private boolean hasPermission(){String permission=permission();return permission==null||checkSelfPermission(permission)==PackageManager.PERMISSION_GRANTED;}
     private void ensurePermission(){if(hasPermission()){discovery.start();return;}if(permissionAsked)return;permissionAsked=true;requestPermissions(new String[]{permission()},100);}
     @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==100){if(hasPermission())discovery.start();else{status.setText("Local-network access is needed to discover and stream. Tap Find to try again, or allow it in Settings.");}}}
-    @Override protected void onResume(){super.onResume();foreground=true;ensurePermission();main.post(pulse);main.post(poll);if(wasPlaying&&current!=null){wasPlaying=false;if(player!=null)player.play();else startMedia(current);}else if(current!=null&&player==null){playButton.setText("Play");playerStatus.setText("Paused · tap Play to resume streaming");}}
+    @Override protected void onResume(){super.onResume();foreground=true;ensurePermission();main.post(pulse);main.post(poll);if(wasPlaying&&current!=null){wasPlaying=false;userPaused=false;if(player!=null)player.play();else startMedia(current);}else if(current!=null&&player==null){playButton.setText("Play");playerStatus.setText("Paused · tap Play to resume streaming");}}
     @Override protected void onPause(){foreground=false;main.removeCallbacks(pulse);main.removeCallbacks(poll);discovery.stop();if(player!=null){wasPlaying=player.isPlaying();player.pause();}super.onPause();}
     @Override protected void onStop(){if(player!=null&&current!=null){updatePlayer();stopPlayback();}super.onStop();}
     @Override protected void onDestroy(){destroyed=true;generation++;discovery.stop();stopPlayback();if(engine!=null){engine.release();engine=null;}session=null;work.shutdownNow();super.onDestroy();}
@@ -286,9 +315,12 @@ public final class MainActivity extends Activity {
     public void debugSeek(long milliseconds){if(!BuildConfig.DEBUG||player==null||player.getLength()<=0)throw new IllegalStateException();seekListener.onStartTrackingTouch(seek);seek.setProgress((int)Math.min(1000,milliseconds*1000/player.getLength()));seekListener.onStopTrackingTouch(seek);}
     public Media.Stats debugStats(){return BuildConfig.DEBUG?stats():null;}
     public String debugEngineVersion(){return engine==null?"not started":LibVLC.version()+" changeset="+LibVLC.changeset();}
-    public boolean debugPausedUi(){return BuildConfig.DEBUG&&!debugPlaying()&&playButton.getText().toString().equals("Play")&&playerStatus.getText().toString().equals("Paused");}
+    public boolean debugPausedUi(){return BuildConfig.DEBUG&&player!=null&&player.getPlayerState()==Media.State.Paused&&!debugPlaying()&&playButton.getText().toString().equals("Play")&&playerStatus.getText().toString().equals("Paused");}
     public void debugFailInitialOutputOnce(){if(!BuildConfig.DEBUG||player!=null)throw new IllegalStateException();debugSkipSurfaceOnce=true;}
     public boolean debugSoftwarePlayback(){return BuildConfig.DEBUG&&softwarePlayback;}
+    public boolean debugPauseRequested(){return BuildConfig.DEBUG&&userPaused;}
+    public boolean debugPauseIntentUi(){return BuildConfig.DEBUG&&userPaused&&playButton.getText().toString().equals("Play")&&playerStatus.getText().toString().equals("Paused");}
+    public boolean debugResumeApplied(){return BuildConfig.DEBUG&&autoResumeApplied;}
     public String debugError(){return lastError;}
     public String debugDiagnostics(){return BuildConfig.DEBUG?playbackDiagnostics():"";}
     public void debugLeave(){if(!BuildConfig.DEBUG)throw new IllegalStateException();leavePlayer();}

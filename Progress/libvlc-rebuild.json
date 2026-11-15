@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-11-15T19:32:55+00:00",
-  "branch": "feature/vlc-lan-android \u00b7 native checkpoint 25e187b",
+  "as_of": "2026-11-15T20:15:03+00:00",
+  "branch": "feature/vlc-lan-android \u00b7 implementation2c8ddbf \u00b7 last full cross-platform pass25e187b",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
@@ -13,20 +13,40 @@
       "name": "Windows \u00b7 x64",
       "playback": "PASS: native Windows CI43752264480. AVC/HEVC Main10 rendering, AAC decode, captions, AVI/FLAC/ADPCM, transport, fullscreen and lifecycle/resume.",
       "sharing": "PASS: portable real-listener suite and native sharing/pair/revoke UI; DNS-SD shutdown returned without deadlock. Physical discovery remains unverified.",
-      "distribution": "Separate installed VLC3 for development. Bundled runtime/source audit remains open; no new EXE release.",
+      "distribution": "Custom x64 runtime and independent local audits pass. Clean CI reached an optional speech-module linker issue; explicit exclusion is ready for retry. No public installer.",
       "evidence": "build/windows-vlc-third-evidence/smoke.stdout.log"
     },
     {
       "name": "Android \u00b7 API26+",
-      "playback": "PASS: local ARM64 emulator and fresh x64 CI43752264480. Actual AVC and HEVC Main10/AAC decode/display, seek/pause/volume/fullscreen.",
+      "playback": "Opening/resume fix passes fully source-built Java/native ARM64 APK: portable1s resume and Mac0.5s injected recovery, including pause/seek/fullscreen. Fresh x64 emulator retry is queued.",
       "sharing": "PASS: actual portable/Windows server and native Mac server; pair/list/range streaming without a saved download. One-time software recovery passes injected native-output failure. Physical Wi-Fi discovery still needs phones.",
-      "distribution": "Development APK built. Custom ARM64 native component built; final source/license/replacement audit pending. No production APK published.",
-      "evidence": "build/android-integration/instrumentation.log"
+      "distribution": "Cleaned native/binding audits pass. Direct-source Java AAR and final source companion are being finalized; no production APK published.",
+      "evidence": "build/android-source-aar-r2-resigned-macos-recovery/instrumentation.log"
     }
   ],
   "next": [
-    "Complete native runtime distribution/source/replacement audits for Windows and Android; source builds are underway.",
+    "Fix the Android opening stall found by fresh x64 CI; finish source-built Windows native proof and both runtime distribution gates.",
     "Test physical Wi-Fi discovery, firewall behavior, speakers and A/V synchronization on real devices.",
     "Owner reviews the apps before public packages or update-feed changes."
+  ],
+  "previews": [
+    {
+      "id": "macos",
+      "name": "Mac \u00b7 dark appearance",
+      "path": "build/review/mac/Luma-dark.png",
+      "caption": "Native Mac review interface. The rebuilt app is available locally in build/Luma Player.app; the library is empty in this isolated capture."
+    },
+    {
+      "id": "windows",
+      "name": "Windows \u00b7 native WPF",
+      "path": "build/windows-vlc-third-evidence/smoke/Luma-Windows-dark.png",
+      "caption": "Native Windows CI interface. This WPF capture omits its separate native video child; decoded/displayed counters and libVLC frame snapshots establish video output separately."
+    },
+    {
+      "id": "android",
+      "name": "Android \u00b7 streaming playback",
+      "path": "build/android-source-aar-r2-resigned-macos-recovery/Luma-Android-review.png",
+      "caption": "Actual Android emulator streaming the authored demo from the production Mac server, using independently re-signed Java/native libraries built from pinned sources. Development review only."
+    }
   ]
 }
