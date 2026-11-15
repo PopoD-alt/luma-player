@@ -100,6 +100,27 @@ public class LanProtocolTest {
             }
         }
     }
+    @Test public void localCancellationDoesNotWaitForBlockedUpstreamDisconnect()throws Exception{
+        java.util.concurrent.CountDownLatch reading=new java.util.concurrent.CountDownLatch(1),disconnecting=new java.util.concurrent.CountDownLatch(1),release=new java.util.concurrent.CountDownLatch(1);
+        HttpURLConnection upstream=new HttpURLConnection(new URL("http://127.0.0.1:1234/media")){
+            public void connect(){}public boolean usingProxy(){return false;}
+            public int getResponseCode(){return 200;}public String getHeaderField(String name){return name.equalsIgnoreCase("Content-Length")?"1":name.equalsIgnoreCase("Content-Type")?"video/mp4":null;}
+            public long getContentLengthLong(){return 1;}
+            public InputStream getInputStream(){return new InputStream(){public int read(){reading.countDown();boolean done=false;while(!done)try{done=release.await(5,TimeUnit.SECONDS);}catch(InterruptedException ignored){}return -1;}public int read(byte[] b,int off,int len){return read();}};}
+            public void disconnect(){disconnecting.countDown();boolean done=false;while(!done)try{done=release.await(5,TimeUnit.SECONDS);}catch(InterruptedException ignored){}}
+        };
+        LanApi.Session session=new LanApi.Session(LanEndpoint.parse("http://127.0.0.1:1234"),new LanApi.Info("session","Desktop"),TOKEN);LanApi.Item item=LanApi.parsePlaylist(playlist(TOKEN),session).get(0);
+        java.util.concurrent.ExecutorService closer=java.util.concurrent.Executors.newSingleThreadExecutor();StreamRelay relay=new StreamRelay(session,item,url->upstream,f->{});
+        try(Socket client=new Socket("127.0.0.1",new URL(relay.playbackUrl()).getPort())){
+            client.setSoTimeout(1000);String request="GET "+new URL(relay.playbackUrl()).getPath()+" HTTP/1.1\r\nHost: localhost\r\n\r\n";client.getOutputStream().write(request.getBytes(StandardCharsets.US_ASCII));client.getOutputStream().flush();
+            assertTrue(Server.line(client.getInputStream()).startsWith("HTTP/1.1 200"));while(!Server.line(client.getInputStream()).isEmpty()){}
+            assertTrue("Upstream read did not start",reading.await(1,TimeUnit.SECONDS));
+            closer.submit(relay::cancelLocalConnections).get(1,TimeUnit.SECONDS);
+            assertEquals("Local stream remains open during blocked upstream cleanup",-1,client.getInputStream().read());
+            java.util.concurrent.Future<?> complete=closer.submit(relay::close);assertTrue("No upstream cleanup was requested",disconnecting.await(1,TimeUnit.SECONDS));
+            assertFalse("Fixture did not keep upstream disconnect blocked",complete.isDone());release.countDown();complete.get(2,TimeUnit.SECONDS);
+        }finally{release.countDown();relay.close();closer.shutdownNow();}
+    }
     static JSONObject playlist(String token)throws Exception{return new JSONObject().put("version",1).put("name","Desktop").put("items",new JSONArray().put(new JSONObject().put("id","episode-1").put("title","Episode").put("durationSeconds",12).put("resumeSeconds",2).put("mimeType","video/mp4").put("streamPath","/v1/media/episode-1?token="+token)));}
     interface Throwing{void run()throws Exception;}
     static void reject(Runnable run){try{run.run();fail("Unsafe endpoint accepted");}catch(IllegalArgumentException expected){}}

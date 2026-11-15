@@ -116,5 +116,7 @@ public final class StreamRelay implements AutoCloseable {
         output.write(("HTTP/1.1 "+code+" Request unavailable\r\nContent-Length: 0\r\nConnection: close\r\nCache-Control: no-store\r\n\r\n").getBytes(StandardCharsets.US_ASCII));output.flush();
     }
     private void fail(Failure failure){if(!closed&&listener!=null)listener.failed(failure);}
-    @Override public void close(){closed=true;try{server.close();}catch(IOException ignored){}for(Socket s:sockets)try{s.close();}catch(IOException ignored){}for(HttpURLConnection c:requests)c.disconnect();workers.shutdownNow();}
+    /** Cancels loopback traffic without waiting for a blocked upstream disconnect. */
+    public void cancelLocalConnections(){closed=true;try{server.close();}catch(IOException ignored){}for(Socket s:sockets)try{s.close();}catch(IOException ignored){}workers.shutdownNow();}
+    @Override public void close(){cancelLocalConnections();for(HttpURLConnection c:requests)c.disconnect();}
 }
