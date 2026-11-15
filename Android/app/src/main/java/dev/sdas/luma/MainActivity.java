@@ -79,7 +79,7 @@ public final class MainActivity extends Activity {
     private final java.util.Set<String> softwareItems=new java.util.HashSet<>();
     private boolean softwarePlayback,videoWasDisplayed,hadVideoTracks,videoOutputWasCreated,userPaused,debugSkipSurfaceOnce,nativePlayingSeen;private int videoOutputs;private long nativeStartedAt,playRequestedAt,lastOpeningDiagnostic;
     private Media.Stats lastStats;private SeekBar.OnSeekBarChangeListener seekListener;private IVLCVout.Callback surfaceCallback;
-    private boolean nativeSurfacesReady,surfaceRebindPending,surfaceRestartPending,surfaceRecoveryNeedsResume;private int videoGraphSequence,retiringGraphs,surfaceRebinds,surfaceRebindAttempts,surfaceCreatedEvents,surfaceDestroyedEvents;private long graphStartedAt,lastRetirementMs,surfaceRecoveryTime;
+    private boolean nativeSurfacesReady,surfaceRebindPending,surfaceRestartPending,surfaceRestartStarted,surfaceRecoveryNeedsResume;private int videoGraphSequence,retiringGraphs,surfaceRebinds,surfaceRebindAttempts,surfaceCreatedEvents,surfaceDestroyedEvents;private long graphStartedAt,lastRetirementMs,surfaceRecoveryTime;
     private final Runnable pulse=new Runnable(){public void run(){if(!foreground||destroyed)return;updatePlayer();main.postDelayed(this,500);}};
     private final Runnable poll=new Runnable(){public void run(){if(!foreground||destroyed)return;refresh(false);main.postDelayed(this,5000);}};
     private final Runnable settleFullscreenBars=()->{if(full&&foreground&&!destroyed){applySystemBars();root.requestApplyInsets();}};
@@ -182,7 +182,7 @@ public final class MainActivity extends Activity {
         });}catch(Exception error){main.post(()->{if(stale(version))return;polling=false;status.setText(safe(error));if(error instanceof LanApi.ApiException&&((LanApi.ApiException)error).status==401){disconnect(false);status.setText("Sharing restarted or pairing expired. Connect again to pair.");}});}});
     }
     private void startMedia(LanApi.Item item){
-        if(session==null){status.setText("Pair again before streaming.");return;}if(retiringGraphs>=3){playerStatus.setText("Finishing the previous stream. Please retry in a moment.");return;}stopPlayback();graphStartedAt=android.os.SystemClock.uptimeMillis();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;nativeSurfacesReady=false;surfaceRebindPending=false;surfaceRestartPending=false;surfaceRecoveryNeedsResume=false;surfaceRebinds=0;surfaceRebindAttempts=0;surfaceCreatedEvents=0;surfaceDestroyedEvents=0;lastOpeningDiagnostic=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playButton.setText("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if(session==null){status.setText("Pair again before streaming.");return;}if(retiringGraphs>=3){playerStatus.setText("Finishing the previous stream. Please retry in a moment.");return;}stopPlayback();graphStartedAt=android.os.SystemClock.uptimeMillis();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;nativeSurfacesReady=false;surfaceRebindPending=false;surfaceRestartPending=false;surfaceRestartStarted=false;surfaceRecoveryNeedsResume=false;surfaceRebinds=0;surfaceRebindAttempts=0;surfaceCreatedEvents=0;surfaceDestroyedEvents=0;lastOpeningDiagnostic=0;current=item;lastError=null;lastStats=null;initialResume=localResume.getOrDefault(item.id,(long)(item.resumeSeconds*1000));autoResumeApplied=false;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);playerTitle.setText(item.title);playButton.setText("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try{
             if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList("--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
             int version=generation,clip=mediaGeneration;LanApi.Session active=session;
@@ -193,7 +193,7 @@ public final class MainActivity extends Activity {
             player=new MediaPlayer(engine);MediaPlayer activePlayer=player;player.setVolume(volume.getProgress());
             player.setEventListener(event->main.post(()->{
                 if(destroyed||player!=activePlayer||current!=item)return;
-                if(event.type==MediaPlayer.Event.Playing){nativePlayingSeen=true;if(nativeSurfacesReady&&activePlayer.isPlaying())surfaceRecoveryNeedsResume=false;if(userPaused){activePlayer.pause();playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");return;}nativeStartedAt=android.os.SystemClock.uptimeMillis();hadVideoTracks|=hasKnownVideoTrack();applyResume();playerStatus.setText((softwarePlayback?"Software playback · ":"Streaming · ")+active.host.name);playButton.setText("Pause");logPlayback("playing");}
+                if(event.type==MediaPlayer.Event.Playing){nativePlayingSeen=true;if(nativeSurfacesReady&&activePlayer.isPlaying()){surfaceRecoveryNeedsResume=false;surfaceRestartStarted=false;}if(userPaused){activePlayer.pause();playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");return;}nativeStartedAt=android.os.SystemClock.uptimeMillis();hadVideoTracks|=hasKnownVideoTrack();applyResume();playerStatus.setText((softwarePlayback?"Software playback · ":"Streaming · ")+active.host.name);playButton.setText("Pause");logPlayback("playing");}
                 else if(event.type==MediaPlayer.Event.Vout){videoOutputs=event.getVoutCount();videoOutputWasCreated|=videoOutputs>0;if(videoOutputs>0&&nativeSurfacesReady)surfaceRebindAttempts=0;logPlayback("video-output");}
                 else if(event.type==MediaPlayer.Event.Paused){if(!activePlayer.isPlaying()){playButton.setText("Play");if(lastError==null)playerStatus.setText("Paused");}}
                 else if(event.type==MediaPlayer.Event.Buffering&&!userPaused&&lastError==null&&event.getBuffering()<100)playerStatus.setText("Buffering "+Math.round(event.getBuffering())+"% · keep the desktop awake");
@@ -237,14 +237,14 @@ public final class MainActivity extends Activity {
         catch(RuntimeException error){lastError="The video surface could not be restored. Retry playback.";playerStatus.setText(lastError);stopPlayback();}
     }
     private void resumeAfterSurfaceRecovery(MediaPlayer activePlayer,VLCVideoLayout activeVideo){
-        if(destroyed||player!=activePlayer||video!=activeVideo||!foreground||userPaused||!nativeSurfacesReady||surfaceRebinds==0||surfaceRestartPending||lastError!=null)return;
-        int state=activePlayer.getPlayerState();if(state==Media.State.Playing||state==Media.State.Paused){surfaceRecoveryNeedsResume=false;if(state==Media.State.Paused)activePlayer.play();return;}if(state!=Media.State.Ended&&state!=Media.State.Stopped&&state!=Media.State.Error)return;
-        // A video-only input can end when its sole track is temporarily disabled.
-        // Restart the same native player after restoring its valid surface.
+        if(destroyed||player!=activePlayer||video!=activeVideo||!foreground||userPaused||!nativeSurfacesReady||surfaceRebinds==0||surfaceRestartPending||surfaceRestartStarted||lastError!=null)return;
+        // Disabling the old video track may finish asynchronously even after a
+        // Playing/Paused observation. Stop that input before restarting the same
+        // player on its restored valid surface, preserving the user's position.
         surfaceRestartPending=true;activePlayer.retain();final long began=android.os.SystemClock.uptimeMillis();playerStatus.setText("Restoring video…");logPlayback("surface-restart-requested");
         retiredPlayers.execute(()->{try{activePlayer.stop();}catch(RuntimeException ignored){}finally{main.post(()->{
             try{if(destroyed||player!=activePlayer||video!=activeVideo)return;surfaceRestartPending=false;if(!foreground||userPaused||!nativeSurfacesReady||!validVideoSurface(activeVideo))return;
-                initialResume=surfaceRecoveryTime;autoResumeApplied=false;nativePlayingSeen=false;nativeStartedAt=0;videoWasDisplayed=false;videoOutputWasCreated=false;videoOutputs=0;lastStats=null;playRequestedAt=android.os.SystemClock.uptimeMillis();logPlayback("resume-after-surface-recovery-stopMs="+(playRequestedAt-began));activePlayer.play();
+                initialResume=surfaceRecoveryTime;autoResumeApplied=false;nativePlayingSeen=false;nativeStartedAt=0;videoWasDisplayed=false;videoOutputWasCreated=false;videoOutputs=0;lastStats=null;surfaceRestartStarted=true;playRequestedAt=android.os.SystemClock.uptimeMillis();logPlayback("resume-after-surface-recovery-stopMs="+(playRequestedAt-began));activePlayer.play();
             }finally{activePlayer.release();}
         });}});
     }
