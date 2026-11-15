@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-11-15T21:17:23+00:00",
-  "branch": "feature/vlc-lan-android \u00b7 Android b8c6d50 \u00b7 portable Windows bundle33b9d94",
+  "as_of": "2026-11-15T21:34:49+00:00",
+  "branch": "feature/vlc-lan-android \u00b7 checkpoint1f55437 \u00b7 native Windows43762909502",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
@@ -13,19 +13,19 @@
       "name": "Windows \u00b7 x64",
       "playback": "PASS: native Windows CI43759294052, including HEVC Main10 MP4/MKV, AAC, AVC, captions, AVI/FLAC/ADPCM, transport, fullscreen and lifecycle/resume.",
       "sharing": "PASS: production listener, pairing/ranges/revocation, DNS-SD shutdown and real SystemRequired power handle create/release. Physical discovery and speakers remain unverified.",
-      "distribution": "Custom source build, DLL identity and independent static/source/import audit pass. Native PNG frame-capture proof found the disabled core image encoder; upstream image framework restored, FFmpeg encoders/output modules remain excluded. Full rebuild/native rerun is next. No public installer.",
+      "distribution": "Corrected custom component passes native Windows AVC/HEVC PNG capture, playback, transport, sharing and power-handle checks. Final independent source/module/import audit and central staging are in progress; portable bundled app test follows.",
       "evidence": "build/windows-sixth-evidence/smoke/smoke-results.json"
     },
     {
       "name": "Android \u00b7 API26+",
-      "playback": "PASS ARM64: AVC/HEVC/AAC, normal and injected recovery, real SurfaceView destruction/Pause/restoration, fullscreen and independent re-signing. Fresh x64 CI43761442211 still fails native video output despite a valid surface; detailed codec/vout diagnostics are being added.",
+      "playback": "PASS true-cold ARM64: standard off-UI font preparation finishes before the first player; quiet and verbose runs pass AVC/HEVC/AAC, pause/seek, real surface restoration and fullscreen. Fresh quiet x64 rerun is next.",
       "sharing": "PASS: original-file streaming from actual Mac and portable Windows production servers, pairing, live playlist and seeking without a saved movie. Physical Wi-Fi discovery remains unverified.",
       "distribution": "Approved source-built Java/native ARM64 component, private debug APK, complete matching b8c6d50 application archive and native sources preserved. Re-signed exact app passes real Mac streaming. No production APK published.",
-      "evidence": "build/android-surface-lifecycle-fixed-review/private-debug-manifest.json"
+      "evidence": "build/android-font-preparation-cold-quiet/instrumentation.log"
     }
   ],
   "next": [
-    "Diagnose remaining x64 native output failure using live redacted codec/vout logs; rerun actual streaming checks.",
+    "Confirm cold-cache Android font preparation and native playback in fresh quiet x64 CI.",
     "Finish custom Windows source build, native rendering and independent component verification.",
     "Test physical Wi-Fi discovery, firewall behavior, speakers and A/V sync on real devices.",
     "Owner reviews the apps before production packages or update-feed changes."

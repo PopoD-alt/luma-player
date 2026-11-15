@@ -68,6 +68,7 @@ active-stream power request. Windows custom runtime's compiler/linker probe
 passed; its full source build and native/independent audit remain pending.
 Android's custom ARM64 library component is
 independently approved for private owner review, but the later stock-runtime x64
-run still reports a native video-output failure after the locally passing
-surface-recovery fix; diagnosis and a successful rerun remain pending. Component approval does not imply production publication approval or
+diagnostics identified blocking first-use font initialization. The background
+preparation fix passes cold-cache ARM64 tests; its fresh quiet x64 rerun remains
+pending. Component approval does not imply production publication approval or
 universal format/device compatibility.

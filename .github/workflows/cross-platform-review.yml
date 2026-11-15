@@ -2,6 +2,11 @@ name: VLC and local sharing review
 
 on:
   workflow_dispatch:
+    inputs:
+      native_diagnostics:
+        description: Enable redacted verbose Android native logs for diagnosis
+        type: boolean
+        default: false
   push:
     branches: [feature/vlc-lan-android]
     paths:
@@ -92,7 +97,7 @@ jobs:
           profile: pixel_7_pro
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
-          script: python3 Scripts/run-android-integration.py --native-diagnostics
+          script: python3 Scripts/run-android-integration.py ${{ inputs.native_diagnostics && '--native-diagnostics' || '' }}
       - name: Preserve Android evidence only
         if: always()
         uses: actions/upload-artifact@v7
