@@ -203,6 +203,7 @@ def main():
             subprocess.run(['adb', 'install', '-r', str(debug)], check=True)
             subprocess.run(['adb', 'install', '-r', str(tests)], check=True)
             command = ['adb', 'shell', 'am', 'instrument', '-w',
+                       '-e', 'class', 'dev.sdas.luma.LanPlaybackTest',
                        '-e', 'serverUrl', 'http://10.0.2.2:' + str(parameters['port']),
                        '-e', 'pairCode', parameters['code'],
                        '-e', 'demoId', parameters['ids']['demo'],

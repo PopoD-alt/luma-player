@@ -41,18 +41,19 @@ public final class StreamRelay implements AutoCloseable {
     private final ThreadPoolExecutor workers=new ThreadPoolExecutor(3,3,0,TimeUnit.SECONDS,new ArrayBlockingQueue<>(6),r->{Thread t=new Thread(r,"luma-stream");t.setDaemon(true);return t;});
     private volatile boolean closed;
     private final java.util.concurrent.atomic.AtomicLong forwardedBytes=new java.util.concurrent.atomic.AtomicLong();
-    private final java.util.concurrent.atomic.AtomicInteger accepted=new java.util.concurrent.atomic.AtomicInteger(),rejected=new java.util.concurrent.atomic.AtomicInteger(),parsed=new java.util.concurrent.atomic.AtomicInteger(),upstreamAttempts=new java.util.concurrent.atomic.AtomicInteger(),headersSent=new java.util.concurrent.atomic.AtomicInteger(),firstBytes=new java.util.concurrent.atomic.AtomicInteger(),completed=new java.util.concurrent.atomic.AtomicInteger(),ioErrors=new java.util.concurrent.atomic.AtomicInteger();
-    private enum Phase { CREATED, ACCEPTED, WORKER_REJECTED, LOCAL_REQUEST, UPSTREAM_OPEN, UPSTREAM_CONNECT, UPSTREAM_STATUS, PRE_HEADERS, HEADERS_SENT, STREAM_BODY, FIRST_BYTE, COMPLETE, CANCELLED }
+    private final java.util.concurrent.atomic.AtomicInteger accepted=new java.util.concurrent.atomic.AtomicInteger(),rejected=new java.util.concurrent.atomic.AtomicInteger(),parsed=new java.util.concurrent.atomic.AtomicInteger(),upstreamAttempts=new java.util.concurrent.atomic.AtomicInteger(),upstreamConnected=new java.util.concurrent.atomic.AtomicInteger(),headersSent=new java.util.concurrent.atomic.AtomicInteger(),firstBytes=new java.util.concurrent.atomic.AtomicInteger(),completed=new java.util.concurrent.atomic.AtomicInteger(),ioErrors=new java.util.concurrent.atomic.AtomicInteger();
+    private enum Phase { CREATED, ACCEPTED, WORKER_REJECTED, LOCAL_REQUEST, UPSTREAM_OPEN, UPSTREAM_CONNECT, UPSTREAM_RESPONSE, UPSTREAM_STATUS, PRE_HEADERS, HEADERS_SENT, STREAM_BODY, FIRST_BYTE, COMPLETE, CANCELLED }
     private static final class Observation {final int request;final Phase phase;Observation(int request,Phase phase){this.request=request;this.phase=phase;}}
-    private static final class IoObservation {final int request;final Phase phase;final String type;final boolean cancelled;IoObservation(int request,Phase phase,String type,boolean cancelled){this.request=request;this.phase=phase;this.type=type;this.cancelled=cancelled;}}
+    private static final class IoObservation {final int request;final Phase phase;final String type;final boolean cancelled;final NetworkDiagnostics.Failure failure;final long elapsedMs;IoObservation(int request,Phase phase,String type,boolean cancelled,NetworkDiagnostics.Failure failure,long elapsedMs){this.request=request;this.phase=phase;this.type=type;this.cancelled=cancelled;this.failure=failure;this.elapsedMs=elapsedMs;}}
     private volatile Observation lastPhase=new Observation(0,Phase.CREATED);
     private volatile IoObservation lastIo;
+    private final java.util.concurrent.atomic.AtomicReference<IoObservation> firstIo=new java.util.concurrent.atomic.AtomicReference<>();
     private volatile int upstreamStatus,localStatus;
     public long forwardedBytes(){return forwardedBytes.get();}
     /** Bounded observations contain only code-owned phases, numbers and exception class names. */
-    public String diagnostics(){Observation phase=lastPhase;IoObservation error=lastIo;return "accepted="+accepted.get()+", rejected="+rejected.get()+", parsed="+parsed.get()+", upstreamAttempts="+upstreamAttempts.get()+", upstreamStatus="+upstreamStatus+", localStatus="+localStatus+", headers="+headersSent.get()+", firstBytes="+firstBytes.get()+", completed="+completed.get()+", ioErrors="+ioErrors.get()+", cancelled="+closed+", phase="+phase.phase+", request="+phase.request+(error==null?"":", ioClass="+error.type+", ioPhase="+error.phase+", ioRequest="+error.request+", ioCancelled="+error.cancelled);}
+    public String diagnostics(){Observation phase=lastPhase;IoObservation error=lastIo,first=firstIo.get();return "accepted="+accepted.get()+", rejected="+rejected.get()+", parsed="+parsed.get()+", upstreamAttempts="+upstreamAttempts.get()+", upstreamConnected="+upstreamConnected.get()+", upstreamStatus="+upstreamStatus+", localStatus="+localStatus+", headers="+headersSent.get()+", firstBytes="+firstBytes.get()+", completed="+completed.get()+", ioErrors="+ioErrors.get()+", cancelled="+closed+", phase="+phase.phase+", request="+phase.request+(error==null?"":", ioClass="+error.type+", ioPhase="+error.phase+", ioRequest="+error.request+", ioCancelled="+error.cancelled+", ioReason="+error.failure.reason+", ioErrno="+error.failure.errno+", ioElapsedMs="+error.elapsedMs)+(first==null?"":", firstIoPhase="+first.phase+", firstIoReason="+first.failure.reason+", firstIoErrno="+first.failure.errno);}
     private void observe(int request,Phase phase){lastPhase=new Observation(request,phase);}
-    private void observeIo(int request,Phase phase,IOException error){String type=error.getClass().getSimpleName();if(!type.matches("[A-Za-z0-9_$]{1,64}"))type="IOException";lastIo=new IoObservation(request,phase,type,closed);ioErrors.incrementAndGet();}
+    private void observeIo(int request,Phase phase,IOException error,long began){String type=error.getClass().getSimpleName();if(!type.matches("[A-Za-z0-9_$]{1,64}"))type="IOException";IoObservation value=new IoObservation(request,phase,type,closed,NetworkDiagnostics.classify(error),Math.max(0,TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-began)));lastIo=value;firstIo.compareAndSet(null,value);ioErrors.incrementAndGet();}
 
     public StreamRelay(LanApi.Session session,LanApi.Item item,LanApi.Connections connections,Listener listener) throws IOException {
         this.upstream=session.endpoint.media(item.streamPath,item.id,session.token);
@@ -71,7 +72,7 @@ public final class StreamRelay implements AutoCloseable {
         }catch(IOException error){if(!closed)fail(Failure.OFFLINE);break;}
     }
     private void serve(Socket socket,int requestId){
-        HttpURLConnection remote=null;Phase phase=Phase.LOCAL_REQUEST;observe(requestId,phase);
+        HttpURLConnection remote=null;Phase phase=Phase.LOCAL_REQUEST;long began=System.nanoTime();observe(requestId,phase);
         try(Socket client=socket){
             if(!client.getInetAddress().isLoopbackAddress())return;
             BufferedInputStream input=new BufferedInputStream(client.getInputStream());BufferedOutputStream output=new BufferedOutputStream(client.getOutputStream());
@@ -88,7 +89,8 @@ public final class StreamRelay implements AutoCloseable {
             remote.setConnectTimeout(5000);remote.setReadTimeout(10000);remote.setRequestMethod(head?"HEAD":"GET");
             remote.setRequestProperty("Connection","close");remote.setRequestProperty("User-Agent","LumaAndroid/0.1");
             if(range!=null)remote.setRequestProperty("Range",range);
-            phase=Phase.UPSTREAM_CONNECT;observe(requestId,phase);upstreamAttempts.incrementAndGet();int status=remote.getResponseCode();upstreamStatus=status;phase=Phase.UPSTREAM_STATUS;observe(requestId,phase);
+            phase=Phase.UPSTREAM_CONNECT;observe(requestId,phase);upstreamAttempts.incrementAndGet();remote.connect();upstreamConnected.incrementAndGet();
+            phase=Phase.UPSTREAM_RESPONSE;observe(requestId,phase);int status=remote.getResponseCode();upstreamStatus=status;phase=Phase.UPSTREAM_STATUS;observe(requestId,phase);
             if(status==401){replyError(output,401);fail(Failure.AUTH);return;}
             if(status==404){replyError(output,404);fail(Failure.REMOVED);return;}
             if(status>=300&&status<400){replyError(output,502);fail(Failure.UNSAFE_RESPONSE);return;}
@@ -107,8 +109,8 @@ public final class StreamRelay implements AutoCloseable {
                 while(!closed&&remaining>0){int read=media.read(buffer,0,(int)Math.min(buffer.length,remaining));if(read<0)throw new IOException("Incomplete LAN stream");output.write(buffer,0,read);output.flush();forwardedBytes.addAndGet(read);remaining-=read;if(firstByte){firstByte=false;firstBytes.incrementAndGet();phase=Phase.FIRST_BYTE;observe(requestId,phase);}}
                 if(remaining==0){completed.incrementAndGet();observe(requestId,Phase.COMPLETE);}else observe(requestId,Phase.CANCELLED);
             }
-        }catch(SocketTimeoutException e){observeIo(requestId,phase,e);if(!closed)fail(Failure.OFFLINE);}
-        catch(IOException error){observeIo(requestId,phase,error);/* A VLC seek closes its old range; preserve the existing failure policy. */}
+        }catch(SocketTimeoutException e){observeIo(requestId,phase,e,began);if(!closed)fail(Failure.OFFLINE);}
+        catch(IOException error){observeIo(requestId,phase,error,began);/* A VLC seek closes its old range; preserve the existing failure policy. */}
         finally{if(remote!=null){requests.remove(remote);remote.disconnect();}sockets.remove(socket);}
     }
     private static boolean validRange(int status,String value,long length){

@@ -76,7 +76,8 @@ public final class MainActivity extends Activity {
     private LinearLayout desktopRows,homeContent,playerControls,playerHeader;private TextView status,playlistTitle,playlistInfo,playerTitle,playerStatus,clock;
     private View videoTapTarget;private boolean chromeVisible=true;private Button fullButton;
     private EditText manual;private Button connect,playButton;private ListView list;private SeekBar seek,volume;private AlertDialog pairDialog;
-    private boolean foreground,polling,connecting,dragging,full,wasPlaying,autoResumeApplied,destroyed;
+    private volatile boolean foreground,windowFocused;
+    private boolean polling,connecting,dragging,full,wasPlaying,autoResumeApplied,destroyed;
     private int generation,mediaGeneration;private long initialResume;private LanApi.Item current;private String lastError;
     private boolean permissionAsked,nativeDiagnostics;
     private final java.util.Set<String> softwareItems=new java.util.HashSet<>();
@@ -163,6 +164,16 @@ public final class MainActivity extends Activity {
         for(Network network:connectivity.getAllNetworks()){NetworkCapabilities caps=connectivity.getNetworkCapabilities(network);if(caps!=null&&caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))return network;}return null;
     }
     private LanApi forNetwork(Network network){return network==null?new LanApi():new LanApi(url->(HttpURLConnection)network.openConnection(url,java.net.Proxy.NO_PROXY));}
+    private String networkDiagnostics(Network bound){
+        try{
+            ConnectivityManager connectivity=(ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+            if(connectivity==null)return "networkState=UNAVAILABLE, foreground="+foreground+", windowFocus="+windowFocused;
+            Network active=connectivity.getActiveNetwork(),route=bound==null?active:bound;
+            NetworkCapabilities caps=route==null?null:connectivity.getNetworkCapabilities(route);boolean listed=false;
+            if(route!=null)for(Network candidate:connectivity.getAllNetworks())if(route.equals(candidate)){listed=true;break;}
+            return "networkBound="+(bound!=null)+", networkListed="+listed+", networkCaps="+(caps!=null)+", networkWifi="+(caps!=null&&caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))+", activeMatchesRoute="+(route!=null&&route.equals(active))+", localPermission="+hasPermission()+", foreground="+foreground+", windowFocus="+windowFocused;
+        }catch(RuntimeException ignored){return "networkState=UNAVAILABLE, foreground="+foreground+", windowFocus="+windowFocused;}
+    }
     private void connectManual(){if(!hasPermission()){permissionAsked=false;ensurePermission();return;}try{connectDesktop(LanEndpoint.parse(manual.getText().toString().trim()),wifiNetwork());}catch(IllegalArgumentException error){status.setText(error.getMessage());}}
     private void connectDesktop(LanEndpoint endpoint,Network network){
         if(connecting)return;if(!hasPermission()){ensurePermission();return;}disconnect(false);selectedEndpoint=endpoint;selectedNetwork=network;api=forNetwork(network);connecting=true;connect.setEnabled(false);status.setText("Connecting to desktop…");int version=generation;
@@ -225,7 +236,8 @@ public final class MainActivity extends Activity {
         graphStartedAt=android.os.SystemClock.uptimeMillis();playerStatus.setText("Opening LAN stream…");
         try{
             int version=generation,clip=mediaGeneration;LanApi.Session active=session;
-            relay=new StreamRelay(active,item,api.connections(),failure->main.post(()->{if(stale(version)||clip!=mediaGeneration||current!=item)return;lastError=failure==StreamRelay.Failure.AUTH?"Pairing expired. Return to the playlist and pair again.":failure==StreamRelay.Failure.REMOVED?"This item was removed from the desktop.":failure==StreamRelay.Failure.UNSAFE_RESPONSE?"The desktop returned an unsafe stream response.":"Desktop offline. Keep sharing enabled and retry.";playerStatus.setText(lastError);userPaused=true;if(player!=null)player.pause();}));
+            LanApi.Connections mediaConnections=api.connections();Network boundNetwork=selectedNetwork;
+            relay=new StreamRelay(active,item,url->{android.util.Log.i("LumaPlayback","relay-upstream-open: mediaGeneration="+clip+", "+networkDiagnostics(boundNetwork));return mediaConnections.open(url);},failure->main.post(()->{if(stale(version)||clip!=mediaGeneration||current!=item)return;lastError=failure==StreamRelay.Failure.AUTH?"Pairing expired. Return to the playlist and pair again.":failure==StreamRelay.Failure.REMOVED?"This item was removed from the desktop.":failure==StreamRelay.Failure.UNSAFE_RESPONSE?"The desktop returned an unsafe stream response.":"Desktop offline. Keep sharing enabled and retry.";playerStatus.setText(lastError);userPaused=true;if(player!=null)player.pause();}));
             // Each native player owns its own surface tree. A retired helper
             // must never receive destroy/layout callbacks for the next player.
             videoContainer.removeView(video);video=new VLCVideoLayout(this);videoContainer.addView(video,0,new FrameLayout.LayoutParams(-1,-1));videoGraphSequence++;
@@ -311,7 +323,7 @@ public final class MainActivity extends Activity {
     private String playbackDiagnostics(){
         Media.Stats value=stats();return "preparing="+enginePreparing+", prepared="+enginePrepared+", cacheVerified="+fontCacheVerified+", preparationMs="+(enginePreparing?android.os.SystemClock.uptimeMillis()-preparationStartedAt:preparationDurationMs)+", graph="+videoGraphSequence+", graphAgeMs="+(graphStartedAt==0?0:android.os.SystemClock.uptimeMillis()-graphStartedAt)+", retiring="+retiringGraphs+", lastRetirementMs="+lastRetirementMs+", software="+softwarePlayback+", nativeState="+(player==null?-1:player.getPlayerState())+", nativeTimeMs="+(player==null?-1:player.getTime())+", position="+(player==null?-1:player.getPosition())+", lengthMs="+(player==null?-1:player.getLength())+", timeEvents="+nativeTimeEvents+", lastTimeEventMs="+lastNativeTimeEvent+", bufferingPercent="+nativeBufferingPercent+", bufferingEvents="+nativeBufferingEvents+", openingAgeMs="+(playRequestedAt==0?0:android.os.SystemClock.uptimeMillis()-playRequestedAt)+", playingEventSeen="+nativePlayingSeen+", resumeApplied="+autoResumeApplied+", forwardedBytes="+(relay==null?0:relay.forwardedBytes())+", relay={"+(relay==null?"none":relay.diagnostics())+"}, surfaceReady="+videoSurfaceReady()+", nativeSurfaceReady="+nativeSurfacesReady+", holderValid="+validVideoSurface(video)+", surfaceCreated="+surfaceCreatedEvents+", surfaceDestroyed="+surfaceDestroyedEvents+", rebinds="+surfaceRebinds+", rebindPending="+surfaceRebindPending+", restartPending="+surfaceRestartPending+", recoveryNeedsResume="+surfaceRecoveryNeedsResume+", size="+video.getWidth()+"x"+video.getHeight()+", videoTracks="+(player==null?-1:player.getVideoTracksCount())+", outputs="+videoOutputs+", outputCreated="+videoOutputWasCreated+", decodedVideo="+(value==null?0:value.decodedVideo)+", displayed="+(value==null?0:value.displayedPictures)+", decodedAudio="+(value==null?0:value.decodedAudio)+", playing="+(player!=null&&player.isPlaying());
     }
-    private void logPlayback(String reason){android.util.Log.i("LumaPlayback",reason+": "+playbackDiagnostics());}
+    private void logPlayback(String reason){android.util.Log.i("LumaPlayback",reason+": "+playbackDiagnostics()+", "+networkDiagnostics(selectedNetwork));}
     private void updatePlayer(){
         if(player==null||current==null)return;applyResume();long length=player.getLength(),time=Math.max(0,player.getTime());
         clock.setText(time(time)+" / "+time(length));if(!dragging&&length>0)seek.setProgress((int)Math.min(1000,time*1000/length));seek.setEnabled(player.isSeekable());
@@ -394,7 +406,7 @@ public final class MainActivity extends Activity {
     @Override protected void onStop(){if(player!=null&&current!=null){updatePlayer();stopPlayback();}super.onStop();}
     @Override protected void onDestroy(){destroyed=true;generation++;discovery.stop();stopPlayback();releaseEngineWhenIdle();retiredPlayers.shutdown();session=null;work.shutdownNow();super.onDestroy();}
     @Override public void onConfigurationChanged(Configuration config){super.onConfigurationChanged(config);scheduleFullscreenBars();MediaPlayer active=player;if(active!=null)main.post(()->{if(player==active)active.updateVideoSurfaces();});}
-    @Override public void onWindowFocusChanged(boolean hasFocus){super.onWindowFocusChanged(hasFocus);if(hasFocus)scheduleFullscreenBars();}
+    @Override public void onWindowFocusChanged(boolean hasFocus){super.onWindowFocusChanged(hasFocus);windowFocused=hasFocus;if(hasFocus)scheduleFullscreenBars();}
     // Modern back gestures use the native API33 dispatcher registered in onCreate.
     @SuppressLint("GestureBackNavigation")
     @Override public void onBackPressed(){navigateBack();}

@@ -130,8 +130,18 @@ public class LanProtocolTest {
             client.setSoTimeout(1000);String request="GET "+new URL(relay.playbackUrl()).getPath()+" HTTP/1.1\r\nHost: localhost\r\n\r\n";client.getOutputStream().write(request.getBytes(StandardCharsets.US_ASCII));client.getOutputStream().flush();
             assertEquals("Existing pre-response IO close policy changed",-1,client.getInputStream().read());
             long deadline=System.currentTimeMillis()+1000;while(!relay.diagnostics().contains("ioClass=")&&System.currentTimeMillis()<deadline)Thread.sleep(5);
-            String observed=relay.diagnostics();assertTrue(observed.contains("accepted=1"));assertTrue(observed.contains("parsed=1"));assertTrue(observed.contains("upstreamAttempts=1"));assertTrue(observed.contains("upstreamStatus=0"));assertTrue(observed.contains("headers=0"));assertTrue(observed.contains("ioClass=IOException"));assertTrue(observed.contains("ioPhase=UPSTREAM_CONNECT"));
+            String observed=relay.diagnostics();assertTrue(observed.contains("accepted=1"));assertTrue(observed.contains("parsed=1"));assertTrue(observed.contains("upstreamAttempts=1"));assertTrue(observed.contains("upstreamConnected=1"));assertTrue(observed.contains("upstreamStatus=0"));assertTrue(observed.contains("headers=0"));assertTrue(observed.contains("ioClass=IOException"));assertTrue(observed.contains("ioPhase=UPSTREAM_RESPONSE"));assertTrue(observed.contains("ioReason=UNKNOWN"));assertTrue(observed.contains("ioErrno=0"));
             assertFalse(observed.contains(TOKEN));assertFalse(observed.contains("private.invalid"));assertFalse(observed.contains("https://"));assertFalse(observed.contains(new URL(relay.playbackUrl()).getPath()));
+        }
+    }
+    @Test public void relayDistinguishesTcpConnectFailureFromResponseFailure()throws Exception{
+        LanApi.Session session=new LanApi.Session(LanEndpoint.parse("http://127.0.0.1:1234"),new LanApi.Info("session","Desktop"),TOKEN);LanApi.Item item=LanApi.parsePlaylist(playlist(TOKEN),session).get(0);
+        try(StreamRelay relay=new StreamRelay(session,item,url->new HttpURLConnection(url){
+            public void connect()throws IOException{throw new java.net.SocketException("ECONNREFUSED http://private.invalid/?token="+TOKEN);}public void disconnect(){}public boolean usingProxy(){return false;}
+        },failure->{});Socket client=new Socket("127.0.0.1",new URL(relay.playbackUrl()).getPort())){
+            client.setSoTimeout(1000);client.getOutputStream().write(("GET "+new URL(relay.playbackUrl()).getPath()+" HTTP/1.1\r\nHost: localhost\r\n\r\n").getBytes(StandardCharsets.US_ASCII));client.getOutputStream().flush();assertEquals(-1,client.getInputStream().read());
+            long deadline=System.currentTimeMillis()+1000;while(!relay.diagnostics().contains("ioErrors=1")&&System.currentTimeMillis()<deadline)Thread.sleep(5);
+            String observed=relay.diagnostics();assertTrue(observed,observed.contains("upstreamConnected=0"));assertTrue(observed,observed.contains("ioPhase=UPSTREAM_CONNECT"));assertTrue(observed,observed.contains("ioReason=CONNECTION_REFUSED"));assertTrue(observed,observed.contains("firstIoReason=CONNECTION_REFUSED"));assertFalse(observed.contains(TOKEN));assertFalse(observed.contains("private.invalid"));
         }
     }
     static JSONObject playlist(String token)throws Exception{return new JSONObject().put("version",1).put("name","Desktop").put("items",new JSONArray().put(new JSONObject().put("id","episode-1").put("title","Episode").put("durationSeconds",12).put("resumeSeconds",2).put("mimeType","video/mp4").put("streamPath","/v1/media/episode-1?token="+token)));}
