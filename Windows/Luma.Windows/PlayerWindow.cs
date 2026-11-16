@@ -137,7 +137,7 @@ internal sealed class PlayerWindow : Window
             var bar = new FrameworkElementFactory(typeof(ProgressBar)); bar.SetValue(RangeBase.MaximumProperty, 1d); bar.SetValue(FrameworkElement.HeightProperty, 2d);
             bar.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 3, 0, 0)); bar.SetValue(Control.BorderThicknessProperty, new Thickness(0));
             bar.SetResourceReference(Control.BackgroundProperty, "LineBrush"); bar.SetResourceReference(Control.ForegroundProperty, property == nameof(MediaEntry.PhoneProgressDetail) ? "AccentBrush" : "MutedBrush");
-            bar.SetBinding(RangeBase.ValueProperty, new System.Windows.Data.Binding(property == nameof(MediaEntry.PhoneProgressDetail) ? nameof(MediaEntry.PhoneProgressFraction) : nameof(MediaEntry.ComputerProgressFraction))); rowContent.AppendChild(bar);
+            bar.SetBinding(RangeBase.ValueProperty, new System.Windows.Data.Binding(property == nameof(MediaEntry.PhoneProgressDetail) ? nameof(MediaEntry.PhoneProgressFraction) : nameof(MediaEntry.ComputerProgressFraction)) { Mode = System.Windows.Data.BindingMode.OneWay }); rowContent.AppendChild(bar);
         }
         rowFrame.AppendChild(rowContent);
         item.Setters.Add(new Setter(TemplateProperty, new ControlTemplate(typeof(ListBoxItem)) { VisualTree = rowFrame }));
@@ -201,7 +201,7 @@ internal sealed class PlayerWindow : Window
         Item("Play original video demo", () => _ = ImportAsync([Path.Combine(AppContext.BaseDirectory, "Demos", "Luma-MSVideo1-16.avi")]));
         Item("Saved bookmarks", ShowBookmarks); Item("Caption timing −0.25s", () => ChangeCaptionDelay(-.25)); Item("Caption timing +0.25s", () => ChangeCaptionDelay(.25));
         Item("Turn captions off", () => TryControl(() => vlc?.SelectSubtitle(-1)));
-        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.7.0 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
+        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.8.0 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
         return menu;
     }
     async Task OpenMediaAsync()
