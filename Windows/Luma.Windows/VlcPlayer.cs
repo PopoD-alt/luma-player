@@ -67,12 +67,17 @@ internal sealed class VlcPlayer : HwndHost
     public IReadOnlyList<VlcTrack> AudioTracks => TrackList(false);
     public IReadOnlyList<VlcTrack> SubtitleTracks => TrackList(true);
     public bool IsSeekable { get { VerifyAccess(); return player != IntPtr.Zero && Native.libvlc_media_player_is_seekable(player) != 0; } }
+    internal int LastChapterDescriptionCount { get; private set; }
+    internal string ChapterDiagnostics
+    {
+        get { VerifyAccess(); return player == IntPtr.Zero ? "no native player" : $"state={Native.libvlc_media_player_get_state(player)},title={Native.libvlc_media_player_get_title(player)},titles={Native.libvlc_media_player_get_title_count(player)},chapters={Native.libvlc_media_player_get_chapter_count(player)},fullDescriptions={LastChapterDescriptionCount}"; }
+    }
     public IReadOnlyList<PlaybackChapter> Chapters
     {
         get
         {
             VerifyAccess(); if (player == IntPtr.Zero || !opened) return [];
-            int count = Native.libvlc_media_player_get_full_chapter_descriptions(player, -1, out IntPtr list);
+            int count = Native.libvlc_media_player_get_full_chapter_descriptions(player, -1, out IntPtr list); LastChapterDescriptionCount = count;
             try
             {
                 if (count is <= 0 or > 1024 || list == IntPtr.Zero) return [];
@@ -245,6 +250,9 @@ internal sealed class VlcPlayer : HwndHost
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern void libvlc_media_player_set_pause(IntPtr value, int pause);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_is_playing(IntPtr value);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_is_seekable(IntPtr value);
+        [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_get_title(IntPtr value);
+        [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_get_title_count(IntPtr value);
+        [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_get_chapter_count(IntPtr value);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_get_full_chapter_descriptions(IntPtr value, int title, out IntPtr descriptions);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern void libvlc_chapter_descriptions_release(IntPtr descriptions, uint count);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_get_state(IntPtr value);

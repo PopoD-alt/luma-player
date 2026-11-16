@@ -44,6 +44,9 @@ public static class PlaybackSkipTests
         Check(session.Automatic(ranges,8.2,true,true,true)?.EndSeconds==10 && session.AutomaticSkips==2,"Ending skip stops before post-credit chapter");
         session.Reset();session.Consume(ranges[0]);Check(session.Automatic(ranges,1.2,true,true,true) is null && PlaybackSkipPolicy.Active(ranges,1.2) is not null,"Explicit user seek keeps manual skip available while suppressing auto-repeat");
         session.Reset();session.UserSeek(1.4);Check(session.Automatic(ranges,1.5,true,true,true) is null,"Explicit seek before chapter discovery suppresses a late automatic seek");
+        session.Reset();session.UserSeek(1.5);session.UserSeek(6);Check(session.Automatic(ranges,1.5,true,true,true) is null,"Pending explicit seek from an intro is not overwritten while native time remains at the origin");
+        session.Reset();session.UserSeek(1.5);session.UserSeek(6);session.UserSeek(6);session.UserSeek(9);
+        Check(session.Automatic(ranges,1.5,true,true,true) is null && session.Automatic(ranges,8.5,true,true,true) is null,"Rapid explicit seeks retain earlier origin and destination points for late chapter discovery");
         session.Reset();Check(session.Automatic(ranges,1.5,true,true,true) is not null,"New playthrough resets automatic history");
         string temp=Path.Combine(Path.GetTempPath(),"luma-skip-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(temp);
         try
@@ -64,8 +67,8 @@ public static class PlaybackSkipTests
         {
             var old=MatroskaDemuxer.Demux(File.ReadAllBytes(Path.Combine(fixtures,"Luma-AVC-AAC.mkv")));
             var chaptered=MatroskaDemuxer.Demux(File.ReadAllBytes(Path.Combine(fixtures,"Luma-Skip-Chapters.mkv")));
-            Check(old.Tracks.Count==chaptered.Tracks.Count,"Chapter fixture tracks retained");
-            foreach(var track in old.Tracks)
+            Check(chaptered.Tracks.Count==1 && chaptered.Tracks.Single().TrackType==1,"Skip fixture is explicitly video-only; the source audio ends after three seconds");
+            foreach(var track in old.Tracks.Where(track=>track.TrackType==1))
             {
                 var other=chaptered.Tracks.Single(t=>t.Id==track.Id);
                 Check(track.Packets.Count==other.Packets.Count && track.CodecPrivate.SequenceEqual(other.CodecPrivate),"Original encoded packets/config retained");

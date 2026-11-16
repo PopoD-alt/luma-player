@@ -313,7 +313,11 @@ internal sealed class PlayerWindow : Window
     void Seek(double value)
     {
         if (current is null || !double.IsFinite(value) || duration <= 0) return;
-        double target = Math.Clamp(value, 0, duration); skipSession.UserSeek(target);
+        double origin = CurrentTime, target = Math.Clamp(value, 0, duration);
+        // Native seeking is asynchronous: suppress the old segment as well as
+        // the destination so a stale clock cannot overwrite this user request.
+        skipSession.UserSeek(origin); skipSession.UserSeek(target);
+        if (PlaybackSkipPolicy.Active(activeSkipRanges, origin) is { } originSegment) skipSession.Consume(originSegment);
         if (PlaybackSkipPolicy.Active(activeSkipRanges, target) is { } segment) skipSession.Consume(segment);
         computerEnded = false; vlc?.Seek(target); UpdateTransport();
     }
@@ -461,7 +465,7 @@ internal sealed class PlayerWindow : Window
         else _ = LoadEntryAsync(item, position);
         Notice("Resumed this computer from the phone position at " + MediaEntry.Clock(position));
     }
-    void Ended() { if (!playing) return; playing = false; computerEnded = true; SaveProgress(); if (repeatMode == 2) { Seek(0); Play(); } else _ = NextAsync(1, true); }
+    void Ended() { if (!playing) return; playing = false; computerEnded = true; SaveProgress(); if (repeatMode == 2) { skipSession.Reset(); computerEnded = false; vlc?.Seek(0); vlc?.Play(); playing = vlc is not null; UpdateTransport(); } else _ = NextAsync(1, true); }
     async Task NextAsync(int delta, bool atEnd = false)
     {
         if (library.Data.Items.Count == 0) return; if (delta < 0 && CurrentTime > 3) { Seek(0); return; }
@@ -658,7 +662,12 @@ internal sealed class PlayerWindow : Window
         var snapshot = Path.Combine(output, "libvlc-avc-frame.png"); demo.Snapshot(snapshot); await Until(() => File.Exists(snapshot) && new FileInfo(snapshot).Length > 100, "Native libVLC AVC snapshot");
         Console.WriteLine("PASS: libVLC native displayed frames, snapshot, seek/pause/rate/volume/fullscreen and external caption selection/delay");
         var chaptered = await Open(Path.Combine(fixtures, "Luma-Skip-Chapters.mkv"));
-        await Until(() => chaptered.DisplayedPictures is > 0 && chaptered.Chapters.Any(c => c.Name == "Opening") && chaptered.Chapters.Any(c => c.Name == "Credits"), "Native labelled chapter metadata and decoded frames");
+        try { await Until(() => chaptered.DisplayedPictures is > 0 && chaptered.Chapters.Any(c => c.Name == "Opening") && chaptered.Chapters.Any(c => c.Name == "Credits"), "Native labelled chapter metadata and decoded frames"); }
+        catch (TimeoutException)
+        {
+            Console.WriteLine("INFO: skip fixture native diagnostics: " + JsonSerializer.Serialize(new { chaptered.ChapterDiagnostics, duration = chaptered.Duration, time = chaptered.CurrentTime, decoded = chaptered.DecodedVideo, displayed = chaptered.DisplayedPictures, names = chaptered.Chapters.Select(c => c.Name).ToArray() }));
+            throw;
+        }
         Pause(); var nativeRanges = PlaybackSkipPolicy.FromChapters(chaptered.Chapters, duration);
         Check(nativeRanges.Count == 2 && Math.Abs(nativeRanges[0].StartSeconds - 1) < .02 && Math.Abs(nativeRanges[0].EndSeconds - 3) < .02 && Math.Abs(nativeRanges[1].EndSeconds - 10) < .02, "Native chapter ABI uses milliseconds and preserves post-credit scene");
         int introFrames = chaptered.DisplayedPictures ?? 0; autoSkip.IsChecked = true; library.Data.AutoSkipEnabled = true; skipSession.Reset(); chaptered.Seek(.7); Play();
