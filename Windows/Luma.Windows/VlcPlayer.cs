@@ -77,7 +77,10 @@ internal sealed class VlcPlayer : HwndHost
         get
         {
             VerifyAccess(); if (player == IntPtr.Zero || !opened) return [];
-            int count = Native.libvlc_media_player_get_full_chapter_descriptions(player, -1, out IntPtr list); LastChapterDescriptionCount = count;
+            // Query the selected title explicitly. This libVLC3 Windows runtime
+            // reports valid title/chapter counts but rejects its documented -1 alias.
+            int currentTitle = Native.libvlc_media_player_get_title(player);
+            int count = Native.libvlc_media_player_get_full_chapter_descriptions(player, currentTitle >= 0 ? currentTitle : -1, out IntPtr list); LastChapterDescriptionCount = count;
             try
             {
                 if (count is <= 0 or > 1024 || list == IntPtr.Zero) return [];

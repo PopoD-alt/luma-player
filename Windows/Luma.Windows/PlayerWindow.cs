@@ -43,6 +43,13 @@ internal sealed class PlayerWindow : Window
     string? skipAnalysisStatus;
     readonly MenuItem analyzeSkips = new() { Header = "Analyze openings / credits with next queue item…" };
     readonly MenuItem cancelSkipAnalysis = new() { Header = "Cancel intro / credit analysis", IsEnabled = false };
+    readonly MenuItem reviewSkipMatches = new() { Header = "Review detected intro / credit matches…", IsEnabled = false };
+    IReadOnlyList<PlaybackSkipRange> detectedSkipRanges = [];
+    Guid? detectedSkipItem; string? detectedSkipPath, detectedReferenceTitle;
+    Func<bool>? detectedFilesUnchanged;
+    int detectedSkipGeneration;
+    Window? skipReviewWindow;
+    double? skipPreviewStopAt;
     readonly TextBlock queueCount = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock backend = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 360 };
     readonly ListBox queue = new() { BorderThickness = new Thickness(0), Margin = new Thickness(6), Background = Brushes.Transparent, DisplayMemberPath = "Title" };
@@ -108,6 +115,7 @@ internal sealed class PlayerWindow : Window
         skipSegment.Click += (_, _) => SkipActiveSegment();
         analyzeSkips.Click += async (_, _) => await AnalyzeSkipsAsync();
         cancelSkipAnalysis.Click += (_, _) => skipAnalysis?.Cancel();
+        reviewSkipMatches.Click += (_, _) => ReviewDetectedMatches();
         volume.ValueChanged += (_, _) => { if (vlc is not null) vlc.Volume = volume.Value; };
         speed.SelectionChanged += (_, _) => { if (speed.SelectedItem is ComboBoxItem item) { rate = (double)item.Tag; if (vlc is not null) vlc.Rate = rate; } };
         repeat.Click += (_, _) => { repeatMode = (repeatMode + 1) % 3; repeat.Content = new[] { "Repeat: off", "Repeat: all", "Repeat: one" }[repeatMode]; };
@@ -224,7 +232,7 @@ internal sealed class PlayerWindow : Window
         Item("Play original video demo", () => _ = ImportAsync([Path.Combine(AppContext.BaseDirectory, "Demos", "Luma-MSVideo1-16.avi")]));
         Item("Saved bookmarks", ShowBookmarks); Item("Caption timing −0.25s", () => ChangeCaptionDelay(-.25)); Item("Caption timing +0.25s", () => ChangeCaptionDelay(.25));
         Item("Turn captions off", () => TryControl(() => vlc?.SelectSubtitle(-1)));
-        menu.Items.Add(new Separator()); menu.Items.Add(analyzeSkips); menu.Items.Add(cancelSkipAnalysis);
+        menu.Items.Add(new Separator()); menu.Items.Add(analyzeSkips); menu.Items.Add(cancelSkipAnalysis); menu.Items.Add(reviewSkipMatches);
         menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n" + (typeof(PlayerWindow).Assembly.GetName().Version?.ToString(3) ?? "Unknown") + " · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
         return menu;
     }
@@ -253,7 +261,7 @@ internal sealed class PlayerWindow : Window
     Task LoadEntryAsync(MediaEntry entry, double? resume = null)
     {
         if (closing) return Task.CompletedTask;
-        skipAnalysis?.Cancel(); SaveProgress(); ++generation; DisposePlayer(); lastError = null; duration = 0; subtitleDelay = 0; playing = false; opening = true;
+        skipAnalysis?.Cancel(); ClearDetectedMatches(); SaveProgress(); ++generation; DisposePlayer(); lastError = null; duration = 0; subtitleDelay = 0; playing = false; opening = true;
         current = entry; computerEnded = false; skipSession.Reset(); chapterSkips = activeSkipRanges = []; activeSkip = null; skipDraft = null; lastChapterScan = DateTime.MinValue; library.Data.SelectedId = entry.Id; pendingResume = resume ?? (entry.ResumeTime > 3 ? entry.ResumeTime : 0); RefreshQueue();
         nowTitle.Text = entry.Title; empty.Visibility = Visibility.Visible; backend.Text = "Opening with libVLC…"; Notice("Opening " + entry.Title);
         int version = generation;
@@ -304,16 +312,17 @@ internal sealed class PlayerWindow : Window
     double CurrentTime => vlc?.CurrentTime ?? 0;
     void TogglePlayback()
     {
+        skipPreviewStopAt = null;
         if (lastError is not null && current is not null) { _ = LoadEntryAsync(current); return; }
         if (current is null) { var entry = queue.SelectedItem as MediaEntry ?? library.Data.Items.Find(i => i.Id == library.Data.SelectedId) ?? library.Data.Items.FirstOrDefault(); if (entry is not null) _ = LoadEntryAsync(entry); else _ = OpenMediaAsync(); return; }
         if (opening) return; if (playing) Pause(); else Play();
     }
-    void Pause() { vlc?.Pause(); playing = false; UpdateTransport(); SaveProgress(); }
+    void Pause() { skipPreviewStopAt = null; vlc?.Pause(); playing = false; UpdateTransport(); SaveProgress(); }
     void Play() { if (duration > 0 && (computerEnded || CurrentTime >= duration - .05)) { skipSession.Reset(); vlc?.Seek(0); } computerEnded = false; vlc?.Play(); playing = vlc is not null; UpdateTransport(); }
     void Seek(double value)
     {
         if (current is null || !double.IsFinite(value) || duration <= 0) return;
-        double origin = CurrentTime, target = Math.Clamp(value, 0, duration);
+        skipPreviewStopAt = null; double origin = CurrentTime, target = Math.Clamp(value, 0, duration);
         // Native seeking is asynchronous: suppress the old segment as well as
         // the destination so a stale clock cannot overwrite this user request.
         skipSession.UserSeek(origin); skipSession.UserSeek(target);
@@ -338,6 +347,9 @@ internal sealed class PlayerWindow : Window
     {
         if (current is null || vlc is null || opening || duration <= 0)
         { activeSkip = null; skipSegment.Visibility = Visibility.Collapsed; skipInfo.Text = current is null ? "Open a video to configure skipping" : "Reading chapter metadata…"; return; }
+        if (skipPreviewStopAt is { } previewEnd && playing && CurrentTime >= previewEnd)
+        { Pause(); Notice("Preview finished; save the suggested range only if it matches the opening / credits"); }
+        if (detectedSkipRanges.Count > 0 && !DetectedIdentityIsCurrent()) ClearDetectedMatches();
         if ((DateTime.UtcNow - lastChapterScan).TotalSeconds >= 1)
         { lastChapterScan = DateTime.UtcNow; chapterSkips = PlaybackSkipPolicy.FromChapters(vlc.Chapters, duration); }
         activeSkipRanges = PlaybackSkipPolicy.Merge(current.SkipRanges, chapterSkips, duration);
@@ -348,7 +360,7 @@ internal sealed class PlayerWindow : Window
         skipSegment.ToolTip = activeSkip is null ? null : (activeSkip.Source == "chapter" ? "Labelled chapter: " + activeSkip.Label : "Saved range") + " · " + MediaEntry.Clock(activeSkip.StartSeconds) + "–" + MediaEntry.Clock(activeSkip.EndSeconds);
         skipInfo.Text = skipAnalysisStatus ?? (skipDraft is { } draft ? "Mark the " + (draft.Kind == "intro" ? "intro" : "credits") + " end in Skip setup"
             : activeSkipRanges.Count == 0 ? "No labelled chapters or saved ranges" : activeSkipRanges.Count + " known segment" + (activeSkipRanges.Count == 1 ? "" : "s"));
-        if (!dragging && skipDraft is null && skipSession.Automatic(activeSkipRanges, CurrentTime, library.Data.AutoSkipEnabled, playing && !vlc.IsPaused, vlc.IsSeekable) is { } automaticRange)
+        if (!dragging && skipDraft is null && skipPreviewStopAt is null && skipSession.Automatic(activeSkipRanges, CurrentTime, library.Data.AutoSkipEnabled, playing && !vlc.IsPaused, vlc.IsSeekable) is { } automaticRange)
             SeekSkipRange(automaticRange, automatic: true);
     }
     void SeekSkipRange(PlaybackSkipRange range, bool automatic)
@@ -423,19 +435,14 @@ internal sealed class PlayerWindow : Window
             if (closing || cancellation.IsCancellationRequested || generation != expectedGeneration || current?.Id != expectedId || !string.Equals(current.FilePath, expectedPath, StringComparison.OrdinalIgnoreCase)
                 || !library.Data.Items.Any(entry => entry.Id == expectedId && string.Equals(entry.FilePath, expectedPath, StringComparison.OrdinalIgnoreCase)) || !FilesUnchanged()) return;
             if (candidates.Count == 0) { Notice("No confident repeated opening / ending audio found; use labelled chapters or mark exact ranges in Skip setup"); return; }
-            foreach (var candidate in candidates.Take(2))
-            {
-                if (generation != expectedGeneration || current?.Id != expectedId || !FilesUnchanged()) return;
-                var range = new PlaybackSkipRange(candidate.Kind, candidate.FirstStartSeconds, candidate.FirstEndSeconds, "manual", "Confirmed repeated audio");
-                if (PlaybackSkipPolicy.ValidatedRanges([range], duration).Count != 1) continue;
-                string kind = range.Kind == "intro" ? "intro" : "credits";
-                if (MessageBox.Show(this, "Possible repeated " + kind + ": " + MediaEntry.Clock(range.StartSeconds) + "–" + MediaEntry.Clock(range.EndSeconds)
-                    + "\n\nAudio repetition is a suggestion and can also match story scenes. Save this range for this video? You can preview it with the seek bar and clear it in Skip setup. Auto-skip remains your separate opt-in setting.", "Confirm " + kind + " range", MessageBoxButton.YesNo) != MessageBoxResult.Yes) continue;
-                if (generation != expectedGeneration || current?.Id != expectedId || !FilesUnchanged()) return;
-                var combined = item.SkipRanges.Where(saved => saved.Kind != range.Kind).Append(range).ToArray();
-                if (!PlaybackSkipPolicy.ValidatedRanges(combined, duration).Any(saved => saved == range)) { Notice("Suggested range overlaps another saved range; nothing was changed"); continue; }
-                library.SetSkipRanges(expectedId, combined); PushSharedPlaylist(); Notice("Saved confirmed " + kind + " range; review it with the seek bar or Skip intro / credits button");
-            }
+            var oldReview = skipReviewWindow; skipReviewWindow = null; if (oldReview?.IsVisible == true) oldReview.Close();
+            detectedSkipRanges = candidates.Take(8).Select(candidate => new PlaybackSkipRange(candidate.Kind,
+                candidate.FirstStartSeconds, candidate.FirstEndSeconds, "manual", "Confirmed repeated audio"))
+                .Where(range => PlaybackSkipPolicy.ValidatedRanges([range], duration).Count == 1).ToArray();
+            detectedSkipItem = expectedId; detectedSkipPath = expectedPath; detectedSkipGeneration = expectedGeneration;
+            detectedReferenceTitle = next.Title; detectedFilesUnchanged = FilesUnchanged; reviewSkipMatches.IsEnabled = detectedSkipRanges.Count > 0;
+            if (detectedSkipRanges.Count > 0) { Notice("Detected audio matches are ready to preview in More → Review detected matches"); ReviewDetectedMatches(); }
+            else Notice("Suggested ranges were outside the current video or ambiguous; no ranges were saved");
         }
         catch (OperationCanceledException) { if (!closing) Notice("Intro / credit analysis cancelled"); }
         catch (Exception error) { if (!closing) Notice("Intro / credit analysis could not finish: " + error.Message); }
@@ -443,6 +450,56 @@ internal sealed class PlayerWindow : Window
         {
             if (ReferenceEquals(skipAnalysis, cancellation)) { skipAnalysis = null; skipAnalysisStatus = null; analyzeSkips.IsEnabled = true; cancelSkipAnalysis.IsEnabled = false; if (!closing) UpdateSkipping(); }
         }
+    }
+    bool DetectedIdentityIsCurrent()
+        => !closing && current?.Id == detectedSkipItem && generation == detectedSkipGeneration && current is not null
+            && string.Equals(current.FilePath, detectedSkipPath, StringComparison.OrdinalIgnoreCase);
+    bool DetectedContextIsCurrent() => DetectedIdentityIsCurrent() && detectedFilesUnchanged?.Invoke() == true;
+    void ClearDetectedMatches()
+    {
+        bool wasPreview = skipPreviewStopAt is not null; skipPreviewStopAt = null;
+        if (wasPreview) { vlc?.Pause(); playing = false; UpdateTransport(); }
+        detectedSkipRanges = []; detectedSkipItem = null; detectedSkipPath = detectedReferenceTitle = null; detectedFilesUnchanged = null;
+        reviewSkipMatches.IsEnabled = false; var review = skipReviewWindow; skipReviewWindow = null; if (review?.IsVisible == true) review.Close();
+    }
+    void PreviewDetectedRange(PlaybackSkipRange range)
+    {
+        if (!DetectedContextIsCurrent() || !detectedSkipRanges.Contains(range)) { ClearDetectedMatches(); Notice("The selected video or detected result changed; analyze the current files again"); return; }
+        Pause(); Seek(Math.Max(0, range.StartSeconds - 1));
+        // Preview is an explicit user seek, including entry into a range that
+        // might only become known from chapter metadata a moment later.
+        skipSession.UserSeek(range.StartSeconds); skipSession.UserSeek(Math.Max(range.StartSeconds, range.EndSeconds - .1));
+        skipPreviewStopAt = Math.Min(range.EndSeconds + 1, Math.Max(.1, duration - .2)); Play();
+        Notice("Previewing suggested " + range.Kind + " · playback pauses after the range; nothing is saved");
+    }
+    bool SaveDetectedRange(PlaybackSkipRange range)
+    {
+        if (!DetectedContextIsCurrent() || current is null || !detectedSkipRanges.Contains(range)) { ClearDetectedMatches(); Notice("The selected video or detected result changed; nothing was saved"); return false; }
+        var combined = current.SkipRanges.Where(saved => saved.Kind != range.Kind).Append(range).ToArray();
+        if (!PlaybackSkipPolicy.ValidatedRanges(combined, duration).Any(saved => saved == range)) { Notice("Suggested range overlaps another saved range; nothing was changed"); return false; }
+        library.SetSkipRanges(current.Id, combined); PushSharedPlaylist(); UpdateSkipping(); Notice("Saved confirmed " + range.Kind + " range for this video"); return true;
+    }
+    void ReviewDetectedMatches()
+    {
+        if (!DetectedContextIsCurrent() || detectedSkipRanges.Count == 0) { ClearDetectedMatches(); Notice("No current detected matches; run Analyze with the next queue item first"); return; }
+        if (skipReviewWindow is { IsVisible: true }) { skipReviewWindow.Activate(); return; }
+        var content = new StackPanel { Margin = new Thickness(18) };
+        content.Children.Add(Text("Review repeated audio matches", 18, true));
+        var explanation = new TextBlock { Text = "Compared " + current!.Title + " with " + detectedReferenceTitle
+            + ". Repetition can also match story scenes. Preview a range before saving. This window stays open beside playback, so the main seek bar remains available."
+            + "\n\nSaving replaces the saved range of the same kind for the current video. Auto-skip is a separate opt-in setting. Close this window to defer; More → Review detected matches reopens the same results.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 12, 0, 12) }; content.Children.Add(explanation);
+        foreach (var range in detectedSkipRanges)
+        {
+            var row = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
+            row.Children.Add(Text((range.Kind == "intro" ? "Possible intro" : "Possible credits") + " · " + MediaEntry.Clock(range.StartSeconds) + "–" + MediaEntry.Clock(range.EndSeconds), 14, true));
+            var actions = Row(); actions.Margin = new Thickness(0, 8, 0, 0); actions.Children.Add(Button("Preview", () => PreviewDetectedRange(range)));
+            var save = Button("Save range", () => { }); save.IsEnabled = current!.SkipRanges.All(saved => saved != range); if (!save.IsEnabled) save.Content = "Saved";
+            save.Click += (_, _) => { if (SaveDetectedRange(range)) { save.Content = "Saved"; save.IsEnabled = false; } }; actions.Children.Add(save); row.Children.Add(actions); content.Children.Add(row);
+        }
+        var note = new TextBlock { Text = "Preview plays from just before the suggested range, then pauses. You can stop or seek at any time. Closing the review window stops its preview and retains the suggestions.", TextWrapping = TextWrapping.Wrap, FontSize = 11 }; content.Children.Add(note);
+        var review = new Window { Owner = this, Title = "Review intro / credit matches", Width = 540, MaxHeight = 620, SizeToContent = SizeToContent.Height, Content = new ScrollViewer { Content = content, VerticalScrollBarVisibility = ScrollBarVisibility.Auto }, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        review.Closed += (_, _) => { if (ReferenceEquals(skipReviewWindow, review)) skipReviewWindow = null; if (skipPreviewStopAt is not null) Pause(); };
+        skipReviewWindow = review; review.Show();
     }
     void UpdateTransport()
     {
@@ -465,7 +522,7 @@ internal sealed class PlayerWindow : Window
         else _ = LoadEntryAsync(item, position);
         Notice("Resumed this computer from the phone position at " + MediaEntry.Clock(position));
     }
-    void Ended() { if (!playing) return; playing = false; computerEnded = true; SaveProgress(); if (repeatMode == 2) { skipSession.Reset(); computerEnded = false; vlc?.Seek(0); vlc?.Play(); playing = vlc is not null; UpdateTransport(); } else _ = NextAsync(1, true); }
+    void Ended() { if (!playing) return; bool preview = skipPreviewStopAt is not null; skipPreviewStopAt = null; playing = false; computerEnded = true; SaveProgress(); if (preview) { UpdateTransport(); Notice("Preview finished; detected matches remain available in More"); return; } if (repeatMode == 2) { skipSession.Reset(); computerEnded = false; vlc?.Seek(0); vlc?.Play(); playing = vlc is not null; UpdateTransport(); } else _ = NextAsync(1, true); }
     async Task NextAsync(int delta, bool atEnd = false)
     {
         if (library.Data.Items.Count == 0) return; if (delta < 0 && CurrentTime > 3) { Seek(0); return; }
@@ -500,12 +557,12 @@ internal sealed class PlayerWindow : Window
         if (e.Key == Key.Escape && opening) { Unload(); Notice("Opening canceled"); e.Handled = true; return; }
         if (e.Key == Key.F11) { ToggleFullscreen(); e.Handled = true; return; }
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O) { _ = OpenMediaAsync(); e.Handled = true; return; }
-        if (Keyboard.FocusedElement is TextBox) return;
+        if (Keyboard.FocusedElement is TextBox || e.Key == Key.Space && Keyboard.FocusedElement is ButtonBase) return;
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.B) Bookmark(); else if (e.Key == Key.Space) TogglePlayback(); else if (e.Key == Key.Left) Seek(CurrentTime - 10); else if (e.Key == Key.Right) Seek(CurrentTime + 10); else return; e.Handled = true;
     }
     void SaveProgress() { if (current is not null && !opening && lastError is null) library.UpdateProgress(current.Id, computerEnded ? duration : CurrentTime, duration, computerEnded); SaveLibrary(); PushSharedPlaylist(); }
     void SaveLibrary() { try { library.Flush(); } catch (IOException error) { Notice("The saved library could not be written: " + error.Message); } }
-    void Unload() { skipAnalysis?.Cancel(); SaveProgress(); ++generation; DisposePlayer(); current = null; playing = opening = false; duration = 0; openingClock.Reset(); empty.Visibility = Visibility.Visible; nowTitle.Text = "Make room for a good story"; backend.Text = ""; UpdateTransport(); }
+    void Unload() { skipAnalysis?.Cancel(); ClearDetectedMatches(); SaveProgress(); ++generation; DisposePlayer(); current = null; playing = opening = false; duration = 0; openingClock.Reset(); empty.Visibility = Visibility.Visible; nowTitle.Text = "Make room for a good story"; backend.Text = ""; UpdateTransport(); }
     void Fail(string error) { lastError = error; opening = playing = false; ++generation; DisposePlayer(); openingClock.Reset(); if (fullscreen) ToggleFullscreen(); Notice(error); nowTitle.Text = "This file could not be played"; empty.Visibility = Visibility.Visible; }
     void Notice(string message) => status.Text = message;
     void ShowDiagnostics()
@@ -584,7 +641,7 @@ internal sealed class PlayerWindow : Window
     void Shutdown()
     {
         skipAnalysis?.Cancel();
-        if (closing) return; closing = true; SaveProgress(); ++generation; timer.Stop(); updateTimer.Stop(); lifetimeCancellation.Cancel(); StopSharing(); sharingPower.Dispose(); sharingWindow?.Close(); DisposePlayer(); lifetimeCancellation.Dispose();
+        if (closing) return; closing = true; ClearDetectedMatches(); SaveProgress(); ++generation; timer.Stop(); updateTimer.Stop(); lifetimeCancellation.Cancel(); StopSharing(); sharingPower.Dispose(); sharingWindow?.Close(); DisposePlayer(); lifetimeCancellation.Dispose();
     }
     void ToggleFullscreen()
     {
@@ -661,8 +718,29 @@ internal sealed class PlayerWindow : Window
         var subtitle = demo.SubtitleTracks.First(t => t.Id >= 0); demo.SelectSubtitle(subtitle.Id); ChangeCaptionDelay(.25); Check(demo.SubtitleTrack == subtitle.Id && demo.SubtitleDelay == .25, "Native external subtitle selection and delay"); demo.SelectSubtitle(-1);
         var snapshot = Path.Combine(output, "libvlc-avc-frame.png"); demo.Snapshot(snapshot); await Until(() => File.Exists(snapshot) && new FileInfo(snapshot).Length > 100, "Native libVLC AVC snapshot");
         Console.WriteLine("PASS: libVLC native displayed frames, snapshot, seek/pause/rate/volume/fullscreen and external caption selection/delay");
+        var keyboardSource = PresentationSource.FromVisual(this) ?? throw new InvalidOperationException("Native WPF keyboard source unavailable");
+        Check(autoSkip.Focus(), "Auto-skip checkbox accepts keyboard focus");
+        bool playbackBeforeSpace = playing, originalAutoSkip = library.Data.AutoSkipEnabled;
+        void SpaceOnAutoSkip()
+        {
+            var previewSpace = new KeyEventArgs(Keyboard.PrimaryDevice, keyboardSource, Environment.TickCount, Key.Space) { RoutedEvent = Keyboard.PreviewKeyDownEvent };
+            autoSkip.RaiseEvent(previewSpace);
+            Check(!previewSpace.Handled && playing == playbackBeforeSpace, "Focused checkbox Space bypasses global play/pause shortcut");
+            autoSkip.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, keyboardSource, Environment.TickCount, Key.Space) { RoutedEvent = Keyboard.KeyDownEvent });
+            autoSkip.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, keyboardSource, Environment.TickCount, Key.Space) { RoutedEvent = Keyboard.KeyUpEvent });
+        }
+        SpaceOnAutoSkip(); Check(library.Data.AutoSkipEnabled != originalAutoSkip && autoSkip.IsChecked == library.Data.AutoSkipEnabled, "Standard routed Space activates and persists the focused checkbox");
+        SpaceOnAutoSkip(); Check(library.Data.AutoSkipEnabled == originalAutoSkip && playing == playbackBeforeSpace, "Second checkbox Space restores opt-out without toggling playback");
+        Console.WriteLine("PASS: focused Auto-skip checkbox accepts standard routed Space activation while global video playback remains unchanged");
         var chaptered = await Open(Path.Combine(fixtures, "Luma-Skip-Chapters.mkv"));
-        try { await Until(() => chaptered.DisplayedPictures is > 0 && chaptered.Chapters.Any(c => c.Name == "Opening") && chaptered.Chapters.Any(c => c.Name == "Credits"), "Native labelled chapter metadata and decoded frames"); }
+        bool loggedActiveChapters = false;
+        try { await Until(() =>
+        {
+            var chapters = chaptered.Chapters;
+            if (chaptered.DisplayedPictures is > 0 && !loggedActiveChapters)
+            { loggedActiveChapters = true; Console.WriteLine("INFO: active skip chapter read: " + JsonSerializer.Serialize(new { chaptered.ChapterDiagnostics, duration = chaptered.Duration, time = chaptered.CurrentTime, names = chapters.Select(c => c.Name).ToArray() })); }
+            return chaptered.DisplayedPictures is > 0 && chapters.Any(c => c.Name == "Opening") && chapters.Any(c => c.Name == "Credits");
+        }, "Native labelled chapter metadata and decoded frames"); }
         catch (TimeoutException)
         {
             Console.WriteLine("INFO: skip fixture native diagnostics: " + JsonSerializer.Serialize(new { chaptered.ChapterDiagnostics, duration = chaptered.Duration, time = chaptered.CurrentTime, decoded = chaptered.DecodedVideo, displayed = chaptered.DisplayedPictures, names = chaptered.Chapters.Select(c => c.Name).ToArray() }));
@@ -687,9 +765,10 @@ internal sealed class PlayerWindow : Window
         Console.WriteLine("PASS: actual libVLC3 labelled chapters, opt-in opening/credits automatic native seeks, preserved post-credit scene/paused intent/same player, explicit rewind and manual Skip intro UI");
         var generatedAudio = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(output))!, "generated", "Luma-review-skip-audio.wav");
         string secondAudio = Path.Combine(output, "original-audio-match-second.wav"); File.Copy(generatedAudio, secondAudio, true);
+        IReadOnlyList<SkipAudioCandidate> observedAudioCandidates = [];
         using (var audioAnalysisTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(90)))
         {
-            var audioCandidates = await SkipAudioAnalyzer.AnalyzeAsync(generatedAudio, secondAudio, VlcPlayer.RuntimePath, audioAnalysisTimeout.Token, minimumMatchSeconds: 3, maxWindowSeconds: 4);
+            var audioCandidates = await SkipAudioAnalyzer.AnalyzeAsync(generatedAudio, secondAudio, VlcPlayer.RuntimePath, audioAnalysisTimeout.Token, minimumMatchSeconds: 3, maxWindowSeconds: 4); observedAudioCandidates = audioCandidates;
             Check(audioCandidates.Any(candidate => candidate.Kind == "intro" && candidate.FirstEndSeconds - candidate.FirstStartSeconds >= 3)
                 && audioCandidates.Any(candidate => candidate.Kind == "credits" && candidate.FirstEndSeconds - candidate.FirstStartSeconds >= 3), "Real approved libVLC audio analysis captures matching authored PCM opening and ending windows");
             Check(current is not null && current.SkipRanges.Count == 0 && ReferenceEquals(vlc, chaptered), "Analysis candidates do not apply ranges or replace playback without confirmation");
@@ -704,6 +783,25 @@ internal sealed class PlayerWindow : Window
         Check(chaptered.IsPaused && ReferenceEquals(vlc, chaptered), "Saved-range skip preserves the paused native player");
         library.SetSkipRanges(current.Id, []); skipDraft = null;
         Console.WriteLine("PASS: Skip setup marks native timestamps, persists a manual range overriding chapters, and Skip intro seeks it without changing paused playback intent");
+        var previewAudio = await Open(generatedAudio); Pause();
+        detectedSkipRanges = observedAudioCandidates.Select(candidate => new PlaybackSkipRange(candidate.Kind, candidate.FirstStartSeconds, candidate.FirstEndSeconds, "manual", "Confirmed repeated audio"))
+            .Where(range => PlaybackSkipPolicy.ValidatedRanges([range], duration).Count == 1).ToArray();
+        detectedSkipItem = current!.Id; detectedSkipPath = current.FilePath; detectedSkipGeneration = generation;
+        detectedReferenceTitle = Path.GetFileName(secondAudio); detectedFilesUnchanged = () => File.Exists(generatedAudio) && File.Exists(secondAudio); reviewSkipMatches.IsEnabled = true;
+        var reviewRange = detectedSkipRanges.First(range => range.Kind == "intro"); int cachedRanges = detectedSkipRanges.Count;
+        ReviewDetectedMatches(); await Task.Delay(100);
+        Check(skipReviewWindow?.IsVisible == true && IsEnabled && current.SkipRanges.Count == 0, "Detected-match review is modeless and does not save before confirmation");
+        skipReviewWindow!.UpdateLayout(); var reviewImage = new RenderTargetBitmap((int)Math.Ceiling(skipReviewWindow.ActualWidth), (int)Math.Ceiling(skipReviewWindow.ActualHeight), 96, 96, PixelFormats.Pbgra32); reviewImage.Render(skipReviewWindow);
+        var reviewPng = new PngBitmapEncoder(); reviewPng.Frames.Add(BitmapFrame.Create(reviewImage)); using (var reviewFile = File.Create(Path.Combine(output, "Luma-Windows-detected-matches.png"))) reviewPng.Save(reviewFile);
+        PreviewDetectedRange(reviewRange); await Until(() => !previewAudio.IsPaused && CurrentTime <= .5, "Preview starts at the actual native opening position");
+        double previewAnchor = CurrentTime; await Until(() => CurrentTime >= previewAnchor + .3 && !previewAudio.IsPaused && previewAudio.DecodedAudio is > 0, "Preview advances the actual native audio clock before saving it");
+        Check(current.SkipRanges.Count == 0 && !library.Data.AutoSkipEnabled, "Preview neither saves a range nor enables automatic skipping");
+        skipReviewWindow!.Close(); Check(skipReviewWindow is null && previewAudio.IsPaused && detectedSkipRanges.Count == cachedRanges && reviewSkipMatches.IsEnabled, "Declining review stops preview but retains cached results");
+        ReviewDetectedMatches(); Check(skipReviewWindow?.IsVisible == true && detectedSkipRanges.Count == cachedRanges, "Review reopens cached matches without another analysis");
+        double beforeSavingRange = CurrentTime;
+        Check(SaveDetectedRange(reviewRange) && current.SkipRanges.Single() == reviewRange && previewAudio.IsPaused && Math.Abs(CurrentTime - beforeSavingRange) < .1 && ReferenceEquals(vlc, previewAudio), "Explicit Save confirms one cached range without moving or rebuilding paused playback");
+        skipReviewWindow!.Close();
+        Console.WriteLine("PASS: modeless detected-match review previews native audio before saving, retains declined results, reopens without reanalysis, and saves only by explicit action");
         var hevc = await Open(Path.Combine(fixtures, "Luma-HEVC10-AAC51.mp4"));
         await Until(() => hevc.DecodedVideo is > 0 && hevc.DecodedAudio is > 0 && hevc.DisplayedPictures is > 0, "HEVC Main10/AAC5.1 decoded audio and displayed video");
         Pause(); Seek(.75); Play(); await Task.Delay(300); Check(CurrentTime >= .75, "HEVC/AAC seek retained synchronized native clock"); Pause();
@@ -781,7 +879,7 @@ internal sealed class PlayerWindow : Window
             SetTheme(theme); await Task.Delay(100); UpdateLayout(); var image = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); image.Render(layout);
             var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(image)); using var file = File.Create(Path.Combine(output, theme ? "Luma-Windows-dark.png" : "Luma-Windows-light.png")); png.Save(file);
         }
-        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", hevc10Matroska = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", autoSkipChapters = "passed", repeatedAudioAnalysis = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeChangeset = VlcPlayer.RuntimeChangeset, runtimeBundled = VlcPlayer.RuntimeBundled, dnsSdRegistration, idleSleepPrevention,
+        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", hevc10Matroska = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", autoSkipChapters = "passed", repeatedAudioAnalysis = "passed", detectedMatchReview = "passed", keyboardSkipToggle = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeChangeset = VlcPlayer.RuntimeChangeset, runtimeBundled = VlcPlayer.RuntimeBundled, dnsSdRegistration, idleSleepPrevention,
             physicalAudio = endpoints == 0 ? "unverified-no-active-render-endpoint" : "system-output-requested-audibility-not-measured", activeAudioRenderEndpoints = endpoints }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine("PASS: libVLC native lifecycle/resume, opt-in sharing UI pairing/revoke, and native UI theme snapshots; physical audibility remains explicitly separate");
     }
