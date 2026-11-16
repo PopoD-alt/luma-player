@@ -145,6 +145,32 @@ import Darwin
     func addSubtitle(_ url: URL) -> Bool {
         !closed && url.absoluteString.withCString { function("libvlc_media_player_add_slave", AddSlave.self)(mediaPlayer, 0, $0, true) == 0 }
     }
+    func chapters() -> [PlaybackChapter] {
+        guard !closed else { return [] }
+        typealias GetChapters = @convention(c) (Pointer?, Int32, UnsafeMutablePointer<Pointer?>?) -> Int32
+        typealias FreeChapters = @convention(c) (Pointer?, UInt32) -> Void
+        // libVLC3's 64-bit chapter struct is {int64 offset_ms,int64 duration_ms,char* name}.
+        var descriptions: Pointer?
+        let count = function("libvlc_media_player_get_full_chapter_descriptions", GetChapters.self)(mediaPlayer, -1, &descriptions)
+        defer { if let descriptions, count > 0 { function("libvlc_chapter_descriptions_release", FreeChapters.self)(descriptions, UInt32(count)) } }
+        guard count > 0, count <= 1024, let descriptions else { return [] }
+        var result: [PlaybackChapter] = []
+        for index in 0..<Int(count) {
+            guard let chapter = descriptions.load(fromByteOffset: index * MemoryLayout<Pointer?>.stride, as: Pointer?.self) else { continue }
+            let offset = chapter.load(as: Int64.self), duration = chapter.load(fromByteOffset: 8, as: Int64.self)
+            let pointer = chapter.load(fromByteOffset: 16, as: UnsafePointer<CChar>?.self)
+            // Chapter labels are untrusted media metadata, so copy a bounded prefix.
+            var name = ""
+            if let pointer {
+                let length = strnlen(pointer, 640)
+                if length < 640 { name = String(decoding: UnsafeBufferPointer(start: UnsafeRawPointer(pointer).assumingMemoryBound(to: UInt8.self), count: length), as: UTF8.self) }
+            }
+            guard offset >= 0, offset <= 31_536_000_000 else { continue }
+            result.append(PlaybackChapter(name: name, startSeconds: Double(offset) / 1000,
+                                          durationSeconds: duration > 0 && duration <= 31_536_000_000 ? Double(duration) / 1000 : 0))
+        }
+        return result
+    }
     func tracks(audio: Bool) -> [PlaybackTrack] {
         guard !closed else { return [] }
         let list = function(audio ? "libvlc_audio_get_track_description" : "libvlc_video_get_spu_description", GetTracks.self)(mediaPlayer)

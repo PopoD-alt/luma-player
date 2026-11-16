@@ -14,6 +14,35 @@ struct SharedMedia {
     var mobileDurationSeconds: Double? = nil
     var mobileUpdatedAtUnixSeconds: Double? = nil
     var mobileCompleted: Bool? = nil
+    var skipRanges: [SharedSkipRange] = []
+}
+
+
+/// Read-only skip metadata; this never authorizes remote playback commands.
+struct SharedSkipRange: Codable {
+    let kind: String
+    let startSeconds: Double
+    let endSeconds: Double
+    let source: String
+    var label: String? = nil
+
+    static func validated(_ input: [SharedSkipRange], duration: Double) -> [SharedSkipRange] {
+        let candidates = input.prefix(32).filter {
+            ["intro", "credits"].contains($0.kind) && ["manual", "chapter"].contains($0.source)
+                && $0.startSeconds.isFinite && $0.endSeconds.isFinite && $0.startSeconds >= 0
+                && $0.endSeconds <= 31_536_000 && $0.endSeconds - $0.startSeconds >= 0.25
+                && (!(duration.isFinite && duration > 0) || $0.endSeconds <= duration + 0.25)
+        }.sorted { $0.startSeconds < $1.startSeconds }
+        return Array(candidates.enumerated().filter { index, item in
+            !candidates.enumerated().contains { otherIndex, other in
+                index != otherIndex && item.startSeconds < other.endSeconds && other.startSeconds < item.endSeconds
+            }
+        }.prefix(8).map { _, item in
+            SharedSkipRange(kind: item.kind, startSeconds: item.startSeconds,
+                endSeconds: duration.isFinite && duration > 0 ? min(duration, item.endSeconds) : item.endSeconds,
+                source: item.source, label: item.label.map { String(decoding: $0.utf16.prefix(64), as: UTF16.self) })
+        })
+    }
 }
 
 struct SharedProgressReport: Decodable {

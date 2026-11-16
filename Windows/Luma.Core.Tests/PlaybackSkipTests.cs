@@ -34,6 +34,14 @@ public static class PlaybackSkipTests
         var manual = new PlaybackSkipRange("intro", .5, 1.5, "manual", "Saved intro");
         var merged = PlaybackSkipPolicy.Merge([manual],ranges,12);
         Check(merged.Count == 2 && merged[0] == manual && merged[1].Kind == "credits", "Saved range overrides only its own labelled kind");
+        var crossing = new PlaybackSkipRange("intro",7,9,"manual","Explicit saved opening");
+        var crossKind = PlaybackSkipPolicy.Merge([crossing],ranges,12);
+        Check(crossKind.Count==1 && crossKind.Single()==crossing,"Explicit manual range survives and removes any overlapping native kind");
+        Check(PlaybackSkipPolicy.FromChapters([new(0,12,"Opening")],12).Count==0,"A single Opening chapter cannot auto-skip the whole video");
+        Check(PlaybackSkipPolicy.FromChapters([new(0,3,"Credits"),new(3,9,"Story")],12).Count==0,"Credits near the start are not treated as an ending");
+        Check(PlaybackSkipPolicy.FromChapters([new(0,700,"Opening"),new(700,500,"Story")],1200).Count==0,"Overlong labelled opening is not trusted");
+        Check(PlaybackSkipPolicy.FromChapters([new(0,6000,"Story"),new(6000,3000,"Credits"),new(9000,1000,"Post-credits")],10000).Count==0,"Overlong labelled credits are not trusted");
+        Check(PlaybackSkipPolicy.ValidatedRanges([new("intro",0,12,"manual")],12).Count==1,"Explicit manual ranges are not restricted by chapter heuristics");
         foreach (var bad in new[] { manual with { StartSeconds=double.NaN },manual with { EndSeconds=double.PositiveInfinity },manual with { StartSeconds=-1 },manual with { StartSeconds=2, EndSeconds=1 },manual with { EndSeconds=13 },manual with { Kind="scene" },manual with { Source="unknown" },manual with { EndSeconds=31_536_001 } })
             Check(PlaybackSkipPolicy.ValidatedRanges([bad],12).Count == 0, "Unsafe segment rejected");
         Check(PlaybackSkipPolicy.ValidatedRanges([manual, new("credits",1,3,"manual")],12).Count==0,"Overlapping ranges are rejected rather than skipping ambiguous story");

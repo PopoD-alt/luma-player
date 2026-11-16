@@ -170,7 +170,7 @@ export default function LumaCodecProgress() {
   const [category,setCategory] = useCanvasState("luma-codecs-category", "all");
   const [detail,setDetail] = useCanvasState<string|null>("luma-codecs-detail", null);
   const [platform,setPlatform] = useCanvasState("luma-codecs-platform", "windows");
-  const [previewId,setPreviewId] = useCanvasState("luma-modern-player-preview", "android-controls");
+  const [previewId,setPreviewId] = useCanvasState("luma-auto-skip-preview", "android-auto-skip");
   const preview = snapshot.previews.find(p=>p.id===previewId) ?? snapshot.previews[0];
   const windows = platform === "windows";
   const entries = windows ? snapshot.windows_entries : snapshot.entries;

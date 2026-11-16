@@ -4,6 +4,14 @@ Luma keeps its native WPF interface, queue, bookmarks, resume positions, themes 
 
 The public download is **0.7.0 Windows preview build 4**, targeting Windows 11 x64 and .NET 10. The owner tested the supplied copies and reported that they work as expected. Windows on ARM, other Windows versions, every codec/profile and every physical output device are outside that general confirmation. No installer or production-signed Windows build is included.
 
+## Auto-skip preview
+
+The `feature/auto-skip` source builds **0.9.0 review build 6**; the public download remains 0.7.0. Enable the **Auto-skip** checkbox below the video. It starts off. Named intro/opening and credits/ending chapters supply boundaries, and the adjacent Skip button permits a manual jump. **Skip setup** marks exact start/end positions or clears saved ranges when a file lacks useful chapter names.
+
+**More → Analyze openings / credits with next queue item…** compares the current item with the next local episode. It scans bounded first/last-three-minute audio windows using the current playback runtime, shows progress and supports cancellation. Allow up to about 12 minutes for long files. Use **More → Review detected matches** to preview the proposed range, then Save it explicitly for the current video. Closing the review retains unconfirmed results while that input remains open. Pause before a long analysis; changing videos or automatic queue advance cancels it. Confirm a suggested range before it is saved for the current video; no analysis result enables auto-skip automatically. Audio can repeat in story scenes too, so review the actual boundary. Files remain local and unchanged; no AI model or cloud service is used.
+
+The library persists the switch and per-file ranges. Saved desktop ranges are shared read-only with Android 0.3.0. Explicit seeks and pauses keep user intent, and a separate post-credit chapter remains playable. A generic chapter name or an unlabelled post-credit scene cannot provide a reliable skip boundary by itself.
+
 ## Device progress review
 
 The latest source on `main` builds **0.8.0 review build 5**. [Native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43781716148) passes the current application source with its approved app-local runtime, including progress persistence, unchanged playback on incoming reports and explicit native resume. Local review EXEs remain cross-built on Mac; that result is source/runtime validation rather than a claim that those exact EXE bytes were run in CI. Public downloads below remain 0.7.0. The new queue and Details panel show independent Computer/Phone progress bars, times, percentages, completion state and the phone's last update. **Resume from phone** explicitly resumes at its saved position. An arriving phone checkpoint never seeks or replaces the running desktop player.

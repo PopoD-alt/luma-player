@@ -209,7 +209,8 @@ def main():
                        '-e', 'serverUrl', 'http://10.0.2.2:' + str(parameters['port']),
                        '-e', 'pairCode', parameters['code'],
                        '-e', 'demoId', parameters['ids']['demo'],
-                       '-e', 'hevcId', parameters['ids']['hevc10']]
+                       '-e', 'hevcId', parameters['ids']['hevc10'],
+                       '-e', 'skipId', parameters['ids']['skip']]
             if options.exercise_video_recovery:
                 command += ['-e', 'exerciseVideoRecovery', 'true']
             if options.native_diagnostics:
@@ -231,7 +232,7 @@ def main():
                 output = redact_diagnostics(result.stdout, parameters['code'])
                 (reports / 'instrumentation.log').write_text(output)
                 print(output, end='')
-                if result.returncode or 'OK (1 test)' not in output or any(marker in output for marker in ('FAILURES!!!', 'INSTRUMENTATION_FAILED', 'Process crashed')):
+                if result.returncode or not re.search(r'OK \([1-9][0-9]* tests?\)', output) or any(marker in output for marker in ('FAILURES!!!', 'INSTRUMENTATION_FAILED', 'Process crashed')):
                     raise RuntimeError('Android end-to-end playback checks did not pass.')
                 # Instrumentation captures playback before ActivityScenario closes;
                 # a screenshot here would show the launcher instead of the app.
@@ -239,7 +240,8 @@ def main():
                         ('luma-android-review.png', 'Luma-Android-review.png'),
                         ('luma-android-fullscreen.png', 'Luma-Android-fullscreen.png'),
                         ('luma-android-modern-controls.png', 'Luma-Android-modern-controls.png'),
-                        ('luma-android-playlist.png', 'Luma-Android-playlist.png')):
+                        ('luma-android-playlist.png', 'Luma-Android-playlist.png'),
+                        ('luma-android-auto-skip.png', 'Luma-Android-auto-skip.png')):
                     shot = subprocess.run(['adb', 'exec-out', 'run-as', 'dev.sdas.luma.preview',
                                            'cat', 'cache/' + device_name], stdout=subprocess.PIPE, check=True)
                     if not shot.stdout.startswith(b'\x89PNG\r\n\x1a\n'):

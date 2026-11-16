@@ -6,4 +6,5 @@
     <item name="connection_status" type="id" /><item name="player_status" type="id" />
     <item name="player_previous" type="id" /><item name="player_next" type="id" />
     <item name="player_playlist" type="id" /><item name="playback_playlist" type="id" />
+    <item name="player_auto_skip" type="id" /><item name="player_skip_segment" type="id" />
 </resources>

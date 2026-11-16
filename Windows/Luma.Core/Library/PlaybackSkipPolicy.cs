@@ -56,7 +56,9 @@ public static class PlaybackSkipPolicy
             var chapter = chapters[i]; string? kind = KindForChapter(chapter.Name); if (kind is null) continue;
             double end = i + 1 < chapters.Length ? chapters[i + 1].StartSeconds : duration;
             if (ValidTime(chapter.DurationSeconds) && chapter.DurationSeconds > 0) end = Math.Min(end, chapter.StartSeconds + chapter.DurationSeconds);
-            if (end - chapter.StartSeconds >= .25) ranges.Add(new(kind, chapter.StartSeconds, end, "chapter", chapter.Name));
+            double length = end - chapter.StartSeconds;
+            if (kind == "intro" && length > Math.Min(600, duration / 2) || kind == "credits" && (length > 1800 || chapter.StartSeconds < duration / 2)) continue;
+            if (length >= .25) ranges.Add(new(kind, chapter.StartSeconds, end, "chapter", chapter.Name));
         }
         return ValidatedRanges(ranges, duration);
     }
@@ -64,7 +66,7 @@ public static class PlaybackSkipPolicy
     public static IReadOnlyList<PlaybackSkipRange> Merge(IEnumerable<PlaybackSkipRange>? saved, IEnumerable<PlaybackSkipRange>? chapters, double duration)
     {
         var manual = ValidatedRanges(saved, duration).Where(r => r.Source == "manual").ToArray();
-        return ValidatedRanges(manual.Concat(ValidatedRanges(chapters, duration).Where(c => !manual.Any(m => m.Kind == c.Kind))), duration);
+        return ValidatedRanges(manual.Concat(ValidatedRanges(chapters, duration).Where(c => !manual.Any(m => m.Kind == c.Kind || m.StartSeconds < c.EndSeconds && c.StartSeconds < m.EndSeconds))), duration);
     }
     public static PlaybackSkipRange? Active(IEnumerable<PlaybackSkipRange> ranges, double position)
         => ValidTime(position) ? ranges.FirstOrDefault(r => position >= r.StartSeconds && position < r.EndSeconds - .1) : null;

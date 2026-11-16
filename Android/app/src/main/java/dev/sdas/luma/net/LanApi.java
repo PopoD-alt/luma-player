@@ -1,5 +1,7 @@
 package dev.sdas.luma.net;
 
+import dev.sdas.luma.SkipSegments;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,10 +43,15 @@ public final class LanApi {
         public final double durationSeconds, resumeSeconds;
         public final double computerProgressSeconds,computerUpdatedAtUnixSeconds,mobileProgressSeconds,mobileDurationSeconds,mobileUpdatedAtUnixSeconds;
         public final boolean computerCompleted,mobileCompleted;
+        public final List<SkipSegments.Range> skipRanges;
         Item(String id,String title,String mimeType,String streamPath,double duration,double resume) {
             this(id,title,mimeType,streamPath,duration,resume,resume,0,false,Double.NaN,0,0,false);
         }
         Item(String id,String title,String mimeType,String streamPath,double duration,double resume,double computerProgress,double computerUpdated,boolean computerCompleted,double mobileProgress,double mobileDuration,double mobileUpdated,boolean mobileCompleted) {
+            this(id,title,mimeType,streamPath,duration,resume,computerProgress,computerUpdated,computerCompleted,mobileProgress,mobileDuration,mobileUpdated,mobileCompleted,Collections.emptyList());
+        }
+        Item(String id,String title,String mimeType,String streamPath,double duration,double resume,double computerProgress,double computerUpdated,boolean computerCompleted,double mobileProgress,double mobileDuration,double mobileUpdated,boolean mobileCompleted,List<SkipSegments.Range> skipRanges) {
+            this.skipRanges=Collections.unmodifiableList(new ArrayList<>(skipRanges));
             this.id=id;this.title=title;this.mimeType=mimeType;this.streamPath=streamPath;this.durationSeconds=duration;this.resumeSeconds=resume;
             this.computerProgressSeconds=computerProgress;this.computerUpdatedAtUnixSeconds=computerUpdated;this.computerCompleted=computerCompleted;
             this.mobileProgressSeconds=mobileProgress;this.mobileDurationSeconds=mobileDuration;this.mobileUpdatedAtUnixSeconds=mobileUpdated;this.mobileCompleted=mobileCompleted;
@@ -139,7 +146,8 @@ public final class LanApi {
                 if(duration>0)computer=Math.min(computer,duration);
                 if(duration>0)mobileDuration=duration;
                 if(Double.isFinite(mobile)){double known=duration>0?duration:mobileDuration;if(known>0)mobile=Math.min(mobile,known);}
-                result.add(new Item(id,title,mime,path,duration,resume,computer,computerUpdated,optionalBoolean(item,"computerCompleted",false),mobile,mobileDuration,mobileUpdated,optionalBoolean(item,"mobileCompleted",false)));
+                if(item.has("skipRanges")&&!item.isNull("skipRanges")&&!(item.get("skipRanges") instanceof JSONArray))throw malformed();
+                result.add(new Item(id,title,mime,path,duration,resume,computer,computerUpdated,optionalBoolean(item,"computerCompleted",false),mobile,mobileDuration,mobileUpdated,optionalBoolean(item,"mobileCompleted",false),SkipSegments.parse(item.optJSONArray("skipRanges"),duration)));
             }
             return new Playlist(Collections.unmodifiableList(result),truncated,total);
         } catch (JSONException | IllegalArgumentException e) { throw malformed(); }

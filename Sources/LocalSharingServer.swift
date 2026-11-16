@@ -132,6 +132,12 @@ import Darwin
                 }
                 if let completed = item.computerCompleted { result["computerCompleted"] = completed }
                 if let completed = item.mobileCompleted { result["mobileCompleted"] = completed }
+                result["skipRanges"] = SharedSkipRange.validated(item.skipRanges, duration: item.durationSeconds).map { range -> [String: Any] in
+                    var value: [String: Any] = ["kind": range.kind, "startSeconds": range.startSeconds,
+                        "endSeconds": range.endSeconds, "source": range.source]
+                    if let label = range.label { value["label"] = label }
+                    return value
+                }
                 return result
             }
             client.json(["version": 1, "name": name, "items": items, "truncated": available.count > items.count, "totalItems": available.count]); return

@@ -6,6 +6,18 @@ The [public ARM64 preview APK](https://github.com/PopoD-alt/luma-player/releases
 
 The default Maven AAR remains **development-only**: its native/Java payload includes GPL components and is not the public APK's runtime. An explicit build selector chooses the reviewed ARM64 component. Its exact library/module/dependency/source/replacement audit is recorded in [ThirdParty/libvlc](../ThirdParty/libvlc/README.md). Technical component checks and the owner's successful test do not establish legal/patent clearance or every device/format combination.
 
+## Auto-skip preview
+
+This feature branch builds **0.3.0-preview / version code 3**. The public APK above is still 0.1.0; `main` has the previous 0.2.0 player source. The new review APK retains the public preview's application ID and signing certificate for in-place updates.
+
+Tap **Auto-skip Off** in the video header to open its settings, then enable **Auto-skip openings and credits**. It starts off and is a separate preference on each device. Recognised named chapters or saved ranges drive the jumps; a **Skip intro / Skip credits** button appears when a range is active. Explicit rewind/seek lets you replay that section, and enabling auto-skip while paused keeps playback paused.
+
+If there are no useful chapter labels, pause/seek to the desired start and choose **Mark opening start here** or **Mark credits start here**. Move to its end and mark the end. Ranges must fit within the video without overlapping. The phone saves its override locally; **Use desktop timings** restores the current shared desktop configuration. Clearing saved phone timings does not disable recognised native chapters; use the Auto-skip switch to turn automatic skipping off.
+
+A desktop running 0.9.0 shares its saved ranges as optional read-only playlist metadata. Audio matches confirmed on the desktop become saved ranges; Android does not run the episode-comparison job itself. Old hosts can keep streaming, with local chapter/manual skipping available where native timing and seeking are supported.
+
+Recognised labels include Intro/Opening/OP and Credits/Outro/Ending/ED plus supported simple variants. Numbered generic chapters, recaps and post-credit labels are ignored. Skipping to a chapter's end preserves a separately marked post-credit scene, but cannot detect a hidden scene inside the credits chapter. Automatic analysis is repeated-audio matching with confirmation on desktop, not an AI classifier or universal recognition of arbitrary video.
+
 ## Modern player review
 
 Current source on `main`: **0.2.0-preview**, Android version code **2**. The public 0.1.0-preview link above remains the earlier app. New review builds preserve its application ID and debug signing certificate so a normal update can retain app data. This is a local owner-review build, not a Play Store or production-signed release.
@@ -73,7 +85,7 @@ On Android17/API37 the app requests `ACCESS_LOCAL_NETWORK`. Android16/API36 uses
 
 ## Validation
 
-`testDebugUnitTest` exercises private-address restrictions, same-origin/session-scoped stream URLs, actual HTTP pairing/Bearer playlist requests, malformed metadata, redirect denial, GET/HEAD/range forwarding and token-hiding relay URLs. `lintDebug` checks Android API usage and app resources. New tests cover typed optional progress metadata, authenticated bounded progress POSTs, older-host compatibility, rate-limit/authorization behavior, coalescing, backward seeks and gesture clamping. The approved runtime build passes all 40 JVM tests and lint.
+`testDebugUnitTest` exercises private-address restrictions, same-origin/session-scoped stream URLs, actual HTTP pairing/Bearer playlist requests, malformed metadata, redirect denial, GET/HEAD/range forwarding and token-hiding relay URLs. `lintDebug` checks Android API usage and app resources. New tests cover typed optional progress metadata, authenticated bounded progress POSTs, older-host compatibility, rate-limit/authorization behavior, coalescing, backward seeks and gesture clamping. The approved runtime build passes all 52 JVM tests and lint.
 
 The instrumentation test uses the **production desktop sharing server**, not a simulated playlist or fake decoder. Start its synthetic fixture host with stdin kept open:
 
@@ -98,7 +110,7 @@ The modern-player ARM64 native checks pass against both production server implem
 
 The root [integration harness](../Scripts/run-android-integration.py) supports the actual portable Windows-Core server or native Mac server, custom app/test APK paths, separate report directories, and `--exercise-video-recovery`. Optional `--stress-transitions` exercises ten alternating AVC/HEVC opens within the same paired session, network, activity and native engine, with real native clock/frame progress after seeking and AVC fullscreen transitions. Local ARM64 source-built runtime runs have passed both desktop servers, normal startup, explicit recovery, independent APK re-signing and this bounded transition check. These are fixture checks rather than full VLC parity.
 
-Current Android sources pass default-development and approved-runtime debug builds, lint, and **40 JVM tests**. First playback prepares the native font cache on a background worker before creating any decoder or renderer; the UI remains responsive. A true-cold, quiet ARM64 run of the approved runtime passed preparation and the full playback checks. Preparation completion and persistent cache validation are reported separately; a failed cache-validation flag does not trigger repeated native scans.
+Current Android sources pass default-development and approved-runtime debug builds, lint, and **52 JVM tests**. First playback prepares the native font cache on a background worker before creating any decoder or renderer; the UI remains responsive. A true-cold, quiet ARM64 run of the approved runtime passed preparation and the full playback checks. Preparation completion and persistent cache validation are reported separately; a failed cache-validation flag does not trigger repeated native scans.
 
 MP4 and QuickTime MIME families (`video/mp4`, `audio/mp4`, `video/quicktime`) use the retained native avformat demuxer. A same-library comparison reproduced a short HTTP MP4 whose default demuxer left native time at 250 ms while frames advanced; avformat passed actual native-clock progression and precise seeking. Other container families retain automatic demuxer selection. The instrumentation waits for the desktop bookmark to settle and for the real native clock and displayed frames to advance before checking rapid Pause→Play.
 

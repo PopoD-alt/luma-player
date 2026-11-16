@@ -12,9 +12,10 @@ import Darwin
                 guard CommandLine.arguments.count == 3 else { throw CocoaError(.fileReadInvalidFileName) }
                 let fixtures = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
                 let ready = URL(fileURLWithPath: CommandLine.arguments[2])
-                let demo = UUID().uuidString.lowercased(), hevc = UUID().uuidString.lowercased()
-                var items = [SharedMedia(id: demo, url: fixtures.appendingPathComponent("Luma-Demo.mp4"), title: "Luma Demo", durationSeconds: 12, resumeSeconds: 0.5),
-                             SharedMedia(id: hevc, url: fixtures.appendingPathComponent("Luma-HEVC10-AAC51.mp4"), title: "Luma HEVC Main10 / AAC5.1", durationSeconds: 2, resumeSeconds: 0)]
+                let demo = UUID().uuidString.lowercased(), hevc = UUID().uuidString.lowercased(), skip = UUID().uuidString.lowercased()
+                var items = [SharedMedia(id: demo, url: fixtures.appendingPathComponent("Luma-Demo.mp4"), title: "Luma Demo", durationSeconds: 12, resumeSeconds: 0.5, skipRanges: [SharedSkipRange(kind: "intro", startSeconds: 4, endSeconds: 5, source: "manual", label: "Desktop saved opening")]),
+                             SharedMedia(id: hevc, url: fixtures.appendingPathComponent("Luma-HEVC10-AAC51.mp4"), title: "Luma HEVC Main10 / AAC5.1", durationSeconds: 2, resumeSeconds: 0),
+                             SharedMedia(id: skip, url: fixtures.appendingPathComponent("Luma-Skip-Chapters.mkv"), title: "Luma Opening / Credits", durationSeconds: 0, resumeSeconds: 0)]
                 guard items.allSatisfy({ FileManager.default.fileExists(atPath: $0.url.path) }) else { throw CocoaError(.fileNoSuchFile) }
                 let server = LocalSharingServer()
                 server.start(provider: { items }, onProgress: { report, stamp in
@@ -30,7 +31,7 @@ import Darwin
                     guard server.isSharing, Date() < deadline else { throw CocoaError(.fileReadUnknown) }
                     try await Task.sleep(for: .milliseconds(50))
                 }
-                let metadata: [String: Any] = ["port": server.port, "code": server.pairingCode, "ids": ["demo": demo, "hevc10": hevc]]
+                let metadata: [String: Any] = ["port": server.port, "code": server.pairingCode, "ids": ["demo": demo, "hevc10": hevc, "skip": skip]]
                 let data = try JSONSerialization.data(withJSONObject: metadata)
                 let pending = ready.deletingLastPathComponent().appendingPathComponent(".luma-pair-\(UUID().uuidString).pending")
                 let descriptor = pending.path.withCString { Darwin.open($0, O_WRONLY | O_CREAT | O_EXCL, 0o600) }

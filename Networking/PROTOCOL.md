@@ -39,6 +39,18 @@ port. Only local/private/link-local/loopback source addresses are accepted.
   the separate computer progress can show a completed item without resuming at
   its end. Timestamps are server-generated Unix seconds (fractions allowed),
   finite and between zero and 253,402,300,799. Completion fields are booleans.
+- Hosts can add optional `skipRanges` per playlist item: at most eight objects
+  `{ "kind":"intro", "startSeconds":30, "endSeconds":90, "source":"manual", "label":"Saved opening" }`.
+  Kinds are `intro`/`credits`, sources `manual`/`chapter`, labels at most64 UTF-16
+  units, and finite boundaries remain in the one-year time limit with start>=0,
+  end>start (at least0.25s), no overlap, and end within known media duration.
+  Missing/null means no shared saved ranges. Clients reject malformed ranges or
+  omit invalid/unknown entries; they never infer a fixed intro length.
+  This is read-only metadata: a host cannot turn on a client's auto-skip switch
+  or issue seek commands. Each player opts in locally. Android may override
+  desktop ranges locally; it does not write skip ranges back to the host.
+  Confirmed desktop audio matches are stored as manual ranges. Old v1 clients
+  ignore the additive field, and old hosts remain compatible.
 - `POST /v1/progress`, header `Authorization: Bearer <token>`, JSON
   `{ "itemId":"opaque-id","positionSeconds":120,"durationSeconds":1200,"completed":false }`,
   reports only the phone's playback position. Body size is at most 4,096 bytes;

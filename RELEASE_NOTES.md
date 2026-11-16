@@ -1,3 +1,17 @@
+# Luma Player 0.9.0 — auto-skip review, unreleased
+
+Mac **build 11**, Windows **review build 6**, Android **0.3.0-preview / version code 3** on `feature/auto-skip`. Public 0.7.0 downloads, `main`'s approved 0.8.0 source and update feeds remain unchanged pending review of this feature.
+
+- Opt-in Auto-skip plus manual Skip intro/credits controls on all three platforms.
+- Conservative labelled-chapter ranges and saved manual start/end timings. Desktop timings are shared as read-only playlist metadata; Android can keep a local override.
+- Separate post-credit chapter boundaries are preserved. Pausing, deliberate seeks, rapid seeks and late metadata retain user intent; skip requests are consumed before asynchronous seeking to prevent loops.
+- Optional local desktop repeated-audio comparison of two episodes, bounded to three-minute head/tail windows, with progress, cancellation, file-change checks and confirmation before saving. No AI model, cloud upload or implicit acceptance.
+- Existing libraries default to auto-skip off. Playback progress/bookmarks remain separate from skip ranges.
+
+General AI recognition of credits in any arbitrary video is not implemented. Repeated audio may be story material; suggestions require review, and generic chapter names are not guessed. Physical-device, real-episode and hardware/audio coverage remains separate from authored fixture checks. Review builds retain the existing ad-hoc/unsigned/debug signing model.
+
+---
+
 # Luma Player 0.8.0 — latest source, unreleased
 
 Android companion **0.2.0-preview / version code 2**; Mac **build 10**; Windows **review build 5**. These changes are included on `main` after the owner approved the updated interface. The public 0.7.0 downloads and stable update feeds are unchanged.

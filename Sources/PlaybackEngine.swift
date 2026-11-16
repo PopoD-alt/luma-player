@@ -79,6 +79,11 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     @Published private(set) var volume: Double = 80
     @Published private(set) var rate: Double = 1
     @Published private(set) var subtitleDelay: Double = 0
+    @Published private(set) var chapters: [PlaybackChapter] = []
+    private(set) var userSeekRevision = 0
+    private(set) var lastUserSeekTime: Double = 0
+    private(set) var recentUserSeekPositions: [Double] = []
+    func clearUserSeekHistory() { recentUserSeekPositions.removeAll() }
     @Published private(set) var audioTracks: [PlaybackTrack] = []
     @Published private(set) var subtitleTracks: [PlaybackTrack] = []
     @Published private(set) var selectedAudioTrack: Int32 = -1
@@ -114,6 +119,7 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
     private var vlcWaitingSince: Date?
     private var desiredVLCPlaying = false
     var vlcStatistics: (decodedVideo: Int32, displayedVideo: Int32, decodedAudio: Int32)? { vlc?.statistics }
+    var actualNativePlaybackTime: Double? { usingVLC ? vlc?.time : nil }
     var actualPlaybackRate: Double { usingVLC ? vlc?.actualRate ?? 0 : Double(player.rate) }
     var vlcRuntimePath: String? { vlc?.runtimePath }
     var actualSubtitleDelay: Double { vlc?.actualSubtitleDelay ?? 0 }
@@ -278,16 +284,21 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
         if let endObserver { NotificationCenter.default.removeObserver(endObserver); self.endObserver = nil }
         if let temporaryAudio { try? FileManager.default.removeItem(at: temporaryAudio); self.temporaryAudio = nil }
         avi = nil; lastFrame = -1; anchorTime = 0
-        hasMedia = false; isPlaying = false; isSeekable = false; currentTime = 0; duration = 0; state = "idle"
+        hasMedia = false; isPlaying = false; isSeekable = false; currentTime = 0; duration = 0; state = "idle"; recentUserSeekPositions.removeAll()
         cues = []; externalCues = []; matroskaSubtitles = [:]; subtitleRenderingNote = nil
         bitmapSubtitles = [:]; bitmapEventIndex = nil; canvas?.displayPGS(nil)
-        audioGroup = nil; textGroup = nil; audioTracks = []; subtitleTracks = []
+        audioGroup = nil; textGroup = nil; audioTracks = []; subtitleTracks = []; chapters = []
         selectedAudioTrack = -1; selectedSubtitleTrack = -1; subtitleDelay = 0; errorMessage = nil
         canvas?.imageLayer.contents = nil; canvas?.caption.stringValue = ""
     }
-    func seek(to seconds: Double) {
+    func seek(to seconds: Double, userInitiated: Bool = true) {
         guard isSeekable, seconds.isFinite else { return }
         let time = min(duration, max(0, seconds))
+        if userInitiated {
+            recentUserSeekPositions.append(contentsOf: [currentTime, time])
+            if recentUserSeekPositions.count > 32 { recentUserSeekPositions.removeFirst(recentUserSeekPositions.count - 32) }
+            userSeekRevision &+= 1; lastUserSeekTime = time
+        }
         currentTime = time; anchorTime = time; anchor = Date(); lastFrame = -1
         cancelFrame()
         if usingVLC { vlc?.seek(time); return }
@@ -399,7 +410,7 @@ struct PlaybackTrack: Identifiable, Equatable { let id: Int32; let name: String 
                 if Date().timeIntervalSince(vlcWaitingSince!) > 30 { state = "error"; errorMessage = "Opening timed out. Retry this file or check the libVLC runtime."; return }
             } else { vlcWaitingSince = nil }
             if Date().timeIntervalSince(tracksPoll) > 1 {
-                tracksPoll = Date(); audioTracks = vlc.tracks(audio: true); subtitleTracks = vlc.tracks(audio: false)
+                tracksPoll = Date(); audioTracks = vlc.tracks(audio: true); subtitleTracks = vlc.tracks(audio: false); chapters = vlc.chapters()
                 if !subtitleTracks.contains(where: { $0.id == -1 }) { subtitleTracks.insert(PlaybackTrack(id: -1, name: "Off"), at: 0) }
                 selectedAudioTrack = vlc.selectedAudio; selectedSubtitleTrack = vlc.selectedSubtitle
             }

@@ -404,25 +404,36 @@ internal sealed class PlayerWindow : Window
         if (!PlaybackSkipPolicy.ValidatedRanges(candidate, duration).Any(r => r == range)) { Notice("Choose an end after the start, within the video, without overlapping another saved range"); return; }
         library.SetSkipRanges(current.Id, candidate); skipDraft = null; PushSharedPlaylist(); UpdateSkipping(); Notice("Saved " + kind + " range for this video and paired phones");
     }
+    bool AnalysisSelectionIsCurrent(int expectedGeneration, Guid itemId, string path, Guid referenceId, string referencePath)
+    {
+        if (closing || generation != expectedGeneration || current?.Id != itemId || !string.Equals(current.FilePath, path, StringComparison.OrdinalIgnoreCase)) return false;
+        int index = library.Data.Items.FindIndex(entry => entry.Id == itemId && string.Equals(entry.FilePath, path, StringComparison.OrdinalIgnoreCase));
+        return index >= 0 && index + 1 < library.Data.Items.Count && library.Data.Items[index + 1].Id == referenceId
+            && string.Equals(library.Data.Items[index + 1].FilePath, referencePath, StringComparison.OrdinalIgnoreCase)
+            && File.Exists(path) && File.Exists(referencePath);
+    }
     async Task AnalyzeSkipsAsync()
     {
         if (skipAnalysis is not null || current is not { } item || vlc is null) { Notice("Open a video before starting analysis"); return; }
         int index = library.Data.Items.FindIndex(i => i.Id == item.Id);
         var next = index >= 0 && index + 1 < library.Data.Items.Count ? library.Data.Items[index + 1] : null;
         if (next is null || !File.Exists(item.FilePath) || !File.Exists(next.FilePath)) { Notice("Put another episode from the same series immediately after this one in the queue"); return; }
-        if (MessageBox.Show(this, "Compare repeated opening / ending audio in these two queue items?\n\n" + item.Title + "\n" + next.Title
+        int expectedGeneration = generation; string expectedPath = item.FilePath, referencePath = next.FilePath; Guid expectedId = item.Id, expectedReferenceId = next.Id;
+        string referenceTitle = next.Title;
+        if (MessageBox.Show(this, "Compare repeated opening / ending audio in these two queue items?\n\n" + item.Title + "\n" + referenceTitle
             + "\n\nAnalysis stays on this computer and can take about 12 minutes for long episodes. You can cancel from More. Any suggested ranges require your confirmation; the files are unchanged.", "Analyze intros / credits", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
-        int expectedGeneration = generation; string expectedPath = item.FilePath; Guid expectedId = item.Id;
+        if (!AnalysisSelectionIsCurrent(expectedGeneration, expectedId, expectedPath, expectedReferenceId, referencePath))
+        { Notice("The selected queue items changed; choose the current two episodes and try again"); return; }
         long firstLength, nextLength; DateTime firstWrite, nextWrite;
         try
         {
-            var firstInfo = new FileInfo(expectedPath); var nextInfo = new FileInfo(next.FilePath);
+            var firstInfo = new FileInfo(expectedPath); var nextInfo = new FileInfo(referencePath);
             firstLength = firstInfo.Length; nextLength = nextInfo.Length; firstWrite = firstInfo.LastWriteTimeUtc; nextWrite = nextInfo.LastWriteTimeUtc;
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException) { Notice("A selected file is unavailable; choose the current files and try again"); return; }
         bool FilesUnchanged()
         {
-            try { var first = new FileInfo(expectedPath); var second = new FileInfo(next.FilePath); return first.Exists && second.Exists && first.Length == firstLength && first.LastWriteTimeUtc == firstWrite && second.Length == nextLength && second.LastWriteTimeUtc == nextWrite; }
+            try { var first = new FileInfo(expectedPath); var second = new FileInfo(referencePath); return first.Exists && second.Exists && first.Length == firstLength && first.LastWriteTimeUtc == firstWrite && second.Length == nextLength && second.LastWriteTimeUtc == nextWrite; }
             catch (Exception error) when (error is IOException or UnauthorizedAccessException) { return false; }
         }
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token); skipAnalysis = cancellation;
@@ -431,7 +442,7 @@ internal sealed class PlayerWindow : Window
         {
             skipAnalysisStatus = "Analyzing repeated audio · 0%"; UpdateSkipping();
             var progress = new Progress<double>(fraction => { if (!closing && ReferenceEquals(skipAnalysis, cancellation)) { skipAnalysisStatus = "Analyzing repeated audio · " + Math.Clamp((int)(fraction * 100), 0, 100) + "% · More to cancel"; UpdateSkipping(); } });
-            var candidates = await SkipAudioAnalyzer.AnalyzeAsync(expectedPath, next.FilePath, VlcPlayer.RuntimePath, cancellation.Token, progress);
+            var candidates = await SkipAudioAnalyzer.AnalyzeAsync(expectedPath, referencePath, VlcPlayer.RuntimePath, cancellation.Token, progress);
             if (closing || cancellation.IsCancellationRequested || generation != expectedGeneration || current?.Id != expectedId || !string.Equals(current.FilePath, expectedPath, StringComparison.OrdinalIgnoreCase)
                 || !library.Data.Items.Any(entry => entry.Id == expectedId && string.Equals(entry.FilePath, expectedPath, StringComparison.OrdinalIgnoreCase)) || !FilesUnchanged()) return;
             if (candidates.Count == 0) { Notice("No confident repeated opening / ending audio found; use labelled chapters or mark exact ranges in Skip setup"); return; }
@@ -440,7 +451,7 @@ internal sealed class PlayerWindow : Window
                 candidate.FirstStartSeconds, candidate.FirstEndSeconds, "manual", "Confirmed repeated audio"))
                 .Where(range => PlaybackSkipPolicy.ValidatedRanges([range], duration).Count == 1).ToArray();
             detectedSkipItem = expectedId; detectedSkipPath = expectedPath; detectedSkipGeneration = expectedGeneration;
-            detectedReferenceTitle = next.Title; detectedFilesUnchanged = FilesUnchanged; reviewSkipMatches.IsEnabled = detectedSkipRanges.Count > 0;
+            detectedReferenceTitle = referenceTitle; detectedFilesUnchanged = FilesUnchanged; reviewSkipMatches.IsEnabled = detectedSkipRanges.Count > 0;
             if (detectedSkipRanges.Count > 0) { Notice("Detected audio matches are ready to preview in More → Review detected matches"); ReviewDetectedMatches(); }
             else Notice("Suggested ranges were outside the current video or ambiguous; no ranges were saved");
         }
@@ -783,7 +794,11 @@ internal sealed class PlayerWindow : Window
         Check(chaptered.IsPaused && ReferenceEquals(vlc, chaptered), "Saved-range skip preserves the paused native player");
         library.SetSkipRanges(current.Id, []); skipDraft = null;
         Console.WriteLine("PASS: Skip setup marks native timestamps, persists a manual range overriding chapters, and Skip intro seeks it without changing paused playback intent");
+        var snapshotFirst = current!; var snapshotNext = library.Add([generatedAudio]).FirstOrDefault() ?? library.Data.Items.Single(entry => entry.FilePath == Path.GetFullPath(generatedAudio)); int snapshotGeneration = generation;
+        Check(AnalysisSelectionIsCurrent(snapshotGeneration,snapshotFirst.Id,snapshotFirst.FilePath,snapshotNext.Id,snapshotNext.FilePath),"Analysis launch accepts the current adjacent queue snapshot");
+        Check(!AnalysisSelectionIsCurrent(snapshotGeneration-1,snapshotFirst.Id,snapshotFirst.FilePath,snapshotNext.Id,snapshotNext.FilePath),"Analysis launch rejects a stale generation before starting a worker");
         var previewAudio = await Open(generatedAudio); Pause();
+        Check(!AnalysisSelectionIsCurrent(snapshotGeneration,snapshotFirst.Id,snapshotFirst.FilePath,snapshotNext.Id,snapshotNext.FilePath),"Analysis launch rejects the old snapshot after actual native playback changes input");
         detectedSkipRanges = observedAudioCandidates.Select(candidate => new PlaybackSkipRange(candidate.Kind, candidate.FirstStartSeconds, candidate.FirstEndSeconds, "manual", "Confirmed repeated audio"))
             .Where(range => PlaybackSkipPolicy.ValidatedRanges([range], duration).Count == 1).ToArray();
         detectedSkipItem = current!.Id; detectedSkipPath = current.FilePath; detectedSkipGeneration = generation;

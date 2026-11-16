@@ -1,59 +1,52 @@
 {
-  "as_of": "2026-11-16T00:58:53+00:00",
-  "branch": "main \u00b7 desktop0.8 / Android0.2 source \u00b7 owner-approved interface \u00b7 public0.7 downloads unchanged",
+  "as_of": "2026-11-16T02:01:07+00:00",
+  "branch": "feature/auto-skip \u00b7 desktop0.9 / Android0.3 local review \u00b7 main0.8/public0.7 unchanged",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
-      "playback": "PASS: approved bundled runtime; native coordinator accepted a phone checkpoint without moving the paused computer player. Explicit Resume from phone sought/played on the same native view.",
-      "sharing": "PASS: actual NW listener progress bounds/auth/persistence; Android ARM64 native interoperability, independent GET matched phone5.496s while computer remained0.5s.",
-      "distribution": "Local review only: ad-hoc signed0.8 build10 in build/review/modern-player/Luma Player.app, strict deep signature verified. Public0.7 DMG and stable0.6.1 feed unchanged.",
-      "evidence": "build/mac-progress-ui-native.log"
+      "playback": "PASS0.9 native UI: intro native3.253s, credits10.221s plus displayed frames, separately marked postcredits preserved; same canvas, opt-in/paused/manual/rewind/rapid/late-metadata guards.",
+      "sharing": "PASS: saved ranges persist and are shared read-only. Actual local audio comparison found shifted opening/ending matches through production worker; preview and explicit atomic confirmation for both files, cancellation and file-change checks passed.",
+      "distribution": "Local ad-hoc signed0.9/build11 review app in build/review/auto-skip/Luma Player.app. Strict deep signature and exact approved native source verified. Public downloads/feeds unchanged.",
+      "evidence": "build/review/auto-skip/mac-native-evidence.json"
     },
     {
       "name": "Windows \u00b7 x64",
-      "playback": "PASS actual Windows0.8 CI43781716148: approved app-local runtime, HEVC Main10 MP4/MKV, AAC/AVC, captions, transport, fullscreen/lifecycle plus separate device progress and explicit native Resume from phone.",
-      "sharing": "PASS actual native WPF UI: paired phone7s persists and is visible without moving paused computer or replacing its native player. Explicit Resume from phone seeks that retained player. Portable Core auth/bounds/persistence/removal/throttle checks also pass.",
-      "distribution": "Local0.8/build5 review portable folder with approved runtime, source/notices and .NET runtime. EXE cross-built on Mac; matching Windows source/runtime passed native CI. Public0.7 archive and feeds unchanged.",
-      "evidence": "build/windows-device-progress-native-evidence/smoke/smoke-results.json"
+      "playback": "PASS native0.9 baseline CI43788581241: chapter/seek/frame/postcredit checks, keyboard toggle, actual audio matching, retained modeless preview/decline/reopen/save and all playback/sharing suites. Final manual-range priority and analysis launch guards await fresh native verification; focused Core/WPF checks pass.",
+      "sharing": "Read-only saved ranges and independent progress pass Core/HTTP tests. Local analysis is cancellable, candidate preview/save explicit, and changing the selected input invalidates results.",
+      "distribution": "Local0.9/build6 source under native review; no new Windows public archive or feed. Earlier0.8 owner folder preserved.",
+      "evidence": "build/windows-autoskip-native-evidence/smoke/smoke-results.json"
     },
     {
       "name": "Android \u00b7 API26+",
-      "playback": "PASS approved ARM64: modern icons, previous/next, cancelled/committed swipe seek, hidden volume/brightness HUDs, overlay drawer/same advancing player;40 JVM tests and lint. Native both hosts plus final original-key33.874s proof.",
-      "sharing": "PASS: real phone report5.496s matches independent host GET; computer position unchanged. Explicit Resume from computer advances native clock/frames on the same player. Phone and computer bars remain separate.",
-      "distribution": "Local Android0.2/code2 APK2997eff1 matches original public preview certificate. In-place code1\u2192code2 upgrade plus native playback/progress passes33.874s;267 nonsignature APK entries match both-server-tested payload. Complete native/app source and notices accompany review.",
-      "evidence": "build/android-modern-ui-evidence.json"
+      "playback": "PASS0.3 approved ARM64:52 JVM tests/lint; two native tests each against Mac38.819s and Windows-Core38.81s. Actual intro clock>=3.2s/credits>=10.2s plus displayed frames, postcredit scene, opt-in/paused/rewind/same surface/manual controls.",
+      "sharing": "PASS authenticated desktop saved range4\u20135 actually skips on phone; phone override6\u20137 survives reopen and takes priority. Existing independent phone/computer progress and AVC/HEVC streaming checks still pass.",
+      "distribution": "Local APK56841a9a, version0.3/code3, original public certificate24e6 retained. Same app bytes passed both hosts. Complete corresponding native/app sources and notices accompany review.",
+      "evidence": "build/review/auto-skip/android-native-evidence.json"
     }
   ],
   "next": [
-    "Latest source and usage guides uploaded to main after owner visual approval. Public0.7 downloads and stable update feeds remain unchanged; new binary packaging is a separate step.",
-    "Expand physical-device checks of fullscreen gestures, playlist drawer and cross-device progress; appearance approval does not establish a hardware/network/audio test matrix.",
-    "AI opening/credit skipping is proposed only: start with optional local Skip intro suggestions, then evaluate confidence on real episodes before optional auto skip.",
-    "Expand physical Wi-Fi discovery/continuity, speaker/surround output and A/V synchronization coverage; retain the documented x64 emulator Wi-Fi limitation."
+    "Finish native Windows auto-skip/audio preview verification, then hand over all local review copies. Main0.8, public0.7 binaries and stable update feeds remain unchanged.",
+    "Review actual episodes: labelled chapters, exact manual ranges, repeated-theme audio suggestions and separately marked post-credit scenes. Audio matching requires confirmation and can take12minutes for bounded maximum windows.",
+    "Expand physical-phone Wi-Fi/gesture/audio coverage and the documented x64 emulator Wi-Fi limitation. A repeated audio passage is not proof that it is an opening or credits."
   ],
   "previews": [
     {
-      "id": "android-controls",
-      "name": "Android \u00b7 modern fullscreen",
-      "path": "docs/images/android-modern-controls.png",
-      "caption": "Actual approved-runtime ARM64 emulator capture with vector controls, separate device times and visible progress-sharing state."
+      "id": "android-auto-skip",
+      "name": "Android \u00b7 Auto-skip and Skip credits",
+      "path": "docs/images/android-auto-skip.png",
+      "caption": "Actual approved ARM64 app with Auto-skip On and manual Skip credits after deliberate rewind. Its native tests require real clock/frame advancement and preserve the post-credit segment."
     },
     {
-      "id": "android-playlist",
-      "name": "Android \u00b7 left playlist drawer",
-      "path": "docs/images/android-playlist-drawer.png",
-      "caption": "Actual landscape left drawer over the same continuing native video. Computer blue / Phone orange bars distinguish their saved positions."
+      "id": "audio-matches",
+      "name": "Mac \u00b7 review repeated audio matches",
+      "path": "docs/images/audio-match-review.png",
+      "caption": "Actual production review UI on short authored test audio; no implicit acceptance. Production uses15-second minimum repeats and up to3-minute head/tail windows."
     },
     {
-      "id": "macos",
-      "name": "Mac \u00b7 separate device progress",
-      "path": "build/review/mac-progress/desktop-phone-progress.png",
-      "caption": "Actual isolated Mac UI: Computer2s, Phone8s, explicit Resume from phone. NSView capture omits native video child; native playback counters and same-view resume were checked separately."
-    },
-    {
-      "id": "windows",
-      "name": "Windows \u00b7 separate device progress",
-      "path": "build/windows-device-progress-native-evidence/smoke/Luma-Windows-dark.png",
-      "caption": "Actual native0.8 Windows app with approved app-local runtime. WPF capture omits native video child; native snapshots/frame counters and explicit resume passed separately."
+      "id": "mac-auto-skip",
+      "name": "Mac \u00b7 Auto-skip menu",
+      "path": "build/review/auto-skip/mac/Luma-Mac-auto-skip.png",
+      "caption": "Actual Mac0.9 interface. NSView capture omits the native video child; genuine native chapter seeks and displayed-frame counters pass separately."
     }
   ]
 }

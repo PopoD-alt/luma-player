@@ -21,6 +21,7 @@ public class LanPlaybackTest {
         String permission=Build.VERSION.SDK_INT>=37?Manifest.permission.ACCESS_LOCAL_NETWORK:Build.VERSION.SDK_INT==36?Manifest.permission.NEARBY_WIFI_DEVICES:null;
         if(permission!=null)InstrumentationRegistry.getInstrumentation().getUiAutomation().grantRuntimePermission(InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName(),permission);
         try(ActivityScenario<MainActivity> app=ActivityScenario.launch(MainActivity.class)){
+            app.onActivity(a->a.debugAutoSkip(false));
             app.onActivity(a->a.debugNativeDiagnostics("true".equals(args.getString("nativeDiagnostics"))));
             app.onActivity(a->a.debugConnect(url));await(app,MainActivity::debugPairVisible,15000,"Actual desktop info/pair dialog");
             app.onActivity(a->a.debugPair(code));await(app,a->a.debugPaired()&&a.debugPlaylistSize()>=2,15000,"Actual six-digit pairing and production playlist");
@@ -90,6 +91,38 @@ public class LanPlaybackTest {
             assertFalse("Android cached a saved movie",hasMedia(InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir()));
         }
     }
+    @Test public void autoSkipNamedChaptersAndSavedDesktopTimings()throws Exception{
+        Bundle args=InstrumentationRegistry.getArguments();String url=required(args,"serverUrl"),code=required(args,"pairCode"),skip=required(args,"skipId"),demo=required(args,"demoId");
+        String permission=Build.VERSION.SDK_INT>=37?Manifest.permission.ACCESS_LOCAL_NETWORK:Build.VERSION.SDK_INT==36?Manifest.permission.NEARBY_WIFI_DEVICES:null;
+        if(permission!=null)InstrumentationRegistry.getInstrumentation().getUiAutomation().grantRuntimePermission(InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName(),permission);
+        try(ActivityScenario<MainActivity> app=ActivityScenario.launch(MainActivity.class)){
+            try{
+                app.onActivity(a->{a.debugAutoSkip(false);a.debugConnect(url);});await(app,MainActivity::debugPairVisible,15000,"Auto-skip production pairing dialog");app.onActivity(a->a.debugPair(code));await(app,a->a.debugPaired()&&a.debugPlaylistSize()>=3,15000,"Auto-skip authored chapter fixture shared");
+                app.onActivity(a->a.debugPlay(skip));await(app,MainActivity::debugPlaybackPrepared,120000,"Auto-skip native preparation");
+                await(app,a->{Media.Stats st=a.debugStats();return a.debugResumeApplied()&&a.debugChapterSkipRanges()==2&&st!=null&&st.displayedPictures>0&&st.decodedVideo>0;},30000,"Actual native labelled chapters and displayed video");
+                int identity=value(app,MainActivity::debugPlayerIdentity),surface=value(app,MainActivity::debugVideoViewIdentity);
+                app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Pause before checking opt-in skip");
+                app.onActivity(a->a.debugSeek(1500));await(app,a->a.debugTime()>=1300&&a.debugTime()<=1800&&a.debugSkipVisible(),5000,"Opening identified without automatic skip while disabled");assertEquals(0,(int)value(app,MainActivity::debugSkipSeeks));
+                app.onActivity(a->a.debugAutoSkip(true));Thread.sleep(600);assertTrue("Enabling auto-skip while paused moved the native clock",value(app,MainActivity::debugTime)<2000);assertEquals(0,(int)value(app,MainActivity::debugSkipSeeks));
+                int displayed=value(app,a->a.debugStats().displayedPictures);app.onActivity(MainActivity::debugToggle);
+                await(app,a->a.debugSkipSeeks()==1&&a.debugTime()>=3200&&a.debugTime()<5000&&a.debugStats().displayedPictures>displayed,8000,"Real native auto-skip opening 1 to 3 seconds");
+                assertEquals(identity,(int)value(app,MainActivity::debugPlayerIdentity));assertEquals(surface,(int)value(app,MainActivity::debugVideoViewIdentity));
+                app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Pause before explicit replay of opening");app.onActivity(a->a.debugSeek(1500));await(app,a->a.debugTime()>=1300&&a.debugTime()<1900,5000,"Seek back into opening");app.onActivity(MainActivity::debugToggle);
+                await(app,a->a.debugTime()>=1750&&a.debugTime()<2800,5000,"User rewind plays opening without immediately skipping again");assertEquals(1,(int)value(app,MainActivity::debugSkipSeeks));
+                app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Pause explicit replay");app.onActivity(MainActivity::debugSkip);await(app,a->a.debugTime()>=2900&&a.debugTime()<3600&&a.debugPausedUi(),5000,"Manual Skip intro preserves paused intent");assertEquals(2,(int)value(app,MainActivity::debugSkipSeeks));
+                app.onActivity(a->a.debugSeek(7300));await(app,a->a.debugTime()>=7100&&a.debugTime()<7800,5000,"Approach credits after story");int beforeCreditsFrames=value(app,a->a.debugStats().displayedPictures);app.onActivity(MainActivity::debugToggle);
+                await(app,a->a.debugSkipSeeks()==3&&a.debugTime()>=10200&&a.debugTime()<11500&&a.debugStats().displayedPictures>beforeCreditsFrames,6000,"Credits skip ends at post-credits boundary, not EOF");
+                assertEquals(identity,(int)value(app,MainActivity::debugPlayerIdentity));assertEquals(surface,(int)value(app,MainActivity::debugVideoViewIdentity));
+                app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Pause in preserved post-credits scene");app.onActivity(a->a.debugSeek(8500));await(app,MainActivity::debugSkipVisible,5000,"Manual Skip credits remains available after replay");
+                app.onActivity(a->a.debugFull(true));await(app,a->a.debugIsFull()&&a.getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE,5000,"Auto-skip fullscreen review");Thread.sleep(1200);dismissSystemFullscreenHint();app.onActivity(a->{if(!a.debugChromeVisible())a.debugTapVideo();});await(app,MainActivity::debugChromeVisible,5000,"Auto-skip header visible");saveReviewScreenshot("luma-android-auto-skip.png");app.onActivity(a->a.debugFull(false));
+                app.onActivity(a->{a.debugAutoSkip(false);a.debugPlay(demo);});await(app,a->{Media.Stats st=a.debugStats();return a.debugResumeApplied()&&st!=null&&st.displayedPictures>0&&a.debugSkipRanges()==1;},25000,"Desktop saved range received on original MP4");
+                app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Pause original MP4");app.onActivity(a->a.debugSeek(4100));await(app,a->a.debugActiveSkipStart()==4,5000,"Host saved opening 4 to 5 seconds exposed");app.onActivity(a->a.debugAutoSkip(true));app.onActivity(MainActivity::debugToggle);await(app,a->a.debugSkipSeeks()==1&&a.debugTime()>=4900&&a.debugTime()<6500,6000,"Actual native skip from shared desktop range");
+                app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Pause to save phone override");app.onActivity(a->a.debugSaveSkip("intro",6,7));app.onActivity(a->a.debugPlay(demo));await(app,a->{Media.Stats st=a.debugStats();return a.debugResumeApplied()&&st!=null&&st.displayedPictures>0;},25000,"Reload phone-saved range from preferences");app.onActivity(MainActivity::debugToggle);await(app,MainActivity::debugPausedUi,5000,"Pause after saved-range reload");app.onActivity(a->a.debugSeek(6100));await(app,a->a.debugActiveSkipStart()==6,5000,"Persisted phone override takes priority over desktop timing");
+                System.out.println("PASS: actual native chapter intro/credits skipping, post-credits preservation, opt-in/paused/user-rewind guards, same player/surface, shared desktop range and saved phone override");
+            }finally{app.onActivity(a->{a.debugAutoSkip(false);if(a.debugCurrentId()!=null)a.debugUseDesktopSkipTimings();});}
+        }
+    }
+
     private static long desktopResumeMillis(String url,String code,String itemId)throws Exception{
         // Read the fixture's actual protocol metadata independently; its Mac and
         // portable hosts intentionally publish different resume positions.

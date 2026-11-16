@@ -73,12 +73,45 @@ func clockLabel(_ time: Double) -> String {
     @Published var notice: String?
     private var timer: AnyCancellable?
     private var sharingLibraryObserver: AnyCancellable?
+    @Published var autoSkipEnabled: Bool {
+        didSet {
+            skipPreferences.set(autoSkipEnabled, forKey: "autoSkipEnabled")
+            if autoSkipEnabled { skipState.reset(); suppressedUserSeekPositions = []; engine.clearUserSeekHistory(); lastUserSeekRevision = engine.userSeekRevision }
+        }
+    }
+    @Published private(set) var currentSkipRange: PlaybackSkipRange?
+    @Published private(set) var resolvedSkipRanges: [PlaybackSkipRange] = []
+    @Published private(set) var pendingSkipStart: Double?
+    @Published private(set) var pendingSkipKind: String?
+    @Published var showSkipAnalysis = false
+    @Published private(set) var skipAnalysisProgress: Double?
+    @Published private(set) var skipAnalysisMessage = ""
+    @Published private(set) var skipAudioCandidates: [SkipAudioCandidate] = []
+    @Published private(set) var selectedSkipAudioCandidateIDs: Set<String> = []
+    @Published private(set) var skipAnalysisFirstTitle = ""
+    @Published private(set) var skipAnalysisSecondTitle = ""
+    private var skipAnalysisFirstID: UUID?
+    private var skipAnalysisSecondID: UUID?
+    private var skipAnalysisFirstURL: URL?
+    private var skipAnalysisSecondURL: URL?
+    private var skipAnalysisFirstStamp: String?
+    private var skipAnalysisSecondStamp: String?
+    private var skipAnalysisGeneration = UUID()
+    private var skipAnalysisWorker: Task<[SkipAudioCandidate], Error>?
+    private let skipPreferences: UserDefaults
+    private var skipState = SkipPlaybackState()
+    private var lastUserSeekRevision = 0
+    private var suppressedUserSeekPositions: [Double] = []
+    private var pendingResumeIsExplicit = false
+    private var pendingSkipItemID: UUID?
     private var pendingResume: Double?
     private var handledEnd = false
     private var noticeDeadline: Date = .distantPast
     private var fullscreenObservers: [NSObjectProtocol] = []
 
-    init(library: LibraryStore? = nil) {
+    init(library: LibraryStore? = nil, preferences: UserDefaults = .standard) {
+        self.skipPreferences = preferences
+        self.autoSkipEnabled = preferences.bool(forKey: "autoSkipEnabled")
         self.engine = PlaybackEngine()
         self.library = library ?? LibraryStore()
         sharingLibraryObserver = self.library.$items.dropFirst().sink { [weak self] _ in
@@ -144,6 +177,10 @@ func clockLabel(_ time: Double) -> String {
         library.select(item.id)
         pendingResume = item.resumeTime > 3 ? item.resumeTime : nil
         handledEnd = false
+        skipState.reset(); suppressedUserSeekPositions = []; engine.clearUserSeekHistory(); lastUserSeekRevision = engine.userSeekRevision
+        pendingResumeIsExplicit = false
+        currentSkipRange = nil; resolvedSkipRanges = []
+        pendingSkipStart = nil; pendingSkipKind = nil; pendingSkipItemID = nil
         engine.load(item.url)
     }
 
@@ -157,20 +194,177 @@ func clockLabel(_ time: Double) -> String {
 
     private func tick() {
         if notice != nil, Date() > noticeDeadline { notice = nil }
+        // A slider/keyboard/manual seek during startup supersedes an older
+        // saved-resume request rather than being overwritten by the next tick.
+        if engine.userSeekRevision != lastUserSeekRevision { pendingResume = nil; pendingResumeIsExplicit = false }
         if let resume = pendingResume, engine.isSeekable, engine.duration > 0, engine.isPlaying {
             pendingResume = nil
-            engine.seek(to: min(resume, max(0, engine.duration - 1)))
+            let explicit = pendingResumeIsExplicit; pendingResumeIsExplicit = false
+            engine.seek(to: min(resume, max(0, engine.duration - 1)), userInitiated: explicit)
             tell("Resumed at \(clockLabel(resume))")
         }
         if let id = library.selectedID, engine.hasMedia, pendingResume == nil, engine.duration > 0, engine.state != "opening" {
             library.updateProgress(id: id, time: engine.currentTime, duration: engine.duration)
         }
+        updateAutoSkip()
         if engine.state == "ended", !handledEnd {
             handledEnd = true
             if let id = library.selectedID { library.completeProgress(id: id) }
             if loopMode == 1, let item = library.selectedItem { play(item) }
             else { next(wrap: loopMode == 2) }
         }
+    }
+
+    private func updateAutoSkip() {
+        guard let item = library.selectedItem, engine.hasMedia, engine.duration > 0 else {
+            currentSkipRange = nil; resolvedSkipRanges = []; return
+        }
+        resolvedSkipRanges = SkipPolicy.resolved(manual: item.skipRanges ?? [], chapters: engine.chapters, duration: engine.duration)
+        if lastUserSeekRevision != engine.userSeekRevision {
+            lastUserSeekRevision = engine.userSeekRevision
+            suppressedUserSeekPositions = engine.recentUserSeekPositions
+        }
+        for position in suppressedUserSeekPositions { skipState.suppress(at: position, ranges: resolvedSkipRanges) }
+        currentSkipRange = resolvedSkipRanges.first { $0.contains(engine.currentTime) }
+        guard pendingResume == nil,
+              let range = skipState.take(at: engine.currentTime, ranges: resolvedSkipRanges, enabled: autoSkipEnabled,
+                                         playing: engine.isPlaying && engine.state == "playing", seekable: engine.isSeekable) else { return }
+        performSkip(range)
+    }
+
+    func skipCurrentSegment() {
+        guard let range = currentSkipRange, engine.isSeekable, engine.hasMedia else { return }
+        skipState.consume(range); performSkip(range)
+    }
+
+    private func performSkip(_ range: PlaybackSkipRange) {
+        // Let the native clock reach EOF naturally rather than declaring an item
+        // complete early; a following post-credit chapter remains playable.
+        let target = min(range.endSeconds, max(0, engine.duration - 0.05))
+        engine.seek(to: target, userInitiated: false)
+        currentSkipRange = nil
+        tell(range.kind == "intro" ? "Skipped intro" : "Skipped credits")
+    }
+
+    func markSkipStart(kind: String) {
+        guard ["intro", "credits"].contains(kind), let item = library.selectedItem,
+              engine.hasMedia, engine.duration > 0, engine.currentTime.isFinite else { return }
+        pendingSkipItemID = item.id; pendingSkipKind = kind; pendingSkipStart = engine.currentTime
+        tell("\(kind == "intro" ? "Intro" : "Credits") starts at \(clockLabel(engine.currentTime)). Move to its end and choose Mark end.")
+    }
+
+    func markSkipEnd() {
+        guard let id = pendingSkipItemID, id == library.selectedID, let kind = pendingSkipKind, let start = pendingSkipStart,
+              engine.hasMedia, engine.duration > 0 else { return }
+        let range = PlaybackSkipRange(kind: kind, startSeconds: start, endSeconds: engine.currentTime, source: "manual", label: kind == "intro" ? "Intro" : "Credits")
+        guard library.setSkipRange(id: id, range: range) else { tell("Choose an end after the start, within this video and outside the other saved range."); return }
+        pendingSkipStart = nil; pendingSkipKind = nil; pendingSkipItemID = nil
+        updateAutoSkip(); tell("Saved \(kind == "intro" ? "intro" : "credits") range for this video")
+    }
+
+    func clearSkipRange(kind: String? = nil) {
+        guard let id = library.selectedID else { return }
+        library.clearSkipRanges(id: id, kind: kind)
+        pendingSkipStart = nil; pendingSkipKind = nil; pendingSkipItemID = nil
+        updateAutoSkip(); tell("Cleared saved skip timings\(kind == nil ? "" : " for " + kind!)")
+    }
+
+    var nextAnalysisItem: MediaItem? {
+        guard let index = library.items.firstIndex(where: { $0.id == library.selectedID }), index + 1 < library.items.count else { return nil }
+        let next = library.items[index + 1]
+        return next.isAvailable ? next : nil
+    }
+
+    private func analysisFileStamp(_ url: URL) -> String? {
+        let resolved = url.standardizedFileURL.resolvingSymlinksInPath()
+        guard let values = try? FileManager.default.attributesOfItem(atPath: resolved.path),
+              values[.type] as? FileAttributeType == .typeRegular,
+              let size = values[.size] as? NSNumber, let inode = values[.systemFileNumber] as? NSNumber,
+              let date = values[.modificationDate] as? Date else { return nil }
+        return "\(resolved.path):\(inode.uint64Value):\(size.uint64Value):\(date.timeIntervalSince1970)"
+    }
+
+    func analyzeSkipAudioWithNext() { beginSkipAudioAnalysis(minimumMatchSeconds: 15, maxWindowSeconds: 180) }
+    #if LUMA_UI_TEST
+    func analyzeSkipAudioFixture() { beginSkipAudioAnalysis(minimumMatchSeconds: 2.5, maxWindowSeconds: 6) }
+    #endif
+    private func beginSkipAudioAnalysis(minimumMatchSeconds: Double, maxWindowSeconds: Double) {
+        guard skipAnalysisProgress == nil, let first = library.selectedItem, first.isAvailable, let second = nextAnalysisItem,
+              let runtimePath = engine.vlcRuntimePath else { tell("Open a video and add the next episode to the queue first."); return }
+        let firstURL = first.url, secondURL = second.url
+        guard let firstStamp = analysisFileStamp(firstURL), let secondStamp = analysisFileStamp(secondURL) else { tell("The selected files are unavailable."); return }
+        skipAnalysisGeneration = UUID(); let token = skipAnalysisGeneration
+        skipAnalysisFirstID = first.id; skipAnalysisSecondID = second.id
+        skipAnalysisFirstURL = firstURL; skipAnalysisSecondURL = secondURL
+        skipAnalysisFirstStamp = firstStamp; skipAnalysisSecondStamp = secondStamp
+        skipAnalysisFirstTitle = first.title; skipAnalysisSecondTitle = second.title
+        skipAudioCandidates = []; selectedSkipAudioCandidateIDs = []; skipAnalysisProgress = 0; skipAnalysisMessage = "Comparing opening and ending audio locally. This can take several minutes; you can cancel at any time."
+        showSkipAnalysis = true
+        let reportProgress: @Sendable (Double) -> Void = { [weak self] fraction in
+            guard fraction.isFinite, let self else { return }
+            Task { @MainActor in
+                guard self.skipAnalysisGeneration == token, self.skipAnalysisWorker != nil else { return }
+                self.skipAnalysisProgress = min(1, max(0, fraction))
+            }
+        }
+        let worker = Task.detached(priority: .utility) {
+            try SkipAudioAnalysis.analyze(first: firstURL, second: secondURL, runtimePath: runtimePath,
+                progress: reportProgress, cancelled: { Task.isCancelled }, minimumMatchSeconds: minimumMatchSeconds, maxWindowSeconds: maxWindowSeconds)
+        }
+        skipAnalysisWorker = worker
+        Task { @MainActor [weak self] in
+            do {
+                let candidates = try await worker.value
+                guard let self, self.skipAnalysisGeneration == token else { return }
+                self.skipAnalysisWorker = nil; self.skipAnalysisProgress = nil; self.skipAudioCandidates = candidates
+                self.skipAnalysisMessage = candidates.isEmpty ? "No reliable repeated opening or ending audio was found. You can still mark timings manually."
+                    : "Review the proposed timings before saving. An audio match can include repeated story material; nothing is saved or skipped until you confirm."
+            } catch {
+                guard let self, self.skipAnalysisGeneration == token else { return }
+                self.skipAnalysisWorker = nil; self.skipAnalysisProgress = nil
+                self.skipAnalysisMessage = "Analysis stopped: " + error.localizedDescription
+            }
+        }
+    }
+
+    func cancelSkipAnalysis() {
+        skipAnalysisGeneration = UUID(); skipAnalysisWorker?.cancel(); skipAnalysisWorker = nil
+        skipAnalysisProgress = nil; skipAudioCandidates = []; selectedSkipAudioCandidateIDs = []; skipAnalysisMessage = "Analysis cancelled. Saved timings are unchanged."
+    }
+
+    func previewSkipAudioCandidate(_ candidate: SkipAudioCandidate) {
+        guard let id = skipAnalysisFirstID, let item = library.items.first(where: { $0.id == id }), item.url == skipAnalysisFirstURL else { return }
+        // A deliberate preview is respected even if auto-skip was already on.
+        if library.selectedID == id, engine.hasMedia, engine.isSeekable { engine.seek(to: candidate.firstStartSeconds) }
+        else { play(item); pendingResume = candidate.firstStartSeconds; pendingResumeIsExplicit = true }
+        showSkipAnalysis = false
+    }
+
+    func selectSkipAudioCandidate(_ candidate: SkipAudioCandidate, selected: Bool) {
+        if selected {
+            let sameKind = Set(skipAudioCandidates.filter { $0.kind == candidate.kind }.map(\.id))
+            selectedSkipAudioCandidateIDs.subtract(sameKind); selectedSkipAudioCandidateIDs.insert(candidate.id)
+        } else { selectedSkipAudioCandidateIDs.remove(candidate.id) }
+    }
+
+    func confirmSkipAudioCandidates() {
+        guard skipAnalysisProgress == nil, !skipAudioCandidates.isEmpty,
+              let firstID = skipAnalysisFirstID, let secondID = skipAnalysisSecondID,
+              let firstURL = skipAnalysisFirstURL, let secondURL = skipAnalysisSecondURL,
+              library.items.contains(where: { $0.id == firstID && $0.url == firstURL }),
+              library.items.contains(where: { $0.id == secondID && $0.url == secondURL }),
+              analysisFileStamp(firstURL) == skipAnalysisFirstStamp, analysisFileStamp(secondURL) == skipAnalysisSecondStamp else {
+            skipAnalysisMessage = "The videos changed or left the queue. Analyze them again before saving timings."; return
+        }
+        let selected = skipAudioCandidates.filter { selectedSkipAudioCandidateIDs.contains($0.id) }
+        guard !selected.isEmpty, selected.count <= 2 else { return }
+        let first = selected.map { PlaybackSkipRange(kind: $0.kind, startSeconds: $0.firstStartSeconds, endSeconds: $0.firstEndSeconds, source: "manual", label: "Confirmed audio match") }
+        let second = selected.map { PlaybackSkipRange(kind: $0.kind, startSeconds: $0.secondStartSeconds, endSeconds: $0.secondEndSeconds, source: "manual", label: "Confirmed audio match") }
+        guard library.setSkipRanges([firstID: first, secondID: second]) else {
+            skipAnalysisMessage = "Those timings overlap saved ranges or exceed a video's known duration. Clear the conflicting saved timings before confirming."; return
+        }
+        showSkipAnalysis = false; skipAudioCandidates = []; selectedSkipAudioCandidateIDs = []; updateAutoSkip()
+        tell("Saved confirmed skip timings for both videos. Auto-skip remains " + (autoSkipEnabled ? "on." : "off until enabled."))
     }
 
     func next(wrap: Bool = false) {
@@ -205,7 +399,7 @@ func clockLabel(_ time: Double) -> String {
             engine.seek(to: bookmark.time)
         } else {
             play(item)
-            pendingResume = bookmark.time
+            pendingResume = bookmark.time; pendingResumeIsExplicit = true
         }
     }
 
@@ -226,7 +420,7 @@ func clockLabel(_ time: Double) -> String {
             engine.seek(to: time)
             if !engine.isPlaying { engine.togglePause() }
         } else {
-            play(item); pendingResume = time
+            play(item); pendingResume = time; pendingResumeIsExplicit = true
         }
         tell(time > 0 ? "Continuing from phone at \(clockLabel(time))" : "Playing again from the beginning")
     }
@@ -266,7 +460,10 @@ func clockLabel(_ time: Double) -> String {
                     computerProgressSeconds: time, computerUpdatedAtUnixSeconds: item.computerUpdatedAtUnixSeconds,
                     computerCompleted: completed, mobileProgressSeconds: item.mobileProgressSeconds,
                     mobileDurationSeconds: item.mobileDurationSeconds, mobileUpdatedAtUnixSeconds: item.mobileUpdatedAtUnixSeconds,
-                    mobileCompleted: item.mobileCompleted)
+                    mobileCompleted: item.mobileCompleted,
+                    skipRanges: (item.skipRanges ?? []).compactMap { $0.validated(duration: duration) }.map {
+                        SharedSkipRange(kind: $0.kind, startSeconds: $0.startSeconds, endSeconds: $0.endSeconds, source: $0.source, label: $0.label)
+                    })
             }
         }, onProgress: { [weak self] report, updatedAt in
             guard let self, let id = UUID(uuidString: report.itemId) else { return false }
@@ -274,7 +471,7 @@ func clockLabel(_ time: Double) -> String {
                 duration: report.durationSeconds, completed: report.completed, updatedAt: updatedAt)
         })
     }
-    func shutdown() { sharingLibraryObserver?.cancel(); sharing.stop(); saveProgress(); engine.shutdown() }
+    func shutdown() { cancelSkipAnalysis(); sharingLibraryObserver?.cancel(); sharing.stop(); saveProgress(); engine.shutdown() }
 }
 
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -474,6 +671,7 @@ struct PlayerView: View {
         .sheet(isPresented: $player.showShortcuts) { shortcutSheet }
         .sheet(isPresented: $player.showFormatSupport) { CodecSupportView() }
         .sheet(isPresented: $player.showSharing) { LocalSharingView(player: player, server: player.sharing) }
+        .sheet(isPresented: $player.showSkipAnalysis) { skipAnalysisSheet }
         .onExitCommand { if player.isVideoFullscreen { player.toggleVideoFullscreen() } }
         .onChange(of: engine.currentTime) { _, value in if !ui.isSeeking { ui.seekValue = value } }
     }
@@ -610,6 +808,19 @@ struct PlayerView: View {
                     }
                 }
             }
+            if engine.hasMedia {
+                VStack {
+                    HStack { Spacer(); skipMenu.padding(16) }
+                    Spacer()
+                    if let range = player.currentSkipRange, engine.isSeekable {
+                        HStack { Spacer(); Button(action: player.skipCurrentSegment) {
+                            Label(range.actionTitle, systemImage: "forward.end.fill").font(.system(size: 13, weight: .semibold))
+                                .padding(.horizontal, 18).padding(.vertical, 12)
+                                .background(.ultraThinMaterial, in: Capsule()).overlay(Capsule().stroke(.white.opacity(0.3), lineWidth: 0.7))
+                        }.buttonStyle(.plain).accessibilityIdentifier("skipCurrentSegment").padding(20) }
+                    }
+                }
+            }
             if engine.state == "opening" || engine.state == "buffering" { ProgressView().controlSize(.large).padding(20).background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 16)) }
             if let error = engine.errorMessage {
                 VStack(spacing: 12) { Image(systemName: "exclamationmark.triangle").font(.largeTitle).foregroundStyle(ember); Text("Playback needs attention").font(.headline); Text(error).font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.6)).multilineTextAlignment(.center); HStack { Button("Dismiss") { engine.errorMessage = nil }; Button("Open another file", action: player.openFiles) } }.padding(30).frame(maxWidth: 380).background(panel, in: RoundedRectangle(cornerRadius: 16))
@@ -617,6 +828,68 @@ struct PlayerView: View {
             if let notice = player.notice { VStack { Spacer(); Text(notice).font(.system(size: 12, weight: .medium)).padding(.horizontal, 16).padding(.vertical, 10).background(.ultraThinMaterial, in: Capsule()).padding(20) }.allowsHitTesting(false) }
         }.clipShape(RoundedRectangle(cornerRadius: player.isVideoFullscreen ? 0 : 20)).overlay(RoundedRectangle(cornerRadius: player.isVideoFullscreen ? 0 : 20).stroke(.white.opacity(player.isVideoFullscreen ? 0 : 0.065), lineWidth: 1)).padding(.horizontal, player.isVideoFullscreen ? 0 : 20).frame(maxWidth: .infinity, maxHeight: .infinity).foregroundStyle(.white).environment(\.colorScheme, .dark)
             .help(player.isVideoFullscreen ? "Double-click or press Escape to leave full screen" : "Double-click for video full screen")
+    }
+
+    private var skipMenu: some View {
+        Menu {
+            Toggle("Auto-skip intros and credits", isOn: $player.autoSkipEnabled)
+            Divider()
+            if player.resolvedSkipRanges.isEmpty { Text("No labelled chapters or saved timings") }
+            ForEach(player.resolvedSkipRanges) { range in
+                Text("\(range.kind == "intro" ? "Intro" : "Credits"): \(clockLabel(range.startSeconds))–\(clockLabel(range.endSeconds)) · \(range.source == "manual" ? "Saved" : "Chapter")")
+            }
+            Divider()
+            if player.skipAnalysisProgress != nil {
+                Button("View audio analysis progress") { player.showSkipAnalysis = true }
+                Button("Cancel audio analysis", action: player.cancelSkipAnalysis)
+            } else {
+                if let next = player.nextAnalysisItem {
+                    Button("Analyze audio with next video: \(next.title)", action: player.analyzeSkipAudioWithNext)
+                }
+                if !player.skipAudioCandidates.isEmpty { Button("Review detected audio matches") { player.showSkipAnalysis = true } }
+            }
+            Divider()
+            Button("Mark intro start here") { player.markSkipStart(kind: "intro") }
+            Button("Mark credits start here") { player.markSkipStart(kind: "credits") }
+            if let start = player.pendingSkipStart {
+                Button("Mark \(player.pendingSkipKind == "intro" ? "intro" : "credits") end here (from \(clockLabel(start)))", action: player.markSkipEnd)
+            }
+            Divider()
+            Button("Clear saved intro") { player.clearSkipRange(kind: "intro") }
+            Button("Clear saved credits") { player.clearSkipRange(kind: "credits") }
+        } label: {
+            Label(player.autoSkipEnabled ? "Auto-skip on" : "Auto-skip off", systemImage: "forward.end.alt.fill")
+                .font(.system(size: 11, weight: .semibold)).padding(.horizontal, 12).padding(.vertical, 9)
+                .background(.ultraThinMaterial, in: Capsule())
+        }.menuStyle(.borderlessButton).fixedSize().help("Use labelled chapters or mark an intro/credits range. Auto-skip is off until you enable it.")
+            .accessibilityIdentifier("autoSkipMenu")
+    }
+
+    private var skipAnalysisSheet: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack { Text("Find repeated openings and credits").font(.title2.weight(.semibold)); Spacer(); Button("Close") { player.showSkipAnalysis = false }
+                .buttonStyle(.plain).padding(.horizontal, 10).padding(.vertical, 6).background(labelColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 6)) }
+            Text(player.skipAnalysisFirstTitle + "\n" + player.skipAnalysisSecondTitle).font(.system(size: 12)).foregroundStyle(muted)
+            Text(player.skipAnalysisMessage).font(.system(size: 13)).fixedSize(horizontal: false, vertical: true)
+            if let progress = player.skipAnalysisProgress {
+                ProgressView(value: progress).accessibilityLabel("Local audio analysis progress")
+                HStack { Text("\(Int(progress * 100))%").font(.system(size: 12, design: .monospaced)); Spacer(); Button("Cancel analysis", action: player.cancelSkipAnalysis) }
+            }
+            ScrollView { VStack(spacing: 12) { ForEach(player.skipAudioCandidates) { candidate in
+                VStack(alignment: .leading, spacing: 7) {
+                    Toggle(candidate.kind == "intro" ? "Use this opening match" : "Use this credits match", isOn: Binding(
+                        get: { player.selectedSkipAudioCandidateIDs.contains(candidate.id) },
+                        set: { player.selectSkipAudioCandidate(candidate, selected: $0) })).font(.headline)
+                    Text("This video: \(clockLabel(candidate.firstStartSeconds))–\(clockLabel(candidate.firstEndSeconds)) · Next video: \(clockLabel(candidate.secondStartSeconds))–\(clockLabel(candidate.secondEndSeconds))").font(.system(size: 12, design: .monospaced))
+                    HStack { Text("Audio similarity \(Int(candidate.similarity * 100))%").font(.caption).foregroundStyle(muted); Spacer(); Button("Preview this video") { player.previewSkipAudioCandidate(candidate) }.buttonStyle(.plain).foregroundStyle(ember) }
+                }.padding(12).background(labelColor.opacity(0.06), in: RoundedRectangle(cornerRadius: 10))
+            } } }.frame(maxHeight: player.skipAudioCandidates.isEmpty ? 0 : 320)
+            if !player.skipAudioCandidates.isEmpty, player.skipAnalysisProgress == nil {
+                Button("Confirm selected timings for both videos", action: player.confirmSkipAudioCandidates).buttonStyle(.borderedProminent).disabled(player.selectedSkipAudioCandidateIDs.isEmpty)
+                Text("Confirmation stores timings locally. Use Auto-skip to enable automatic seeking; no media or audio is uploaded.").font(.caption).foregroundStyle(muted)
+            }
+        }.padding(24).frame(width: 600).fixedSize(horizontal: false, vertical: true)
+            .foregroundStyle(labelColor).background(colorScheme == .dark ? Color(white: 0.1) : Color(white: 0.97))
     }
 
     private var controls: some View {

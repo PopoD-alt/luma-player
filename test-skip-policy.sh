@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")"
+mkdir -p build/tests .cache/modules
+xcrun swiftc -swift-version 5 -target arm64-apple-macos14.0 -module-cache-path "$PWD/.cache/modules" \
+  Sources/SkipSegments.swift Sources/LibraryStore.swift Tests/SkipPolicySmoke.swift -o build/tests/skip-policy-smoke
+build/tests/skip-policy-smoke

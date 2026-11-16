@@ -2,13 +2,34 @@
 
 **A free native media player by sdas for Mac and Windows, with an Android Wi-Fi streaming companion.** Desktop playback uses bundled libVLC 3. The owner tested the public 0.7.0 preview and reported that it works as expected.
 
-**Latest source: desktop 0.8.0 / Android 0.2.0-preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
+**Review source: desktop 0.9.0 / Android 0.3.0-preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
 
 **Public downloads remain desktop 0.7.0 / Android 0.1.0-preview.**
 
 [Downloads](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) · [Installation guide](INSTALL.md) · [Windows guide](Windows/README.md) · [Android guide](Android/README.md) · [Release notes](RELEASE_NOTES.md) · [Roadmap](ROADMAP.md)
 
-## Latest source: modern Android playback and device progress
+## Auto-skip preview
+
+The `feature/auto-skip` branch adds **desktop 0.9.0 / Android 0.3.0-preview** for review. `main` still contains the approved 0.8.0 interface update; public downloads remain 0.7.0 / Android 0.1.0. No release or update feed is changed by this feature branch.
+
+- **Auto-skip starts off.** Enable it in the video's Auto-skip menu on Mac, the checkbox on Windows, or the Auto-skip settings button on Android.
+- Recognised opening/intro and ending/credits chapters provide exact skip boundaries. A separate post-credit chapter remains playable. A **Skip intro / Skip credits** button also lets you jump manually.
+- Without useful chapter names, mark the opening or credits start and end while watching. Saved desktop timings appear in the shared Android playlist; Android can also save a phone-only override.
+- On Mac or Windows, choose **Analyze audio with next video** / **Analyze openings / credits with next queue item** to compare two episodes. Review the proposed times and confirm before saving. Mac can save selected matches for both displayed videos; Windows saves confirmed ranges for the current video.
+
+![Auto-skip controls on Android](docs/images/android-auto-skip.png)
+
+Audio analysis stays on the desktop and uses the existing playback engine. It compares at most the first and last three minutes of each file, can take about **12 minutes** for long episodes, and supports cancellation. Pause before a long comparison if you want to prevent automatic queue advance from cancelling it. Production matching requires a repeated passage of at least 15 seconds. It finds repeated audio, which can also be a story scene. Suggestions are not saved, enabled or skipped automatically. This is original audio matching, without a trained AI model or cloud service; unrelated episodes, different theme edits and videos without repeated audio may yield no useful match.
+
+![Reviewing local audio matches](docs/images/audio-match-review.png)
+
+The audio review image uses short authored test clips; normal analysis uses the longer production limits above.
+
+Auto-skip runs only during seekable playback. Pausing does not trigger a skip, and deliberately seeking into a skipped section lets you replay it. Generic numbered chapters are not guessed as credits. Chapter boundaries can preserve a separately marked post-credit scene; an unlabelled scene inside a chapter named Credits cannot be identified by that label alone.
+
+See the [Android auto-skip guide](Android/README.md#auto-skip-preview) and [Windows guide](Windows/README.md#auto-skip-preview). Review copies keep the existing signing/distribution limits; a new public package has not been published.
+
+## Modern Android playback and device progress
 
 The latest source on `main` includes **desktop 0.8.0 / Android 0.2.0-preview**. The owner approved the updated interface. The public downloads below remain **0.7.0 / Android 0.1.0** and do not include these changes. No stable update feed has been changed.
 
@@ -23,7 +44,7 @@ The latest source on `main` includes **desktop 0.8.0 / Android 0.2.0-preview**. 
 
 Build/update both desktop and Android to the new versions for two-way progress reporting. The phone sends a checkpoint roughly every five seconds while playing and after pause/seek/leave; the desktop stores it locally. Multiple paired phones share the single **Phone** position for each video, rather than having separate profiles. With an older host, streaming still works and phone progress sharing is unavailable. See the [Android guide](Android/README.md#modern-player-review) for gestures and progress details.
 
-AI-assisted intro/credit detection is a proposed next step, **not included** in this preview. Repeated opening music/scenes and chapter metadata could support a local “Skip intro” suggestion; automatic skipping should be optional and validated against real episodes first.
+The auto-skip feature above adds labelled chapters, saved ranges and confirmed repeated-audio suggestions. General AI scene/credit recognition remains future work.
 
 ## Download and install
 

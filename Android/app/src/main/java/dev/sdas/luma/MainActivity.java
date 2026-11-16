@@ -84,6 +84,12 @@ public final class MainActivity extends Activity {
     private View videoTapTarget;private boolean chromeVisible=true;private PlayerIcon.Button fullButton,playButton,previousButton,nextButton;
     private LinearLayout centerTransport,playlistPanel;private FrameLayout playlistOverlay;private ListView playbackList;private PlaylistAdapter playlistAdapter;
     private boolean playlistOpen,drawerRestoreChrome;private TextView deviceProgress,gestureSeekText,volumeHudText,brightnessHudText,progressShareStatus;private Button resumeComputerButton;private TextView playbackPlaylistSummary;
+    private Button autoSkipButton,skipSegmentButton;
+    private boolean autoSkipEnabled,phoneSkipOverride;
+    private List<SkipSegments.Range> phoneSkipRanges=Collections.emptyList(),chapterSkipRanges=Collections.emptyList();
+    private final SkipSegments.Session skipSession=new SkipSegments.Session();
+    private long skipChapterProbeAt,skipUserSeekUntil,skipUserSeekTarget;private int skipSeekCount;
+    private Double pendingIntroStart,pendingCreditsStart;
     private LinearLayout volumeHud,brightnessHud;private GestureLevelView volumeLevel,brightnessLevel;private View seekHud;
     private PlaybackGestureMath.Axis gestureAxis=PlaybackGestureMath.Axis.NONE;private float gestureDownX,gestureDownY;private int gesturePointer=-1,gestureStartLevel,gestureMediaGeneration;private boolean gestureVolume,gestureSeekAllowed;
     private long gestureStartTime,gestureLength,gesturePreview;private float originalWindowBrightness=-1;
@@ -109,6 +115,7 @@ public final class MainActivity extends Activity {
         root=new FrameLayout(this);root.setBackgroundColor(BG);setContentView(root);
         root.setOnApplyWindowInsetsListener((view,insets)->{view.setPadding(full?0:insets.getSystemWindowInsetLeft(),full?0:insets.getSystemWindowInsetTop(),full?0:insets.getSystemWindowInsetRight(),full?0:insets.getSystemWindowInsetBottom());return insets;});
         root.addOnLayoutChangeListener((view,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{if(full&&(right-left!=oldRight-oldLeft||bottom-top!=oldBottom-oldTop))scheduleFullscreenBars();});
+        autoSkipEnabled=getPreferences(MODE_PRIVATE).getBoolean("skip.enabled",false);
         originalWindowBrightness=getWindow().getAttributes().screenBrightness;buildHome();buildPlayer();
         if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::navigateBack);
         discovery=new Discovery(this,main,new Discovery.Listener(){
@@ -151,7 +158,8 @@ public final class MainActivity extends Activity {
         playerHeader=row();playerHeader.setClickable(true);playerHeader.setPadding(dp(14),dp(12),dp(14),dp(16));playerHeader.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xe60b0d14,0x000b0d14}));
         PlayerIcon.Button back=icon(PlayerIcon.Kind.BACK,"Back to desktops",this::leavePlayer,false,48);back.setId(R.id.player_back);playerHeader.addView(back,new LinearLayout.LayoutParams(dp(48),dp(48)));
         LinearLayout heading=column();heading.setPadding(dp(10),0,dp(8),0);playerTitle=text("",17,TEXT);playerTitle.setTypeface(null,Typeface.BOLD);playerTitle.setSingleLine();playerTitle.setEllipsize(TextUtils.TruncateAt.END);heading.addView(playerTitle);
-        TextView origin=text("YOUR DESKTOP · LIVE STREAM",10,0xffbfc6d5);origin.setLetterSpacing(.1f);origin.setPadding(0,dp(5),0,0);heading.addView(origin);playerHeader.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
+        TextView origin=text("YOUR DESKTOP · LIVE STREAM",10,0xffbfc6d5);origin.setSingleLine();origin.setEllipsize(TextUtils.TruncateAt.END);origin.setLetterSpacing(.1f);origin.setPadding(0,dp(5),0,0);heading.addView(origin);playerHeader.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
+        autoSkipButton=button("Auto-skip",this::showSkipSettings,false);autoSkipButton.setId(R.id.player_auto_skip);autoSkipButton.setTextSize(11);autoSkipButton.setPadding(dp(10),0,dp(10),0);autoSkipButton.setMinWidth(0);playerHeader.addView(autoSkipButton,new LinearLayout.LayoutParams(-2,dp(48)));updateAutoSkipLabel();
         PlayerIcon.Button queue=icon(PlayerIcon.Kind.PLAYLIST,"Open playlist",()->setPlaylistOpen(true),false,48);queue.setId(R.id.player_playlist);playerHeader.addView(queue,new LinearLayout.LayoutParams(dp(48),dp(48)));
         fullButton=icon(PlayerIcon.Kind.FULLSCREEN,"Full screen",()->setFull(!full),false,48);playerHeader.addView(fullButton,new LinearLayout.LayoutParams(dp(48),dp(48)));
         playback.addView(playerHeader,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
@@ -169,7 +177,7 @@ public final class MainActivity extends Activity {
         seekListener=new SeekBar.OnSeekBarChangeListener(){
             public void onProgressChanged(SeekBar bar,int value,boolean user){if(user&&player!=null&&player.getLength()>0)clock.setText(time((long)(player.getLength()*value/1000.0))+" / "+time(player.getLength()));}
             public void onStartTrackingTouch(SeekBar bar){dragging=true;main.removeCallbacks(hideChrome);}
-            public void onStopTrackingTouch(SeekBar bar){dragging=false;if(player!=null&&player.isSeekable()&&player.getLength()>0){autoResumeApplied=true;player.setTime((long)(player.getLength()*(bar.getProgress()/1000.0)),false);checkpointProgressSoon();}scheduleChromeHide();}
+            public void onStopTrackingTouch(SeekBar bar){dragging=false;if(player!=null&&player.isSeekable()&&player.getLength()>0){autoResumeApplied=true;long target=(long)(player.getLength()*(bar.getProgress()/1000.0));suppressSkipForUserSeek(target);player.setTime(target,false);checkpointProgressSoon();}scheduleChromeHide();}
         };seek.setOnSeekBarChangeListener(seekListener);
         LinearLayout timing=row();clock=text("0:00 / 0:00",13,TEXT);clock.setTypeface(null,Typeface.BOLD);timing.addView(clock,new LinearLayout.LayoutParams(0,-2,1));deviceProgress=text("Computer · 0:00\nThis phone · 0:00",11,0xffbfc6d5);deviceProgress.setGravity(Gravity.END);deviceProgress.setMaxLines(2);timing.addView(deviceProgress);playerControls.addView(timing);
         progressShareStatus=text("",10,MUTED);progressShareStatus.setGravity(Gravity.END);progressShareStatus.setSingleLine();progressShareStatus.setEllipsize(TextUtils.TruncateAt.END);progressShareStatus.setPadding(0,dp(3),0,dp(2));playerControls.addView(progressShareStatus,new LinearLayout.LayoutParams(-1,-2));
@@ -178,6 +186,7 @@ public final class MainActivity extends Activity {
         // A model-only seek bar preserves app-local volume across player graphs;
         // there is no persistent horizontal volume control over the video.
         volume=new SeekBar(this);volume.setMax(100);volume.setProgress(80);volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onStartTrackingTouch(SeekBar b){}public void onStopTrackingTouch(SeekBar b){}public void onProgressChanged(SeekBar b,int value,boolean user){if(player!=null)player.setVolume(value);}});
+        skipSegmentButton=button("Skip intro",this::skipCurrentSegment,false);skipSegmentButton.setId(R.id.player_skip_segment);skipSegmentButton.setTextSize(13);skipSegmentButton.setBackground(background(0xdc202938,24));skipSegmentButton.setVisibility(View.GONE);FrameLayout.LayoutParams skipPosition=new FrameLayout.LayoutParams(-2,dp(48),Gravity.TOP|Gravity.END);skipPosition.setMargins(dp(18),dp(86),dp(22),0);playback.addView(skipSegmentButton,skipPosition);
         buildGestureHuds();buildPlaybackPlaylist();updateNavigation();
     }
     private PlayerIcon.Button icon(PlayerIcon.Kind kind,String label,Runnable action,boolean prominent,int size){PlayerIcon.Button button=new PlayerIcon.Button(this,kind,label,prominent);button.setOnClickListener(v->{action.run();scheduleChromeHide();});return button;}
@@ -241,14 +250,76 @@ public final class MainActivity extends Activity {
         progressSync.offer(current.id,position,length,complete);
     }
     private void resumeFromComputer(){
-        if(current==null)return;long target=Math.max(0,Math.round(computerProgress(current)*1000));completedOnPhone.remove(current.id);localResume.put(current.id,target);initialResume=target;autoResumeApplied=false;userPaused=false;
+        if(current==null)return;long target=Math.max(0,Math.round(computerProgress(current)*1000));completedOnPhone.remove(current.id);suppressSkipForUserSeek(target);localResume.put(current.id,target);initialResume=target;autoResumeApplied=false;userPaused=false;
         int state=player==null?Media.State.Stopped:player.getPlayerState();
-        if(player==null||state==Media.State.Ended||state==Media.State.Stopped||state==Media.State.Error){startMedia(current);return;}
+        if(player==null||state==Media.State.Ended||state==Media.State.Stopped||state==Media.State.Error){startMedia(current);suppressSkipForUserSeek(target);return;}
         setPlayAction("Pause");playerStatus.setText("Resuming from computer…");
         // The explicit target survives Opening/font preparation. Use the same
         // first-frame/deferred seek guard as ordinary resume when not ready yet.
         if(nativePlayingSeen&&nativeSurfacesReady&&validVideoSurface(video)&&player.isSeekable()&&player.getLength()>0){autoResumeApplied=true;player.setTime(Math.min(target,Math.max(0,player.getLength()-250)),false);checkpointProgressSoon();}
         if(nativeSurfacesReady&&validVideoSurface(video)&&playRequestedAt>0)player.play();
+    }
+    private String phoneSkipKey(){return "skip.ranges."+current.id;}
+    private void resetSkipForMedia(){
+        skipSession.reset();chapterSkipRanges=Collections.emptyList();phoneSkipRanges=Collections.emptyList();skipChapterProbeAt=0;skipUserSeekUntil=0;skipSeekCount=0;pendingIntroStart=null;pendingCreditsStart=null;
+        phoneSkipOverride=current!=null&&getPreferences(MODE_PRIVATE).contains(phoneSkipKey());
+        if(phoneSkipOverride)try{phoneSkipRanges=SkipSegments.parse(new org.json.JSONArray(getPreferences(MODE_PRIVATE).getString(phoneSkipKey(),"[]")),current.durationSeconds);}catch(org.json.JSONException ignored){}
+        if(skipSegmentButton!=null)skipSegmentButton.setVisibility(View.GONE);
+    }
+    private List<SkipSegments.Range> effectiveSkipRanges(){
+        if(current==null)return Collections.emptyList();double duration=player!=null&&player.getLength()>0?player.getLength()/1000.0:current.durationSeconds;
+        return SkipSegments.resolve(phoneSkipOverride?phoneSkipRanges:latestItem(current).skipRanges,chapterSkipRanges,duration);
+    }
+    private void updateAutoSkipLabel(){if(autoSkipButton==null)return;autoSkipButton.setText(autoSkipEnabled?"Auto-skip On":"Auto-skip Off");autoSkipButton.setTextColor(autoSkipEnabled?ACCENT:TEXT);autoSkipButton.setContentDescription("Auto-skip "+(autoSkipEnabled?"on":"off")+". Open skip settings");}
+    private void setAutoSkip(boolean enabled){autoSkipEnabled=enabled;getPreferences(MODE_PRIVATE).edit().putBoolean("skip.enabled",enabled).apply();if(enabled)skipSession.reset();updateAutoSkipLabel();updateSkipPlayback();}
+    private void suppressSkipForUserSeek(long target){skipSession.userSeek(player==null?Double.NaN:player.getTime()/1000.0,target/1000.0,effectiveSkipRanges());skipUserSeekTarget=target;skipUserSeekUntil=android.os.SystemClock.uptimeMillis()+3000;}
+    private void updateSkipPlayback(){
+        if(skipSegmentButton==null||current==null||player==null){if(skipSegmentButton!=null)skipSegmentButton.setVisibility(View.GONE);return;}
+        long now=android.os.SystemClock.uptimeMillis(),position=player.getTime(),length=player.getLength();
+        if(nativePlayingSeen&&length>0&&now-skipChapterProbeAt>=1000){
+            skipChapterProbeAt=now;
+            try{MediaPlayer.Chapter[] nativeChapters=player.getChapters(player.getTitle());
+                if(nativeChapters!=null&&nativeChapters.length<=1024){List<SkipSegments.Chapter> chapters=new ArrayList<>();for(MediaPlayer.Chapter c:nativeChapters)if(c!=null)chapters.add(new SkipSegments.Chapter(c.name,c.timeOffset/1000.0,c.duration/1000.0));chapterSkipRanges=SkipSegments.chapters(chapters,length/1000.0);}
+            }catch(RuntimeException ignored){chapterSkipRanges=Collections.emptyList();}
+        }
+        List<SkipSegments.Range> ranges=effectiveSkipRanges();SkipSegments.Range active=SkipSegments.active(ranges,position/1000.0);
+        boolean seekPending=skipUserSeekUntil>now&&Math.abs(position-skipUserSeekTarget)>750;if(!seekPending)skipUserSeekUntil=0;
+        skipSegmentButton.setVisibility(active!=null&&!playlistOpen&&!seekPending?View.VISIBLE:View.GONE);if(active!=null){skipSegmentButton.setText(active.title()+"  ›");skipSegmentButton.setContentDescription(active.title()+" to "+time((long)(active.endSeconds*1000)));skipSegmentButton.setEnabled(player.isSeekable()&&nativePlayingSeen&&autoResumeApplied);}
+        if(!seekPending&&nativePlayingSeen&&autoResumeApplied&&!dragging&&gestureAxis==PlaybackGestureMath.Axis.NONE&&!surfaceRebindPending&&!surfaceRestartPending&&lastError==null&&nativeSurfacesReady&&(!hasKnownVideoTrack()||videoWasDisplayed)&&player.isSeekable()){
+            SkipSegments.Range automatic=skipSession.automatic(ranges,position/1000.0,autoSkipEnabled,foreground&&!userPaused&&player.isPlaying());if(automatic!=null)performSkip(automatic);
+        }
+    }
+    private void performSkip(SkipSegments.Range range){
+        if(player==null||lastError!=null||!player.isSeekable()||!nativePlayingSeen||!autoResumeApplied)return;skipSession.consume(range);autoResumeApplied=true;player.setTime((long)(range.endSeconds*1000),false);skipSeekCount++;checkpointProgressSoon();skipSegmentButton.setVisibility(View.GONE);playerStatus.setText((userPaused?"Paused · ":"")+("intro".equals(range.kind)?"Skipped opening":"Skipped credits"));
+    }
+    private void skipCurrentSegment(){if(player!=null){SkipSegments.Range active=SkipSegments.active(effectiveSkipRanges(),player.getTime()/1000.0);if(active!=null)performSkip(active);}}
+    private void savePhoneSkipRange(String kind,double start,double end){
+        if(current==null)return;double duration=player!=null&&player.getLength()>0?player.getLength()/1000.0:current.durationSeconds;
+        List<SkipSegments.Range> candidate=new ArrayList<>(phoneSkipOverride?phoneSkipRanges:latestItem(current).skipRanges);candidate.removeIf(r->r.kind.equals(kind));candidate.add(new SkipSegments.Range(kind,start,end,"manual","Saved on this phone"));
+        List<SkipSegments.Range> valid=SkipSegments.validated(candidate,duration);
+        if(valid.size()!=candidate.size()){new AlertDialog.Builder(this).setTitle("Choose a valid range").setMessage("The end must follow the start, stay within the video, and not overlap another saved range.").setPositiveButton("OK",null).show();return;}
+        phoneSkipRanges=valid;phoneSkipOverride=true;persistPhoneSkipRanges();updateSkipPlayback();
+    }
+    private void persistPhoneSkipRanges(){
+        if(current==null)return;try{android.content.SharedPreferences prefs=getPreferences(MODE_PRIVATE);android.content.SharedPreferences.Editor edit=prefs.edit();
+            int count=0;for(String key:prefs.getAll().keySet())if(key.startsWith("skip.ranges.")&&++count>255&&!key.equals(phoneSkipKey()))edit.remove(key);
+            edit.putString(phoneSkipKey(),SkipSegments.json(phoneSkipRanges).toString()).apply();
+        }catch(org.json.JSONException ignored){}
+    }
+    private void showSkipSettings(){
+        if(current==null)return;final String itemId=current.id;LinearLayout content=column();content.setPadding(dp(20),dp(10),dp(20),dp(12));
+        android.widget.Switch toggle=new android.widget.Switch(this);toggle.setText("Auto-skip openings and credits");toggle.setTextColor(TEXT);toggle.setTextSize(14);toggle.setMinHeight(dp(48));toggle.setChecked(autoSkipEnabled);content.addView(toggle);toggle.setOnCheckedChangeListener((b,enabled)->setAutoSkip(enabled));
+        StringBuilder detail=new StringBuilder("Uses labelled chapters or saved timings. No fixed-length guessing.\n");for(SkipSegments.Range r:effectiveSkipRanges())detail.append("intro".equals(r.kind)?"Opening ":"Credits ").append(time((long)(r.startSeconds*1000))).append("–").append(time((long)(r.endSeconds*1000))).append(" · ").append(r.source).append("\n");
+        addText(content,detail.toString(),12,MUTED,8);boolean ready=player!=null&&nativePlayingSeen&&autoResumeApplied&&player.getLength()>0;
+        final AlertDialog[] holder=new AlertDialog[1];
+        for(String kind:new String[]{"intro","credits"}){
+            Double start="intro".equals(kind)?pendingIntroStart:pendingCreditsStart;String name="intro".equals(kind)?"opening":"credits";
+            Button markStart=button("Mark "+name+" start here",()->{if(current==null||!current.id.equals(itemId)||player==null)return;double time=Math.max(0,player.getTime()/1000.0);if("intro".equals(kind))pendingIntroStart=time;else pendingCreditsStart=time;holder[0].dismiss();showSkipSettings();},false);markStart.setEnabled(ready);content.addView(markStart,new LinearLayout.LayoutParams(-1,dp(48)));
+            Button markEnd=button("Mark "+name+" end here"+(start==null?"":" · from "+time((long)(start*1000))),()->{if(current==null||!current.id.equals(itemId)||player==null||start==null)return;holder[0].dismiss();savePhoneSkipRange(kind,start,player.getTime()/1000.0);},false);markEnd.setEnabled(ready&&start!=null);content.addView(markEnd,new LinearLayout.LayoutParams(-1,dp(48)));
+        }
+        content.addView(button("Clear saved timings on this phone",()->{if(current==null||!current.id.equals(itemId))return;phoneSkipRanges=Collections.emptyList();phoneSkipOverride=true;persistPhoneSkipRanges();holder[0].dismiss();updateSkipPlayback();},false),new LinearLayout.LayoutParams(-1,dp(48)));
+        content.addView(button("Use desktop timings",()->{if(current==null||!current.id.equals(itemId))return;getPreferences(MODE_PRIVATE).edit().remove(phoneSkipKey()).apply();phoneSkipOverride=false;phoneSkipRanges=Collections.emptyList();holder[0].dismiss();updateSkipPlayback();},false),new LinearLayout.LayoutParams(-1,dp(48)));
+        ScrollView scroll=new ScrollView(this);scroll.addView(content);holder[0]=new AlertDialog.Builder(this).setTitle("Opening and credits").setView(scroll).setPositiveButton("Done",null).create();holder[0].show();
     }
     private int brightnessPercent(){float level=getWindow().getAttributes().screenBrightness;if(level<0)level=Settings.System.getInt(getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,128)/255f;return Math.max(2,Math.min(100,Math.round(level*100)));}
     private void setBrightnessPercent(int percent){WindowManager.LayoutParams attributes=getWindow().getAttributes();attributes.screenBrightness=Math.max(.02f,Math.min(1,percent/100f));getWindow().setAttributes(attributes);}
@@ -263,7 +334,7 @@ public final class MainActivity extends Activity {
         if(action==MotionEvent.ACTION_MOVE||action==MotionEvent.ACTION_UP){if(gestureAxis==PlaybackGestureMath.Axis.NONE)gestureAxis=PlaybackGestureMath.axis(dx,dy,ViewConfiguration.get(this).getScaledTouchSlop());
             if(gestureAxis==PlaybackGestureMath.Axis.HORIZONTAL){volumeHud.setVisibility(View.GONE);brightnessHud.setVisibility(View.GONE);if(gestureSeekAllowed){gesturePreview=PlaybackGestureMath.seek(gestureStartTime,dx,target.getWidth(),gestureLength);long offset=gesturePreview-gestureStartTime;gestureSeekText.setText((offset>=0?"+":"−")+time(Math.abs(offset))+"\n"+time(gesturePreview)+" / "+time(gestureLength));if(gestureLength>0)seek.setProgress((int)(gesturePreview*1000/gestureLength));}else gestureSeekText.setText("Seeking unavailable");seekHud.animate().cancel();seekHud.setAlpha(1);seekHud.setVisibility(View.VISIBLE);}
             else if(gestureAxis==PlaybackGestureMath.Axis.VERTICAL){int level=PlaybackGestureMath.level(gestureStartLevel,dy,target.getHeight());if(gestureVolume)volume.setProgress(level);else setBrightnessPercent(level);showGestureLevel(gestureVolume,gestureVolume?level:Math.max(2,level));}if(action==MotionEvent.ACTION_MOVE)return true;}
-        if(action==MotionEvent.ACTION_UP){PlaybackGestureMath.Axis completed=gestureAxis;gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;if(completed==PlaybackGestureMath.Axis.HORIZONTAL&&gestureSeekAllowed&&player!=null){autoResumeApplied=true;player.setTime(gesturePreview,false);checkpointProgressSoon();}else if(completed==PlaybackGestureMath.Axis.NONE)target.performClick();main.postDelayed(hideGestureHud,650);scheduleChromeHide();return true;}
+        if(action==MotionEvent.ACTION_UP){PlaybackGestureMath.Axis completed=gestureAxis;gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;if(completed==PlaybackGestureMath.Axis.HORIZONTAL&&gestureSeekAllowed&&player!=null){autoResumeApplied=true;suppressSkipForUserSeek(gesturePreview);player.setTime(gesturePreview,false);checkpointProgressSoon();}else if(completed==PlaybackGestureMath.Axis.NONE)target.performClick();main.postDelayed(hideGestureHud,650);scheduleChromeHide();return true;}
         return true;
     }
     private void renderDesktops(){
@@ -324,7 +395,7 @@ public final class MainActivity extends Activity {
         });}catch(Exception error){main.post(()->{if(stale(version))return;polling=false;status.setText(safe(error));if(error instanceof LanApi.ApiException&&((LanApi.ApiException)error).status==401){disconnect(false);status.setText("Sharing restarted or pairing expired. Connect again to pair.");}});}});
     }
     private void startMedia(LanApi.Item item){
-        if(session==null){status.setText("Pair again before streaming.");return;}if(retiringGraphs>=3){playerStatus.setText("Finishing the previous stream. Please retry in a moment.");return;}stopPlayback();graphStartedAt=android.os.SystemClock.uptimeMillis();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;nativeSurfacesReady=false;surfaceRebindPending=false;surfaceRestartPending=false;surfaceRestartStarted=false;surfaceRecoveryNeedsResume=false;surfaceRebinds=0;surfaceRebindAttempts=0;surfaceCreatedEvents=0;surfaceDestroyedEvents=0;lastOpeningDiagnostic=0;current=item;lastError=null;lastStats=null;initialResume=initialResumeFor(item);autoResumeApplied=false;nativeTimeEvents=0;lastNativeTimeEvent=-1;nativeBufferingEvents=0;nativeBufferingPercent=-1;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);if(playlistOpen)setPlaylistOpen(false);playerTitle.setText(item.title);updateNavigation();refreshProgressDetails();setPlayAction("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if(session==null){status.setText("Pair again before streaming.");return;}if(retiringGraphs>=3){playerStatus.setText("Finishing the previous stream. Please retry in a moment.");return;}stopPlayback();graphStartedAt=android.os.SystemClock.uptimeMillis();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;nativeSurfacesReady=false;surfaceRebindPending=false;surfaceRestartPending=false;surfaceRestartStarted=false;surfaceRecoveryNeedsResume=false;surfaceRebinds=0;surfaceRebindAttempts=0;surfaceCreatedEvents=0;surfaceDestroyedEvents=0;lastOpeningDiagnostic=0;current=item;resetSkipForMedia();lastError=null;lastStats=null;initialResume=initialResumeFor(item);autoResumeApplied=false;nativeTimeEvents=0;lastNativeTimeEvent=-1;nativeBufferingEvents=0;nativeBufferingPercent=-1;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);if(playlistOpen)setPlaylistOpen(false);playerTitle.setText(item.title);updateNavigation();refreshProgressDetails();setPlayAction("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try{
             if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList(BuildConfig.DEBUG&&nativeDiagnostics?"--verbose=2":"--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
             if(!enginePrepared){preparePlayback(item);return;}
@@ -454,6 +525,7 @@ public final class MainActivity extends Activity {
         if(player==null||current==null)return;applyResume();long length=player.getLength(),time=Math.max(0,player.getTime());
         clock.setText(time(time)+" / "+time(length));if(!dragging&&gestureAxis!=PlaybackGestureMath.Axis.HORIZONTAL&&length>0)seek.setProgress((int)Math.min(1000,time*1000/length));seek.setEnabled(player.isSeekable());
         if(player.getPlayerState()==Media.State.Ended&&length>0){time=length;localResume.put(current.id,length);completedOnPhone.add(current.id);}else if(time>=0&&nativePlayingSeen&&autoResumeApplied){localResume.put(current.id,time);if(player.isPlaying())completedOnPhone.remove(current.id);}sharePlaybackProgress(false);refreshProgressDetails();if(playlistOpen)playlistAdapter.notifyDataSetChanged();Media.Stats value=stats();if(value!=null){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}
+        updateSkipPlayback();
         hadVideoTracks|=hasKnownVideoTrack();
         long now=android.os.SystemClock.uptimeMillis(),openingAge=playRequestedAt==0?0:now-playRequestedAt;
         if(!nativePlayingSeen&&playRequestedAt>0&&now-lastOpeningDiagnostic>2000){lastOpeningDiagnostic=now;logPlayback("waiting-for-playing");}
@@ -488,7 +560,7 @@ public final class MainActivity extends Activity {
         if(!userPaused){userPaused=true;setPlayAction("Play");playerStatus.setText("Paused");if(nativePlayingSeen||player.isPlaying())player.pause();}
         else{userPaused=false;setPlayAction("Pause");playerStatus.setText("Resuming stream…");if(nativeSurfacesReady&&validVideoSurface(video)){if(!nativePlayingSeen)playRequestedAt=android.os.SystemClock.uptimeMillis();player.play();}}
     }
-    private void jump(long amount){if(player!=null&&player.isSeekable()){autoResumeApplied=true;player.setTime(Math.max(0,Math.min(player.getLength(),player.getTime()+amount)),false);checkpointProgressSoon();}}
+    private void jump(long amount){if(player!=null&&player.isSeekable()){autoResumeApplied=true;long target=Math.max(0,Math.min(player.getLength(),player.getTime()+amount));suppressSkipForUserSeek(target);player.setTime(target,false);checkpointProgressSoon();}}
     private void stopPlayback(){
         sharePlaybackProgress(true);
         mediaGeneration++;
@@ -580,7 +652,7 @@ public final class MainActivity extends Activity {
     public void debugSeek(long milliseconds){if(!BuildConfig.DEBUG||player==null||player.getLength()<=0)throw new IllegalStateException();seekListener.onStartTrackingTouch(seek);seek.setProgress((int)Math.min(1000,milliseconds*1000/player.getLength()));seekListener.onStopTrackingTouch(seek);}
     public Media.Stats debugStats(){return BuildConfig.DEBUG?stats():null;}
     public String debugEngineVersion(){return engine==null?"not started":LibVLC.version()+" changeset="+LibVLC.changeset();}
-    public boolean debugPausedUi(){return BuildConfig.DEBUG&&player!=null&&player.getPlayerState()==Media.State.Paused&&!debugPlaying()&&android.text.TextUtils.equals("Play",playButton.getContentDescription())&&playerStatus.getText().toString().equals("Paused");}
+    public boolean debugPausedUi(){return BuildConfig.DEBUG&&player!=null&&player.getPlayerState()==Media.State.Paused&&!debugPlaying()&&android.text.TextUtils.equals("Play",playButton.getContentDescription())&&playerStatus.getText().toString().startsWith("Paused");}
     public void debugFailInitialOutputOnce(){if(!BuildConfig.DEBUG||player!=null)throw new IllegalStateException();debugSkipSurfaceOnce=true;}
     public boolean debugSoftwarePlayback(){return BuildConfig.DEBUG&&softwarePlayback;}
     public boolean debugPauseRequested(){return BuildConfig.DEBUG&&userPaused;}
@@ -600,7 +672,8 @@ public final class MainActivity extends Activity {
     public void debugInvalidateWifiRoute(){if(!BuildConfig.DEBUG||wifiConnections==null)throw new IllegalStateException();wifiConnections.invalidateForTesting();}
     public long debugWifiRouteReplacements(){return BuildConfig.DEBUG&&wifiConnections!=null?wifiConnections.replacementCount():0;}
     public String debugError(){return lastError;}
-    public String debugDiagnostics(){return BuildConfig.DEBUG?playbackDiagnostics():"";}
+    public String debugDiagnostics(){return BuildConfig.DEBUG?playbackDiagnostics()+", skip={"+debugNativeChapterSummary()+"}":"";}
+    private String debugNativeChapterSummary(){if(player==null)return "no player";try{MediaPlayer.Chapter[] chapters=player.getChapters(player.getTitle());StringBuilder out=new StringBuilder("title="+player.getTitle()+", count="+(chapters==null?0:chapters.length)+", resolved="+chapterSkipRanges.size());if(chapters!=null)for(int i=0;i<Math.min(8,chapters.length);i++){MediaPlayer.Chapter c=chapters[i];out.append("; ").append(c.name==null?"unnamed":c.name.substring(0,Math.min(64,c.name.length()))).append('@').append(c.timeOffset).append('+').append(c.duration);}return out.toString();}catch(RuntimeException ignored){return "unavailable";}}
     public void debugLeave(){if(!BuildConfig.DEBUG)throw new IllegalStateException();leavePlayer();}
     public void debugFull(boolean value){if(!BuildConfig.DEBUG)throw new IllegalStateException();setFull(value);}
     public boolean debugIsFull(){return BuildConfig.DEBUG&&full;}
@@ -632,6 +705,16 @@ public final class MainActivity extends Activity {
         MotionEvent move=MotionEvent.obtain(began,began+200,MotionEvent.ACTION_MOVE,toX*width,toY*height,0);videoTapTarget.dispatchTouchEvent(move);move.recycle();
         MotionEvent up=MotionEvent.obtain(began,began+250,cancel?MotionEvent.ACTION_CANCEL:MotionEvent.ACTION_UP,toX*width,toY*height,0);videoTapTarget.dispatchTouchEvent(up);up.recycle();
     }
+    public void debugAutoSkip(boolean enabled){if(!BuildConfig.DEBUG)throw new IllegalStateException();setAutoSkip(enabled);}
+    public boolean debugAutoSkipEnabled(){return BuildConfig.DEBUG&&autoSkipEnabled;}
+    public int debugSkipSeeks(){return BuildConfig.DEBUG?skipSeekCount:0;}
+    public int debugSkipRanges(){return BuildConfig.DEBUG?effectiveSkipRanges().size():0;}
+    public int debugChapterSkipRanges(){return BuildConfig.DEBUG?chapterSkipRanges.size():0;}
+    public boolean debugSkipVisible(){return BuildConfig.DEBUG&&skipSegmentButton.getVisibility()==View.VISIBLE;}
+    public void debugSkip(){if(!BuildConfig.DEBUG)throw new IllegalStateException();skipCurrentSegment();}
+    public double debugActiveSkipStart(){if(player==null)return -1;SkipSegments.Range r=SkipSegments.active(effectiveSkipRanges(),player.getTime()/1000.0);return r==null?-1:r.startSeconds;}
+    public void debugUseDesktopSkipTimings(){if(!BuildConfig.DEBUG||current==null)throw new IllegalStateException();getPreferences(MODE_PRIVATE).edit().remove(phoneSkipKey()).apply();phoneSkipOverride=false;phoneSkipRanges=Collections.emptyList();updateSkipPlayback();}
+    public void debugSaveSkip(String kind,double start,double end){if(!BuildConfig.DEBUG)throw new IllegalStateException();savePhoneSkipRange(kind,start,end);}
     public void debugVolume(int value){if(!BuildConfig.DEBUG)throw new IllegalStateException();volume.setProgress(value);}
     public int debugVolume(){return player==null?-1:player.getVolume();}
 }

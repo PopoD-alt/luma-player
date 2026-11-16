@@ -23,6 +23,7 @@ struct MediaItem: Identifiable, Codable, Equatable {
     var mobileDurationSeconds: Double? = nil
     var mobileUpdatedAtUnixSeconds: Double? = nil
     var mobileCompleted: Bool? = nil
+    var skipRanges: [PlaybackSkipRange]? = nil
     var addedAt: Date = Date()
     var bookmarks: [MediaBookmark] = []
 
@@ -195,6 +196,34 @@ final class LibraryStore: ObservableObject {
         save()
     }
 
+    @discardableResult
+    func setSkipRange(id: UUID, range: PlaybackSkipRange) -> Bool { setSkipRanges([id: [range]]) }
+
+    /// Confirm matched timings for two episodes as one local-library write.
+    @discardableResult
+    func setSkipRanges(_ updates: [UUID: [PlaybackSkipRange]]) -> Bool {
+        guard !updates.isEmpty, updates.count <= 2 else { return false }
+        var changed = items
+        for (id, input) in updates {
+            guard let index = changed.firstIndex(where: { $0.id == id }), !input.isEmpty, input.count <= 2 else { return false }
+            var ranges = SkipPolicy.resolved(manual: changed[index].skipRanges ?? [], chapters: [], duration: changed[index].duration)
+            for range in input {
+                guard range.source == "manual", let valid = range.validated(duration: changed[index].duration) else { return false }
+                ranges.removeAll { $0.kind == valid.kind }
+                guard !ranges.contains(where: { valid.startSeconds < $0.endSeconds && valid.endSeconds > $0.startSeconds }) else { return false }
+                ranges.append(valid)
+            }
+            changed[index].skipRanges = ranges.sorted { $0.startSeconds < $1.startSeconds }
+        }
+        items = changed; save(); return true
+    }
+
+    func clearSkipRanges(id: UUID, kind: String? = nil) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        let remaining = (items[index].skipRanges ?? []).filter { kind != nil && $0.kind != kind }
+        items[index].skipRanges = remaining.isEmpty ? nil : remaining; save()
+    }
+
     func removeBookmark(id: UUID, bookmarkID: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].bookmarks.removeAll { $0.id == bookmarkID }
@@ -259,6 +288,7 @@ final class LibraryStore: ObservableObject {
                     let duration = item.duration > 0 ? item.duration : item.mobileDurationSeconds ?? 0
                     if duration > 0 { item.mobileProgressSeconds = min(time, duration) }
                 }
+                item.skipRanges = source.skipRanges.map { Array($0.prefix(8)).compactMap { $0.validated(duration: item.duration) }.filter { $0.source == "manual" } }
                 item.bookmarks = source.bookmarks.filter { $0.time.isFinite && $0.time >= 0 }
                 return item
             }
