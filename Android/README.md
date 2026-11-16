@@ -8,7 +8,7 @@ The default Maven AAR remains **development-only**: its native/Java payload incl
 
 ## Glass UI, handoff and picture-in-picture review
 
-Current feature branch: **0.4.0-preview / version code 4**, paired with desktop **0.10.0**. This is an owner-review build; the public APK remains 0.1.0. Its application ID and existing debug signing certificate are retained for in-place review updates.
+Current source on `main`: **0.4.0-preview / version code 4**, paired with desktop **0.10.0**, updated **2026-11-16**. These versions remain source and local review builds; the public APK remains 0.1.0. Its application ID and existing debug signing certificate are retained for in-place review updates.
 
 The home screen puts **Continue Watching / Now Playing** first and follows it with **Up Next** in desktop playlist order. Earlier entries remain accessible after the upcoming queue. Open the **hamburger menu** for discovery, pairing, local address entry and disconnect. The violet/rose glass interface follows the supplied UI references. Poster images are real playback frames, held in a private bounded thumbnail cache (up to 24 small images / 4 MB); no full video is saved.
 
@@ -27,19 +27,19 @@ PiP uses the same native player, video surface and authenticated stream; it is n
 
 ## Auto-skip preview
 
-Auto-skip was introduced in **0.3.0-preview / version code 3** and is included in this branch. The public APK above is still 0.1.0; `main` has the previous 0.2.0 player source. The new review APK retains the public preview's application ID and signing certificate for in-place updates.
+Auto-skip was introduced in **0.3.0-preview / version code 3** and is included in the current **0.4.0-preview** source on `main`. The public APK above is still 0.1.0. The new review APK retains the public preview's application ID and signing certificate for in-place updates.
 
 Tap **Auto-skip Off** in the video header to open its settings, then enable **Auto-skip openings and credits**. It starts off and is a separate preference on each device. Recognised named chapters or saved ranges drive the jumps; a **Skip intro / Skip credits** button appears when a range is active. Explicit rewind/seek lets you replay that section, and enabling auto-skip while paused keeps playback paused.
 
 If there are no useful chapter labels, pause/seek to the desired start and choose **Mark opening start here** or **Mark credits start here**. Move to its end and mark the end. Ranges must fit within the video without overlapping. The phone saves its override locally; **Use desktop timings** restores the current shared desktop configuration. Clearing saved phone timings does not disable recognised native chapters; use the Auto-skip switch to turn automatic skipping off.
 
-A desktop running 0.9.0 shares its saved ranges as optional read-only playlist metadata. Audio matches confirmed on the desktop become saved ranges; Android does not run the episode-comparison job itself. Old hosts can keep streaming, with local chapter/manual skipping available where native timing and seeking are supported.
+A desktop running 0.9.0 or later shares its saved ranges as optional read-only playlist metadata. Audio matches confirmed on the desktop become saved ranges; Android does not run the episode-comparison job itself. Old hosts can keep streaming, with local chapter/manual skipping available where native timing and seeking are supported.
 
 Recognised labels include Intro/Opening/OP and Credits/Outro/Ending/ED plus supported simple variants. Numbered generic chapters, recaps and post-credit labels are ignored. Skipping to a chapter's end preserves a separately marked post-credit scene, but cannot detect a hidden scene inside the credits chapter. Automatic analysis is repeated-audio matching with confirmation on desktop, not an AI classifier or universal recognition of arbitrary video.
 
 ## Modern player review
 
-Current source on `main`: **0.2.0-preview**, Android version code **2**. The public 0.1.0-preview link above remains the earlier app. New review builds preserve its application ID and debug signing certificate so a normal update can retain app data. This is a local owner-review build, not a Play Store or production-signed release.
+The controls below were introduced in **0.2.0-preview / version code 2** and remain included in the current **0.4.0-preview / version code 4** source on `main`. The public 0.1.0-preview link above remains the earlier app. New review builds preserve its application ID and debug signing certificate so a normal update can retain app data. This is a local owner-review build, not a Play Store or production-signed release.
 
 - **Tap video:** show/hide controls; they fade while playing and remain available while paused.
 - **Center icon:** play/pause. Adjacent icons jump ten seconds or open the previous/next playlist item. Previous/next is disabled at the queue ends.
@@ -48,7 +48,7 @@ Current source on `main`: **0.2.0-preview**, Android version code **2**. The pub
 - **Playlist icon:** show a left drawer over the video. Playback continues; close the drawer or tap another item without leaving the playback screen.
 - **Fullscreen icon / Back:** enter/leave fullscreen. Back first closes an open drawer. Android system edge gestures still belong to the OS.
 
-In the 0.4.0 review, opening an item uses the latest saved phone/computer position; a completed checkpoint restarts from the beginning. The playlist drawer and playback footer distinguish **Computer** from **This phone**, with time, percentage and completion state. Desktop queue/details views show the same two saved positions and the phone's last update time. Use **Resume from computer** on the phone or **Resume from phone** on desktop to jump deliberately; a received report never interrupts the other player's position.
+In the 0.4.0 source, opening an item uses the latest saved phone/computer position; a completed checkpoint restarts from the beginning. The playlist drawer and playback footer distinguish **Computer** from **This phone**, with time, percentage and completion state. Desktop queue/details views show the same two saved positions and the phone's last update time. Use **Resume from computer** on the phone or **Resume from phone** on desktop to jump deliberately; a received report never interrupts the other player's position.
 
 Progress sharing needs desktop 0.8.0 as well as Android 0.2.0. Reports are authenticated, sent in the background about every five seconds while playing, and coalesced after pause, seek or leaving playback. The host persists the latest phone checkpoint alongside its local library. Progress can lag by a few seconds, and closing the process or losing Wi-Fi can prevent the final checkpoint arriving. Multiple paired phones share one Phone checkpoint per video. With an older host, streaming remains available and the app clearly shows that phone progress sharing is unavailable. No cloud account or media upload is involved. The final original-key APK also passes a public version-code-1 → review version-code-2 in-place upgrade followed by the full native UI/progress test (33.874s), without clearing app data between versions.
 
@@ -60,13 +60,13 @@ Progress sharing needs desktop 0.8.0 as well as Android 0.2.0. Reports are authe
 
 1. Enable local playlist sharing in Luma on your desktop. Keep that computer awake and allow its local sharing port through the private-network firewall.
 2. Connect the phone to the same trusted Wi-Fi. Allow local-network access when Android requests it.
-3. Choose a nearby desktop, or enter the desktop's displayed `http://IP-address:port`.
+3. In Android 0.4.0, open the **hamburger menu**, then choose a nearby desktop or enter the desktop's displayed `http://IP-address:port`.
 4. Enter the current six-digit code from the desktop. Select an item from its live playlist.
 5. Use the playback controls or gestures described above. The public 0.1.0 APK still uses the older text buttons and separate playlist screen; install the review build to try the new controls and drawer.
 
 Playback waits for a visible, sized video view. Hardware decoding stays enabled on compatible devices; if a known video with received stream bytes never creates output, the app makes one automatic software retry and remembers that choice for the item during the current connection. Audio-only playback and reported network errors do not trigger this retry. Bookmark seeking waits for native Playing and the first video output rather than interrupting decoder initialization. A newer Play action keeps its intent when an older native Paused event arrives.
 
-The phone refreshes the playlist every five seconds while foregrounded. When the host bounds a large playlist, it clearly shows “Showing first N of M items” above the list. Protocol limits are 1000 returned items, 512 UTF-16 units per title, one year per duration/resume value, and 4 MiB per JSON response. The review app shows separate desktop/phone positions and reports phone progress to compatible hosts. It also keeps a session-local position while a checkpoint is in flight. Backgrounding closes network playback; returning can reopen the stream. Pausing stops playback while bounded stream buffers may fill. Re-pair after desktop sharing restarts. The desktop URL is the only saved connection preference. Pairing tokens remain in memory and are scoped to that desktop's current sharing session.
+The phone refreshes the playlist every five seconds while visible, including PiP. When the host bounds a large playlist, it clearly shows “Showing first N of M items” above the list. Protocol limits are 1000 returned items, 512 UTF-16 units per title, one year per duration/resume value, and 4 MiB per JSON response. The review app shows separate desktop/phone positions and reports phone progress to compatible hosts. It also keeps a session-local position while a checkpoint is in flight. Visible PiP keeps the stream running. Closing PiP, or leaving with PiP disabled, releases network playback; returning shows Continue Watching without autoplay. Pausing stops playback while bounded stream buffers may fill. Re-pair after desktop sharing restarts. The desktop URL is the only saved connection preference. Pairing tokens remain in memory and are scoped to that desktop's current sharing session.
 
 Local sharing uses **unencrypted HTTP**. Use a home network you trust. Manual addresses must be numeric private/link-local/loopback IP addresses with an explicit port; public hosts, DNS names, credentials, cloud URLs, cross-origin stream links and redirects are rejected. Native libVLC receives a nonce-protected loopback URL; the desktop token stays in the bounded HTTP relay. The relay uses a 64 KiB transfer buffer, forwards GET/HEAD and single byte ranges, and writes no media files. No cloud service, analytics, upload, or remote desktop controls are implemented. Play trusted media from your own desktop.
 

@@ -2,15 +2,15 @@
 
 **A free native media player by sdas for Mac and Windows, with an Android Wi-Fi streaming companion.** Desktop playback uses bundled libVLC 3. The owner tested the public 0.7.0 preview and reported that it works as expected.
 
-**Review source: desktop 0.10.0 / Android 0.4.0-preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
+**Latest source on `main`: desktop 0.10.0 / Android 0.4.0-preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
 
 **Public downloads remain desktop 0.7.0 / Android 0.1.0-preview.**
 
-[Downloads](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) · [Installation guide](INSTALL.md) · [Windows guide](Windows/README.md) · [Android guide](Android/README.md) · [Release notes](RELEASE_NOTES.md) · [Roadmap](ROADMAP.md)
+[Downloads](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) · [Installation guide](INSTALL.md) · [Windows guide](Windows/README.md) · [Android guide](Android/README.md) · [Changelog](CHANGELOG.md) · [Release notes](RELEASE_NOTES.md) · [Roadmap](ROADMAP.md)
 
 ## Continue watching and Android glass UI preview
 
-The `feature/android-pip-double-tap` source is the current local review: **Mac 0.10.0 build 12**, **Windows 0.10.0 build 7**, and **Android 0.4.0-preview / version code 4**. Public downloads and update feeds are unchanged.
+The source on `main`, updated **2026-11-16**, builds **Mac 0.10.0 build 12**, **Windows 0.10.0 build 7**, and **Android 0.4.0-preview / version code 4**. It includes the earlier auto-skip update. Public downloads and update feeds are unchanged; these versions remain source and local review builds.
 
 - Android opens on **Continue Watching** and an ordered **Up Next** queue. The hamburger menu holds nearby computers, pairing, manual addresses and disconnect options. Its frosted cards, violet/rose backdrop and rounded icon controls follow the supplied design references. Poster thumbnails are small private cached frames from actual playback, not movie downloads.
 - **Double-tap the right/left half** of the video to seek forward/back ten seconds. Single taps show controls; swipes retain seek, volume and brightness gestures.
@@ -28,7 +28,7 @@ Keep both apps updated for the full handoff behavior. Progress arrives roughly e
 
 ## Auto-skip preview
 
-The auto-skip changes from `feature/auto-skip` are included in this review branch. That earlier review added **desktop 0.9.0 / Android 0.3.0-preview**. `main` still contains the approved 0.8.0 interface update; public downloads remain 0.7.0 / Android 0.1.0. No release or update feed is changed by this feature branch.
+Auto-skip was introduced in **desktop 0.9.0 / Android 0.3.0-preview** and is included in the current **0.10.0 / 0.4.0** source on `main`. Public downloads remain 0.7.0 / Android 0.1.0; no new public package or update feed has been activated.
 
 - **Auto-skip starts off.** Enable it in the video's Auto-skip menu on Mac, the checkbox on Windows, or the Auto-skip settings button on Android.
 - Recognised opening/intro and ending/credits chapters provide exact skip boundaries. A separate post-credit chapter remains playable. A **Skip intro / Skip credits** button also lets you jump manually.
@@ -51,7 +51,7 @@ See the [Android auto-skip guide](Android/README.md#auto-skip-preview) and [Wind
 
 ## Modern Android playback and device progress
 
-The latest source on `main` includes **desktop 0.8.0 / Android 0.2.0-preview**. The owner approved the updated interface. The public downloads below remain **0.7.0 / Android 0.1.0** and do not include these changes. No stable update feed has been changed.
+The controls and device-progress reporting below were introduced in **desktop 0.8.0 / Android 0.2.0-preview** and remain included in the current **0.10.0 / 0.4.0** source on `main`. The public downloads below remain **0.7.0 / Android 0.1.0** and do not include these changes. No stable update feed has been changed.
 
 - Icon controls, previous/next, ten-second jumps and a seek bar in Android fullscreen; tap the picture to show/hide controls.
 - Swipe horizontally across the video to seek. Slide vertically on the **right** for player volume or on the **left** for this window's brightness. The level indicator appears during the gesture, then disappears.
@@ -91,12 +91,12 @@ The playlist references your files; adding media does not copy it into a new lib
 1. Add videos to the playlist on your Mac or Windows PC.
 2. **Mac:** click the Wi-Fi sharing icon and choose **Start sharing this playlist**. **Windows:** choose **Share playlist → Start sharing**. The sharing panel displays the desktop address and a six-digit pairing code.
 3. Connect Android to the **same trusted Wi-Fi**. Open Luma and allow local-network access when requested.
-4. In the 0.4.0 review, open the hamburger menu first. Choose the nearby desktop, or enter the exact displayed `http://IP-address:port` if discovery is unavailable. Enter the six-digit code.
-5. Tap a video. The public 0.7.0 companion provides **Play/Pause**, **±10 seconds**, the seek slider and volume. Choose **Full screen**; tap the video to show its controls and choose **Exit full screen** to leave. Choose **Playlist** to select another video. The latest 0.8.0 / 0.2.0 source adds the icon controls, gestures and overlay drawer described above.
+4. In Android 0.4.0, open the hamburger menu first. Choose the nearby desktop, or enter the exact displayed `http://IP-address:port` if discovery is unavailable. Enter the six-digit code.
+5. Tap a video. The public 0.7.0 companion provides **Play/Pause**, **±10 seconds**, the seek slider and volume. Choose **Full screen**; tap the video to show its controls and choose **Exit full screen** to leave. Choose **Playlist** to select another video. The current 0.10.0 / 0.4.0 source adds icon controls, gestures, the overlay playlist drawer, PiP and newest-device resume described above.
 
-The files stay on your computer. The phone buffers the stream in memory instead of saving a downloaded movie. Playback on the phone is independent of desktop playback. The 0.8.0 / 0.2.0 builds exchange saved progress and offer explicit resume actions; they do not keep two running players in lockstep. Keep the computer on, Luma open and sharing enabled. Active streams request prevention of idle system sleep; lid closure, forced sleep or shutting down the host still interrupts playback.
+The files stay on your computer. The phone buffers the stream in memory instead of saving a downloaded movie. Playback on the phone is independent of desktop playback. Source builds from 0.8.0 / 0.2.0 exchange saved progress and offer explicit resume actions; 0.10.0 / 0.4.0 also selects the newest saved device position when opening a video or pressing Play while paused. Two running players remain independent. Keep the computer on, Luma open and sharing enabled. Active streams request prevention of idle system sleep; lid closure, forced sleep or shutting down the host still interrupts playback.
 
-The list refreshes every five seconds while Android is visible. In the 0.4.0 review, visible picture-in-picture keeps streaming; closing PiP or leaving with PiP disabled stops it. Earlier public builds stop when backgrounded. Removing a shared item cuts off its stream. To disconnect everyone, use **Stop sharing and disconnect** on Mac or **Stop and revoke** on Windows. Sharing is off at desktop launch. Pairing codes expire after ten minutes; generate a new code on Mac or stop/restart sharing on Windows. Existing paired access lasts until sharing stops; pair again after restarting sharing.
+The list refreshes every five seconds while Android is visible. In Android 0.4.0, visible picture-in-picture keeps streaming; closing PiP or leaving with PiP disabled stops it. Earlier public builds stop when backgrounded. Removing a shared item cuts off its stream. To disconnect everyone, use **Stop sharing and disconnect** on Mac or **Stop and revoke** on Windows. Sharing is off at desktop launch. Pairing codes expire after ten minutes; generate a new code on Mac or stop/restart sharing on Windows. Existing paired access lasts until sharing stops; pair again after restarting sharing.
 
 Local HTTP is intended for a home network you trust. No cloud account, router port forwarding or uploading of your media is needed.
 

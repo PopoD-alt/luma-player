@@ -4,21 +4,21 @@ The public 0.7.0 preview uses libVLC 3 for native Mac/Windows playback and adds 
 
 ## Glass UI, PiP and handoff review
 
-Desktop 0.10.0 / Android 0.4.0 source on `feature/android-pip-double-tap` adds the reference-inspired Android glass home, Continue Watching, ordered Up Next and hamburger connectivity. Android includes visible picture-in-picture and left/right double-tap ten-second seeking. New video loads use the latest saved device position, and normal Play on paused playback can accept newer remote progress while retaining deliberate paused seeks. Startup displays recent activity without autoplay. The public downloads and update feeds remain unchanged pending owner review.
+Desktop 0.10.0 / Android 0.4.0 source on `main`, updated **2026-11-16**, adds the reference-inspired Android glass home, Continue Watching, ordered Up Next and hamburger connectivity. Android includes visible picture-in-picture and left/right double-tap ten-second seeking. New video loads use the latest saved device position, and normal Play on paused playback can accept newer remote progress while retaining deliberate paused seeks. Startup displays recent activity without autoplay. The public downloads and update feeds remain unchanged; binary distribution and physical-device review remain separate work.
 
 Physical-phone review should cover Home/expand/Close PiP transitions, gestures and interruptions from other audio apps, then switching devices after saved progress has reached the host. There is no cloud sync or automatic control of another running player.
 
 ## Auto-skip feature review
 
-Desktop 0.9.0 / Android 0.3.0 source on `feature/auto-skip` adds opt-in chapter-based/manual intro and credits skipping across all platforms. Desktop audio matching can suggest ranges by comparing two episodes; results require confirmation and take up to about 12 minutes for the bounded maximum windows. Confirmed desktop timings are visible to the phone. New public binaries and the stable feeds have not been changed.
+The current source on `main` includes opt-in chapter-based/manual intro and credits skipping across all platforms, introduced in desktop 0.9.0 / Android 0.3.0. Desktop audio matching can suggest ranges by comparing two episodes; results require confirmation and take up to about 12 minutes for the bounded maximum windows. Confirmed desktop timings are visible to the phone. New public binaries and the stable feeds have not been changed.
 
 Expand real-episode coverage of repeated themes, cold opens, varied edits and post-credit scenes before considering more automatic detection. The current matcher is not a trained AI model, and a repeated audio passage alone cannot identify its narrative role. Keep explicit review, cancellation and manual range controls.
 
 ## Modern player source update
 
-The next **desktop 0.8.0 / Android 0.2.0** preview adds icon-based Android fullscreen controls, previous/next, horizontal swipe seeking, hidden vertical volume/brightness gestures, and a left playlist drawer that keeps video playing. Separate computer/phone progress and explicit resume actions are implemented across Mac, Windows and Android. Progress is persisted on the shared desktop without remotely seeking another running player. The owner approved the updated interface, and the source is on `main`. These changes are not in the public 0.7.0 assets or update feeds.
+The earlier **desktop 0.8.0 / Android 0.2.0** source update introduced icon-based Android fullscreen controls, previous/next, horizontal swipe seeking, hidden vertical volume/brightness gestures, and a left playlist drawer that keeps video playing. Separate computer/phone progress and explicit resume actions are implemented across Mac, Windows and Android. Progress is persisted on the shared desktop without remotely seeking another running player. The owner approved the updated interface, and the source is on `main`. These changes are not in the public 0.7.0 assets or update feeds.
 
-The auto-skip feature branch now implements labelled chapters, saved ranges and repeated-audio suggestions with confirmation. More general scene/AI recognition remains future research.
+The current source on `main` also implements labelled chapters, saved ranges and repeated-audio suggestions with confirmation. More general scene/AI recognition remains future research.
 
 ## Current work
 

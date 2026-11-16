@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-11-16T21:26:40.245014+00:00",
-  "branch": "feature/android-pip-double-tap \u00b7 desktop0.10 / Android0.4 local review \u00b7 main0.8/public0.7 unchanged",
+  "as_of": "2026-11-16T21:38:39.905127+00:00",
+  "branch": "main \u00b7 desktop 0.10 / Android 0.4 source \u00b7 public 0.7 packages and feeds unchanged",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
@@ -25,7 +25,7 @@
     }
   ],
   "next": [
-    "Review the supplied0.10 desktop /0.4 Android copies before another public package. Main0.8, public0.7 downloads and stable feeds remain unchanged.",
+    "Review the supplied desktop 0.10 / Android 0.4 copies before another public package. Updated source is on main; public 0.7 downloads and stable feeds remain unchanged.",
     "Test physical-phone PiP, double-tap/swipe controls, audio interruptions and device switching on real Wi-Fi; saved progress can lag several seconds.",
     "Review real episodes and auto-skip audio suggestions separately. Confirmed repeated audio is not universal credit recognition or proof of every VLC format on every device."
   ],

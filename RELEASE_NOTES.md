@@ -1,6 +1,8 @@
-# Luma Player 0.10.0 — local review, unreleased
+# Luma Player 0.10.0 — latest source, binaries unreleased
 
-Android **0.4.0-preview / version code 4**, Mac **build 12**, Windows **review build 7**. Public packages and update feeds remain unchanged.
+See the dated [changelog](CHANGELOG.md) for source updates.
+
+Source update on `main`: **2026-11-16**. Android **0.4.0-preview / version code 4**, Mac **build 12**, Windows **review build 7**. Public packages and update feeds remain unchanged.
 
 - Android home and playback adopt the supplied glass design references, with Continue Watching, real-frame thumbnails, ordered Up Next and hamburger connection settings.
 - Android picture-in-picture retains visible native streaming and offers OS Play/Pause/Close controls; expanding preserves playback intent and fullscreen presentation.
@@ -14,7 +16,7 @@ Validation passes: **84 Android JVM tests and lint**, all five native cases agai
 
 # Luma Player 0.9.0 — auto-skip review, unreleased
 
-Mac **build 11**, Windows **review build 6**, Android **0.3.0-preview / version code 3** on `feature/auto-skip`. Public 0.7.0 downloads, `main`'s approved 0.8.0 source and update feeds remain unchanged pending review of this feature.
+Mac **build 11**, Windows **review build 6**, Android **0.3.0-preview / version code 3** were introduced on `feature/auto-skip`. These changes are included in the current desktop 0.10.0 / Android 0.4.0 source on `main`. Public 0.7.0 downloads and update feeds remain unchanged.
 
 - Opt-in Auto-skip plus manual Skip intro/credits controls on all three platforms.
 - Conservative labelled-chapter ranges and saved manual start/end timings. Desktop timings are shared as read-only playlist metadata; Android can keep a local override.
@@ -28,9 +30,9 @@ General AI recognition of credits in any arbitrary video is not implemented. Rep
 
 ---
 
-# Luma Player 0.8.0 — latest source, unreleased
+# Luma Player 0.8.0 — earlier source update, unreleased
 
-Android companion **0.2.0-preview / version code 2**; Mac **build 10**; Windows **review build 5**. These changes are included on `main` after the owner approved the updated interface. The public 0.7.0 downloads and stable update feeds are unchanged.
+Android companion **0.2.0-preview / version code 2**; Mac **build 10**; Windows **review build 5**. These changes were added to `main` after the owner approved the updated interface and remain included in the current 0.10.0 source. The public 0.7.0 downloads and stable update feeds are unchanged.
 
 - Android fullscreen now uses vector play/pause, previous/next, ten-second jump, playlist and fullscreen buttons, with fading glass/gradient controls.
 - Horizontal swipes preview and commit a seek. Vertical gestures control player volume on the right and window brightness on the left, with temporary indicators and restored brightness on exit.
