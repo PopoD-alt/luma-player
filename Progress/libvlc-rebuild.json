@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-16T02:01:07+00:00",
+  "as_of": "2026-11-16T02:05:53+00:00",
   "branch": "feature/auto-skip \u00b7 desktop0.9 / Android0.3 local review \u00b7 main0.8/public0.7 unchanged",
   "platforms": [
     {
@@ -11,10 +11,10 @@
     },
     {
       "name": "Windows \u00b7 x64",
-      "playback": "PASS native0.9 baseline CI43788581241: chapter/seek/frame/postcredit checks, keyboard toggle, actual audio matching, retained modeless preview/decline/reopen/save and all playback/sharing suites. Final manual-range priority and analysis launch guards await fresh native verification; focused Core/WPF checks pass.",
-      "sharing": "Read-only saved ranges and independent progress pass Core/HTTP tests. Local analysis is cancellable, candidate preview/save explicit, and changing the selected input invalidates results.",
-      "distribution": "Local0.9/build6 source under native review; no new Windows public archive or feed. Earlier0.8 owner folder preserved.",
-      "evidence": "build/windows-autoskip-native-evidence/smoke/smoke-results.json"
+      "playback": "PASS FINAL native0.9 CI43789628252/source9329a9: chapter names/current title, actual skip clock+frames, postcredit/paused/rewind guards, manual-range priority and conservative labels, keyboard checkbox activation, real audio matching and retained preview/decline/reopen/save.",
+      "sharing": "PASS all baseline playback and authenticated playlist/progress tests. Analysis launch and completion recheck the selected input and adjacent pair; local audio candidates require explicit Save.",
+      "distribution": "Local0.9/build6 portable review with approved runtime, full app/native sources and notices. EXE cross-built on Mac; same production inputs passed final native Windows CI. Main0.8/public0.7/feeds unchanged.",
+      "evidence": "build/windows-autoskip-final-native-evidence/smoke/smoke-results.json"
     },
     {
       "name": "Android \u00b7 API26+",
@@ -25,7 +25,7 @@
     }
   ],
   "next": [
-    "Finish native Windows auto-skip/audio preview verification, then hand over all local review copies. Main0.8, public0.7 binaries and stable update feeds remain unchanged.",
+    "Review local0.9 desktop /0.3 Android builds before another public package. All automated native checks pass. Main0.8 source, public0.7 downloads and stable update feeds are unchanged.",
     "Review actual episodes: labelled chapters, exact manual ranges, repeated-theme audio suggestions and separately marked post-credit scenes. Audio matching requires confirmation and can take12minutes for bounded maximum windows.",
     "Expand physical-phone Wi-Fi/gesture/audio coverage and the documented x64 emulator Wi-Fi limitation. A repeated audio passage is not proof that it is an opening or credits."
   ],
@@ -47,6 +47,18 @@
       "name": "Mac \u00b7 Auto-skip menu",
       "path": "build/review/auto-skip/mac/Luma-Mac-auto-skip.png",
       "caption": "Actual Mac0.9 interface. NSView capture omits the native video child; genuine native chapter seeks and displayed-frame counters pass separately."
+    },
+    {
+      "id": "windows-auto-skip",
+      "name": "Windows \u00b7 Auto-skip and saved ranges",
+      "path": "build/windows-autoskip-final-native-evidence/smoke/Luma-Windows-auto-skip.png",
+      "caption": "Actual native Windows0.9 test UI. WPF capture omits its native video child; real clock/frame assertions pass separately."
+    },
+    {
+      "id": "windows-matches",
+      "name": "Windows \u00b7 retained match preview",
+      "path": "build/windows-autoskip-final-native-evidence/smoke/Luma-Windows-detected-matches.png",
+      "caption": "Actual modeless Windows match review: Preview and explicit Save are separate, closing retains unconfirmed results for the current input."
     }
   ]
 }

@@ -8,6 +8,8 @@ Mac **build 11**, Windows **review build 6**, Android **0.3.0-preview / version 
 - Optional local desktop repeated-audio comparison of two episodes, bounded to three-minute head/tail windows, with progress, cancellation, file-change checks and confirmation before saving. No AI model, cloud upload or implicit acceptance.
 - Existing libraries default to auto-skip off. Playback progress/bookmarks remain separate from skip ranges.
 
+Validation: Android **52 JVM tests/lint**, actual Mac-server **38.819s** and Windows-Core-server **38.81s** runs (two native tests each); Mac native intro/credits clock and confirmed-audio workflow; [native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43789628252) including all final guards and preview/save controls.
+
 General AI recognition of credits in any arbitrary video is not implemented. Repeated audio may be story material; suggestions require review, and generic chapter names are not guessed. Physical-device, real-episode and hardware/audio coverage remains separate from authored fixture checks. Review builds retain the existing ad-hoc/unsigned/debug signing model.
 
 ---

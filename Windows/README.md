@@ -10,6 +10,8 @@ The `feature/auto-skip` source builds **0.9.0 review build 6**; the public downl
 
 **More → Analyze openings / credits with next queue item…** compares the current item with the next local episode. It scans bounded first/last-three-minute audio windows using the current playback runtime, shows progress and supports cancellation. Allow up to about 12 minutes for long files. Use **More → Review detected matches** to preview the proposed range, then Save it explicitly for the current video. Closing the review retains unconfirmed results while that input remains open. Pause before a long analysis; changing videos or automatic queue advance cancels it. Confirm a suggested range before it is saved for the current video; no analysis result enables auto-skip automatically. Audio can repeat in story scenes too, so review the actual boundary. Files remain local and unchanged; no AI model or cloud service is used.
 
+[Native Windows verification](https://github.com/PopoD-alt/luma-player/actions/runs/43789628252) passes chapter metadata, real skip clock/frame progress, post-credit preservation, keyboard activation, audio capture/matching, retained preview/decline/reopen/save, existing playback and paired progress/sharing checks. The local review EXE remains cross-built; its production source and runtime match that validation.
+
 The library persists the switch and per-file ranges. Saved desktop ranges are shared read-only with Android 0.3.0. Explicit seeks and pauses keep user intent, and a separate post-credit chapter remains playable. A generic chapter name or an unlabelled post-credit scene cannot provide a reliable skip boundary by itself.
 
 ## Device progress review

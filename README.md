@@ -27,6 +27,8 @@ The audio review image uses short authored test clips; normal analysis uses the 
 
 Auto-skip runs only during seekable playback. Pausing does not trigger a skip, and deliberately seeking into a skipped section lets you replay it. Generic numbered chapters are not guessed as credits. Chapter boundaries can preserve a separately marked post-credit scene; an unlabelled scene inside a chapter named Credits cannot be identified by that label alone.
 
+Validation passes: **52 Android JVM tests and lint**, two real native Android playback tests against each desktop server, Mac native chapter/seek/audio-confirmation tests, and [native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43789628252). Real episodes and physical-device Wi-Fi/audio still need broader review.
+
 See the [Android auto-skip guide](Android/README.md#auto-skip-preview) and [Windows guide](Windows/README.md#auto-skip-preview). Review copies keep the existing signing/distribution limits; a new public package has not been published.
 
 ## Modern Android playback and device progress
