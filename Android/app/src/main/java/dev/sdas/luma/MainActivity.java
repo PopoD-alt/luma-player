@@ -4,14 +4,23 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.app.PictureInPictureParams;
+import android.app.PictureInPictureUiState;
+import android.app.RemoteAction;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.Icon;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -24,6 +33,7 @@ import android.provider.Settings;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Rational;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
@@ -37,6 +47,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -55,6 +66,7 @@ import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.interfaces.IVLCVout;
 import org.videolan.libvlc.util.VLCVideoLayout;
 import java.net.HttpURLConnection;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -65,7 +77,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public final class MainActivity extends Activity {
-    private static final int BG=0xff10131b,PANEL=0xff1b202d,LINE=0xff30384a,TEXT=0xfff6f5f1,MUTED=0xffa9b2c6,ACCENT=0xffffa16f;
+    private static final int BG=0xff10131b,PANEL=0xff1b202d,LINE=0xff30384a,TEXT=0xfff6f5f1,MUTED=0xffbcb5cc,ACCENT=0xffe8c4ee;
     // Fontconfig work is non-interruptible. Serialize it across activity
     // lifetimes, before any player can create a subtitle renderer.
     private static final ThreadPoolExecutor FONT_PREPARATION=new ThreadPoolExecutor(1,1,0,TimeUnit.SECONDS,new ArrayBlockingQueue<>(4),r->{Thread t=new Thread(r,"luma-playback-preparation");t.setDaemon(true);return t;});
@@ -81,10 +93,22 @@ public final class MainActivity extends Activity {
     private Discovery discovery;private LibVLC engine;private MediaPlayer player;private StreamRelay relay;
     private FrameLayout root,home,playback,videoContainer;private VLCVideoLayout video;
     private LinearLayout desktopRows,homeContent,playerControls,playerHeader;private TextView status,playlistTitle,playlistInfo,playerTitle,playerStatus,clock;
-    private View videoTapTarget;private boolean chromeVisible=true;private PlayerIcon.Button fullButton,playButton,previousButton,nextButton;
+    private FrameLayout connectionsOverlay;private LinearLayout connectionsPanel;private boolean connectionsOpen;
+    private TextView homeNowLabel,homeNowTitle,homeNowDetails,homeConnection,homeQueueEmpty;private ProgressBar homeProgress;private Button homeContinue;
+    private ScrollView homeScroll;private ImageView homeArtwork;private TextView homeDuration;private EditText homeSearch;private LinearLayout homeDock;private PlayerArtworkStore homeArtworkStore;
+    private HomeQueueAdapter homeQueueAdapter;private List<LanApi.Item> homeQueueItems=Collections.emptyList(),renderedHomeQueueItems=Collections.emptyList();private LanApi.Item homeFeatured;private int homeSuccessorCount;private String homeCacheSignature="",homePlaylistSummary="",homeCachedItemId="";private long homeCacheSavedAt;private boolean homeCachedCompleted;
+    private View videoTapTarget;private boolean chromeVisible=true;private PlayerIcon.Button fullButton,playButton,previousButton,nextButton,pipButton;
+    private static final String PIP_ACTION="dev.sdas.luma.PIP_CONTROL";
+    private static WeakReference<MainActivity> pipOwner=new WeakReference<>(null);
+    private final String pipNonce=java.util.UUID.randomUUID().toString();
+    private PendingIntent pipPlayIntent,pipPauseIntent;private int pipActionGeneration=-1;private PictureInPictureParams pipParams;
+    private boolean pipSupported,pipAutoEnabled=true,pipPresentation,pipRestorePending,pipRestoreChrome,pipSession,activityResumed;
+    private String pipParamsSignature="";private AlertDialog skipDialog,rangeDialog,pipSettingsDialog,aboutDialog;
+    private AudioManager playbackAudioManager;private AudioFocusRequest playbackAudioFocus;
+    private boolean playbackAudioFocusHeld,playbackAudioFocusRequested,playbackAudioFocusResume;private int playbackAudioFocusGeneration;
     private LinearLayout centerTransport,playlistPanel;private FrameLayout playlistOverlay;private ListView playbackList;private PlaylistAdapter playlistAdapter;
     private boolean playlistOpen,drawerRestoreChrome;private TextView deviceProgress,gestureSeekText,volumeHudText,brightnessHudText,progressShareStatus;private Button resumeComputerButton;private TextView playbackPlaylistSummary;
-    private Button autoSkipButton,skipSegmentButton;
+    private Button autoSkipButton,skipSegmentButton;private TextView gestureHint;private Boolean compactPlayer;
     private boolean autoSkipEnabled,phoneSkipOverride;
     private List<SkipSegments.Range> phoneSkipRanges=Collections.emptyList(),chapterSkipRanges=Collections.emptyList();
     private final SkipSegments.Session skipSession=new SkipSegments.Session();
@@ -93,11 +117,15 @@ public final class MainActivity extends Activity {
     private LinearLayout volumeHud,brightnessHud;private GestureLevelView volumeLevel,brightnessLevel;private View seekHud;
     private PlaybackGestureMath.Axis gestureAxis=PlaybackGestureMath.Axis.NONE;private float gestureDownX,gestureDownY;private int gesturePointer=-1,gestureStartLevel,gestureMediaGeneration;private boolean gestureVolume,gestureSeekAllowed;
     private long gestureStartTime,gestureLength,gesturePreview;private float originalWindowBrightness=-1;
+    private PlaybackTapRecognizer playbackTaps;
+    private double computerTimestampAtPause,localActivityHostTimestamp;private boolean manualResumePinned,localActivityWasPlayed;private String localActivityId="";private long localActivityDuration;
+    private final Runnable confirmPlaybackTap=()->{if(playbackTaps!=null){handlePlaybackTap(playbackTaps.confirmSingle(android.os.SystemClock.uptimeMillis()));schedulePlaybackTap();}};
     private final Runnable hideChrome=this::hideChromeIfPlaying;
     private final Runnable hideGestureHud=()->{for(View view:new View[]{volumeHud,brightnessHud,seekHud})if(view!=null)view.animate().alpha(0).setDuration(160).withEndAction(()->view.setVisibility(View.GONE)).start();};
     private EditText manual;private Button connect;private ListView list;private SeekBar seek,volume;private AlertDialog pairDialog;
+    // Kept true from onStart until onStop; PiP is visible while not resumed.
     private volatile boolean foreground,windowFocused;
-    private boolean polling,connecting,dragging,full,wasPlaying,autoResumeApplied,destroyed;
+    private boolean polling,connecting,dragging,full,autoResumeApplied,destroyed;
     private int generation,mediaGeneration;private long initialResume;private LanApi.Item current;private String lastError;
     private boolean permissionAsked,nativeDiagnostics;
     private final java.util.Set<String> softwareItems=new java.util.HashSet<>();
@@ -106,17 +134,19 @@ public final class MainActivity extends Activity {
     private boolean nativeSurfacesReady,surfaceRebindPending,surfaceRestartPending,surfaceRestartStarted,surfaceRecoveryNeedsResume;private int videoGraphSequence,retiringGraphs,surfaceRebinds,surfaceRebindAttempts,surfaceCreatedEvents,surfaceDestroyedEvents;private long graphStartedAt,lastRetirementMs,surfaceRecoveryTime;
     private boolean enginePreparing,enginePrepared,fontCacheVerified;private long preparationStartedAt,preparationDurationMs;private LanApi.Item pendingPreparationItem;private int pendingPreparationConnection,pendingPreparationMedia;
     private int nativeTimeEvents,nativeBufferingEvents;private long lastNativeTimeEvent=-1;private float nativeBufferingPercent=-1;
-    private final Runnable pulse=new Runnable(){public void run(){if(!foreground||destroyed)return;updatePlayer();main.postDelayed(this,500);}};
+    private final Runnable pulse=new Runnable(){public void run(){if(!foreground||destroyed)return;updatePlayer();updatePipParams();main.postDelayed(this,500);}};
     private final Runnable poll=new Runnable(){public void run(){if(!foreground||destroyed)return;refresh(false);main.postDelayed(this,5000);}};
-    private final Runnable settleFullscreenBars=()->{if(full&&foreground&&!destroyed){applySystemBars();root.requestApplyInsets();}};
+    private final Runnable settleFullscreenBars=()->{if(full&&foreground&&!destroyed&&!pipUiHidden()){applySystemBars();root.requestApplyInsets();}};
 
     @Override public void onCreate(Bundle saved){
         super.onCreate(saved);getWindow().setStatusBarColor(BG);getWindow().setNavigationBarColor(BG);
         root=new FrameLayout(this);root.setBackgroundColor(BG);setContentView(root);
-        root.setOnApplyWindowInsetsListener((view,insets)->{view.setPadding(full?0:insets.getSystemWindowInsetLeft(),full?0:insets.getSystemWindowInsetTop(),full?0:insets.getSystemWindowInsetRight(),full?0:insets.getSystemWindowInsetBottom());return insets;});
-        root.addOnLayoutChangeListener((view,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{if(full&&(right-left!=oldRight-oldLeft||bottom-top!=oldBottom-oldTop))scheduleFullscreenBars();});
+        root.setOnApplyWindowInsetsListener((view,insets)->{boolean videoOnly=full||pipUiHidden();view.setPadding(videoOnly?0:insets.getSystemWindowInsetLeft(),videoOnly?0:insets.getSystemWindowInsetTop(),videoOnly?0:insets.getSystemWindowInsetRight(),videoOnly?0:insets.getSystemWindowInsetBottom());return insets;});
+        root.addOnLayoutChangeListener((view,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{if(full&&(right-left!=oldRight-oldLeft||bottom-top!=oldBottom-oldTop))scheduleFullscreenBars();layoutPlayerTransport();updatePipParams();});
         autoSkipEnabled=getPreferences(MODE_PRIVATE).getBoolean("skip.enabled",false);
-        originalWindowBrightness=getWindow().getAttributes().screenBrightness;buildHome();buildPlayer();
+        pipSupported=getPackageManager().hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);pipAutoEnabled=getPreferences(MODE_PRIVATE).getBoolean("pip.auto",true);pipOwner=new WeakReference<>(this);
+        originalWindowBrightness=getWindow().getAttributes().screenBrightness;
+        ViewConfiguration taps=ViewConfiguration.get(this);playbackTaps=new PlaybackTapRecognizer(ViewConfiguration.getDoubleTapTimeout(),ViewConfiguration.getLongPressTimeout(),taps.getScaledTouchSlop(),taps.getScaledDoubleTapSlop());buildHome();buildPlayer();
         if(Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::navigateBack);
         discovery=new Discovery(this,main,new Discovery.Listener(){
             public void found(Discovery.Desktop desktop){desktops.put(desktop.name,desktop);renderDesktops();}
@@ -127,42 +157,138 @@ public final class MainActivity extends Activity {
     }
     private void buildHome(){
         home=new FrameLayout(this);root.addView(home,new FrameLayout.LayoutParams(-1,-1));
-        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);home.addView(scroll);
-        homeContent=column();homeContent.setPadding(dp(22),dp(20),dp(22),dp(28));scroll.addView(homeContent);
-        LinearLayout header=row();TextView brand=text("▶  LUMA",22,TEXT);brand.setTypeface(null,Typeface.BOLD);header.addView(brand,new LinearLayout.LayoutParams(0,-2,1));
-        Button about=button("About",this::about,false);header.addView(about);homeContent.addView(header);
-        TextView tag=text("DESKTOP TO ANDROID",11,ACCENT);tag.setLetterSpacing(.13f);tag.setPadding(0,dp(25),0,dp(10));homeContent.addView(tag);
-        TextView headline=text("A little closer\nto your stories.",34,TEXT);headline.setTypeface(null,Typeface.BOLD);homeContent.addView(headline);
-        addText(homeContent,"Stream your desktop playlist over the same Wi-Fi. Your media stays on your computer; nothing is saved as a phone download.",15,MUTED,14);
-        LinearLayout disclosure=card();addText(disclosure,"Your trusted Wi-Fi only",15,TEXT,0);
-        addText(disclosure,"Pair with your own desktop. Local HTTP is unencrypted, so use a home network you trust. The host must stay awake with sharing enabled.",13,MUTED,7);homeContent.addView(disclosure,margin(0,20,0,22));
-        LinearLayout nearby=row();TextView nearbyTitle=text("Nearby desktops",19,TEXT);nearbyTitle.setTypeface(null,Typeface.BOLD);nearby.addView(nearbyTitle,new LinearLayout.LayoutParams(0,-2,1));nearby.addView(button("Find",()->{desktops.clear();renderDesktops();discovery.stop();permissionAsked=false;ensurePermission();},false));homeContent.addView(nearby);
-        status=text("Start local sharing in Luma on your desktop.",13,MUTED);status.setId(R.id.connection_status);status.setPadding(0,dp(8),0,dp(12));homeContent.addView(status);
-        desktopRows=column();homeContent.addView(desktopRows);renderDesktops();
-        LinearLayout manualCard=card();addText(manualCard,"Connect with an address",15,TEXT,0);
-        manual=new EditText(this);manual.setId(R.id.manual_address);manual.setSingleLine();manual.setTextSize(14);manual.setTextColor(TEXT);manual.setHintTextColor(MUTED);manual.setHint("http://192.168.1.20:12345");manual.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_URI);manualCard.addView(manual,new LinearLayout.LayoutParams(-1,dp(54)));
-        connect=button("Connect to desktop",()->connectManual(),true);connect.setId(R.id.connect);manualCard.addView(connect,new LinearLayout.LayoutParams(-1,dp(48)));homeContent.addView(manualCard,margin(0,12,0,24));
-        LinearLayout libraryHeader=row();playlistTitle=text("Your desktop playlist",19,TEXT);playlistTitle.setTypeface(null,Typeface.BOLD);libraryHeader.addView(playlistTitle,new LinearLayout.LayoutParams(0,-2,1));libraryHeader.addView(button("Refresh",()->refresh(true),false));homeContent.addView(libraryHeader);
-        playlistInfo=text("Pair with a desktop to see its current playlist.",12,MUTED);playlistInfo.setPadding(0,dp(7),0,dp(10));homeContent.addView(playlistInfo);
-        list=new ListView(this);list.setId(R.id.media_list);list.setDividerHeight(dp(7));list.setDivider(new android.graphics.drawable.ColorDrawable(BG));list.setBackgroundColor(BG);playlistAdapter=new PlaylistAdapter();list.setAdapter(playlistAdapter);
-        list.setOnItemClickListener((parent,view,position,id)->startMedia(items.get(position)));
+        home.addView(new GlassBackdropView(this),new FrameLayout.LayoutParams(-1,-1));
+        homeScroll=new ScrollView(this);homeScroll.setFillViewport(true);homeScroll.setClipToPadding(false);home.addView(homeScroll,new FrameLayout.LayoutParams(-1,-1));
+        homeContent=column();homeContent.setFocusableInTouchMode(true);homeContent.setPadding(dp(22),dp(23),dp(22),dp(120));homeScroll.addView(homeContent);
+        LinearLayout header=row();TextView brand=text("Your library",29,TEXT);brand.setTypeface(null,Typeface.BOLD);header.addView(brand,new LinearLayout.LayoutParams(0,-2,1));
+        PlayerIcon.Button menu=icon(PlayerIcon.Kind.MENU,"Open connections",this::openConnectionsDrawer,false,48);menu.setId(R.id.home_connections);header.addView(menu,new LinearLayout.LayoutParams(dp(48),dp(48)));homeContent.addView(header);
+        homeConnection=text("YOUR DESKTOP LIBRARY",11,0xffd8d1e6);homeConnection.setSingleLine();homeConnection.setEllipsize(TextUtils.TruncateAt.END);homeConnection.setPadding(dp(13),dp(7),dp(13),dp(7));homeConnection.setBackground(LiquidGlass.panel(this,999));LinearLayout.LayoutParams chip=new LinearLayout.LayoutParams(-2,-2);chip.setMargins(0,dp(12),0,dp(17));homeContent.addView(homeConnection,chip);
+        homeSearch=new EditText(this);homeSearch.setSingleLine();homeSearch.setTextSize(14);homeSearch.setTextColor(TEXT);homeSearch.setHintTextColor(0xffd1cadf);homeSearch.setHint("Search your videos");homeSearch.setContentDescription("Search desktop playlist");homeSearch.setPadding(dp(18),0,dp(16),0);homeSearch.setBackground(LiquidGlass.control(this,999,false));homeSearch.setInputType(InputType.TYPE_CLASS_TEXT);PlayerIcon searchIcon=new PlayerIcon(PlayerIcon.Kind.SEARCH,TEXT);searchIcon.setBounds(0,0,dp(22),dp(22));homeSearch.setCompoundDrawables(searchIcon,null,null,null);homeSearch.setCompoundDrawablePadding(dp(12));homeContent.addView(homeSearch,new LinearLayout.LayoutParams(-1,dp(50)));
+        homeSearch.addTextChangedListener(new android.text.TextWatcher(){public void beforeTextChanged(CharSequence s,int start,int count,int after){}public void onTextChanged(CharSequence s,int start,int before,int count){updateHomeDashboard();}public void afterTextChanged(android.text.Editable value){}});
+        homeNowLabel=text("Continue watching",21,TEXT);homeNowLabel.setTypeface(null,Typeface.BOLD);homeContent.addView(homeNowLabel,margin(0,24,0,12));
+        FrameLayout poster=new FrameLayout(this);poster.setBackground(LiquidGlass.posterPlaceholder(this,22));poster.setClipToOutline(true);homeContent.addView(poster,new LinearLayout.LayoutParams(-1,dp(190)));
+        homeArtwork=artworkView(22);homeArtwork.setContentDescription("Featured video artwork");poster.addView(homeArtwork,new FrameLayout.LayoutParams(-1,-1));
+        View posterShade=new View(this);posterShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x000b0b17,0x000b0b17,0xbf101025}));poster.addView(posterShade,new FrameLayout.LayoutParams(-1,-1));poster.setForeground(LiquidGlass.outline(this,22));poster.setOnClickListener(v->playHomeFeatured());
+        homeContinue=icon(PlayerIcon.Kind.PLAY,"Continue watching",this::playHomeFeatured,true,50);homeContinue.setId(R.id.home_continue);FrameLayout.LayoutParams playPosition=new FrameLayout.LayoutParams(dp(50),dp(50),Gravity.BOTTOM|Gravity.START);playPosition.setMargins(dp(13),0,0,dp(13));poster.addView(homeContinue,playPosition);
+        homeProgress=progressBar(0xffebc5ee);FrameLayout.LayoutParams progressPosition=new FrameLayout.LayoutParams(-1,dp(4),Gravity.BOTTOM);progressPosition.setMargins(dp(78),0,dp(20),dp(24));poster.addView(homeProgress,progressPosition);
+        homeDuration=text("",11,TEXT);homeDuration.setPadding(dp(8),dp(4),dp(8),dp(4));homeDuration.setBackground(LiquidGlass.strongPanel(this,9));FrameLayout.LayoutParams durationPosition=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.END);durationPosition.setMargins(0,dp(12),dp(12),0);poster.addView(homeDuration,durationPosition);
+        poster.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{int height=Math.max(dp(160),Math.min(dp(260),Math.round((r-l)*9f/16)));if(poster.getLayoutParams().height!=height){ViewGroup.LayoutParams p=poster.getLayoutParams();p.height=height;poster.setLayoutParams(p);}});
+        homeNowTitle=text("Your next watch starts here",20,TEXT);homeNowTitle.setTypeface(null,Typeface.BOLD);homeNowTitle.setMaxLines(2);homeNowTitle.setEllipsize(TextUtils.TruncateAt.END);homeContent.addView(homeNowTitle,margin(0,13,0,0));
+        homeNowDetails=text("Connect to your desktop to see what you last played.",12,0xffc8bfd6);homeNowDetails.setLineSpacing(dp(3),1);homeContent.addView(homeNowDetails,margin(0,5,0,20));
+        LinearLayout libraryHeader=row();playlistTitle=text("Up next",22,TEXT);playlistTitle.setTypeface(null,Typeface.BOLD);libraryHeader.addView(playlistTitle,new LinearLayout.LayoutParams(0,-2,1));libraryHeader.addView(icon(PlayerIcon.Kind.RETRY,"Refresh playlist",()->{if(session==null)openConnectionsDrawer();else refresh(true);},false,42),new LinearLayout.LayoutParams(dp(42),dp(42)));homeContent.addView(libraryHeader);
+        playlistInfo=text("Your desktop's playlist, in order.",12,MUTED);playlistInfo.setPadding(0,dp(7),0,dp(12));homeContent.addView(playlistInfo);
+        homeQueueEmpty=text("Pair with a desktop to bring its playlist here.",14,MUTED);homeContent.addView(homeQueueEmpty,margin(0,4,0,16));
+        list=new ListView(this);list.setId(R.id.media_list);list.setDividerHeight(dp(10));list.setDivider(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));list.setBackgroundColor(Color.TRANSPARENT);playlistAdapter=new PlaylistAdapter();homeQueueAdapter=new HomeQueueAdapter();list.setAdapter(homeQueueAdapter);
+        list.setOnItemClickListener((parent,view,position,id)->{if(position>=0&&position<homeQueueItems.size())startMedia(homeQueueItems.get(position));});
         list.setOnTouchListener((view,event)->{view.getParent().requestDisallowInterceptTouchEvent(true);return false;});
         homeContent.addView(list,new LinearLayout.LayoutParams(-1,dp(330)));
-        addText(homeContent,"FREE BY SDAS  ·  ANDROID PREVIEW",11,MUTED,18);
+        addText(homeContent,"FREE BY SDAS",10,0xffbbb0cd,18);
+        homeDock=row();homeDock.setGravity(Gravity.CENTER);homeDock.setPadding(dp(8),dp(7),dp(8),dp(7));homeDock.setBackground(LiquidGlass.panel(this,34));homeDock.addView(homeDockItem(PlayerIcon.Kind.HOME,"Home",()->homeScroll.smoothScrollTo(0,0),true),new LinearLayout.LayoutParams(0,dp(58),1));homeDock.addView(homeDockItem(PlayerIcon.Kind.PLAY,"Continue",this::playHomeFeatured,false),new LinearLayout.LayoutParams(0,dp(58),1));homeDock.addView(homeDockItem(PlayerIcon.Kind.PLAYLIST,"Up next",()->homeScroll.smoothScrollTo(0,Math.max(0,libraryHeader.getTop()-dp(16))),false),new LinearLayout.LayoutParams(0,dp(58),1));FrameLayout.LayoutParams dockPosition=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM);dockPosition.setMargins(dp(18),0,dp(18),dp(15));home.addView(homeDock,dockPosition);
+        buildConnectionsDrawer();updateHomeDashboard();
     }
+    private void buildConnectionsDrawer(){
+        connectionsOverlay=new FrameLayout(this);connectionsOverlay.setId(R.id.connection_drawer);connectionsOverlay.setVisibility(View.GONE);home.addView(connectionsOverlay,new FrameLayout.LayoutParams(-1,-1));
+        View shade=new View(this);shade.setBackgroundColor(0xa6000000);shade.setOnClickListener(v->closeConnectionsDrawer());connectionsOverlay.addView(shade,new FrameLayout.LayoutParams(-1,-1));
+        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackground(LiquidGlass.strongPanel(this,26));FrameLayout.LayoutParams panelParams=new FrameLayout.LayoutParams(dp(360),-1,Gravity.START);connectionsOverlay.addView(scroll,panelParams);
+        connectionsPanel=column();connectionsPanel.setPadding(dp(22),dp(20),dp(22),dp(28));scroll.addView(connectionsPanel);
+        LinearLayout heading=row();TextView title=text("Connections",23,TEXT);title.setTypeface(null,Typeface.BOLD);heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));heading.addView(icon(PlayerIcon.Kind.CLOSE,"Close connections",this::closeConnectionsDrawer,false,48),new LinearLayout.LayoutParams(dp(48),dp(48)));connectionsPanel.addView(heading);
+        addText(connectionsPanel,"Your desktop, on your Wi-Fi",15,TEXT,20);addText(connectionsPanel,"Start local sharing in Luma on your Mac or PC. Pair here to stream its playlist. The files stay on your computer.",13,MUTED,8);
+        LinearLayout disclosure=card();disclosure.setBackground(LiquidGlass.panel(this,20));addText(disclosure,"Your trusted Wi-Fi only",14,TEXT,0);addText(disclosure,"Local HTTP is unencrypted. Pair only with your own desktop on a home network you trust. Keep it awake with sharing enabled.",12,MUTED,7);connectionsPanel.addView(disclosure,margin(0,18,0,24));
+        LinearLayout nearby=row();TextView nearbyTitle=text("Nearby desktops",18,TEXT);nearbyTitle.setTypeface(null,Typeface.BOLD);nearby.addView(nearbyTitle,new LinearLayout.LayoutParams(0,-2,1));nearby.addView(button("Find",()->{desktops.clear();renderDesktops();discovery.stop();permissionAsked=false;ensurePermission();},false));connectionsPanel.addView(nearby);
+        status=text("Start local sharing in Luma on your desktop.",13,MUTED);status.setId(R.id.connection_status);status.setPadding(0,dp(8),0,dp(12));connectionsPanel.addView(status);
+        desktopRows=column();connectionsPanel.addView(desktopRows);renderDesktops();
+        LinearLayout manualCard=card();manualCard.setBackground(LiquidGlass.panel(this,20));addText(manualCard,"Connect with an address",15,TEXT,0);
+        manual=new EditText(this);manual.setId(R.id.manual_address);manual.setSingleLine();manual.setTextSize(14);manual.setTextColor(TEXT);manual.setHintTextColor(MUTED);manual.setHint("http://192.168.1.20:12345");manual.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_URI);manualCard.addView(manual,new LinearLayout.LayoutParams(-1,dp(54)));
+        connect=button("Connect to desktop",this::connectManual,true);connect.setTextColor(TEXT);connect.setBackground(LiquidGlass.control(this,24,true));connect.setId(R.id.connect);manualCard.addView(connect,new LinearLayout.LayoutParams(-1,dp(48)));connectionsPanel.addView(manualCard,margin(0,12,0,16));Button aboutHome=button("About Luma",this::about,false);aboutHome.setBackground(LiquidGlass.control(this,22,false));connectionsPanel.addView(aboutHome,margin(0,8,0,0));
+        connectionsOverlay.addOnLayoutChangeListener((view,l,t,r,b,oldL,oldT,oldR,oldB)->{int width=Math.min(dp(360),Math.max(dp(240),r-l-dp(32)));if(scroll.getLayoutParams().width!=width){ViewGroup.LayoutParams p=scroll.getLayoutParams();p.width=width;scroll.setLayoutParams(p);}});
+    }
+    private void openConnectionsDrawer(){if(connectionsOverlay==null)return;connectionsOpen=true;homeContent.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);if(homeDock!=null)homeDock.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);connectionsOverlay.setVisibility(View.VISIBLE);connectionsOverlay.bringToFront();connectionsPanel.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);}
+    private void closeConnectionsDrawer(){connectionsOpen=false;if(homeContent!=null)homeContent.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);if(homeDock!=null)homeDock.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);if(connectionsOverlay!=null){connectionsOverlay.setVisibility(View.GONE);android.view.inputmethod.InputMethodManager keyboard=(android.view.inputmethod.InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);if(keyboard!=null)keyboard.hideSoftInputFromWindow(connectionsOverlay.getWindowToken(),0);}}
+    private void playHomeFeatured(){
+        if(session==null){openConnectionsDrawer();return;}
+        if(homeFeatured==null){refresh(true);return;}
+        closeConnectionsDrawer();startMedia(homeFeatured);
+    }
+    /** Refreshes presentation only. Remote metadata never starts, seeks, or replaces a stream. */
+    private void updateHomeDashboard(){
+        if(homeNowTitle==null)return;
+        homeFeatured=session==null?null:current!=null?latestItem(current):PlaybackResumePolicy.homeFeatured(items,localActivityId,localActivityHostTimestamp,localActivityWasPlayed);
+        homeConnection.setText(session==null?"Your desktop library":"●  Connected · "+session.host.name);
+        if(homeFeatured!=null){
+            LanApi.Item item=homeFeatured;PlaybackResumePolicy.Snapshot latest=PlaybackResumePolicy.latest(item);boolean active=current!=null&&current.id.equals(item.id);boolean pendingLocal=!active&&localActivityWasPlayed&&localActivityId.equals(item.id)&&latest.updatedAtSeconds<=localActivityHostTimestamp;
+            double position=latest.positionSeconds,duration=latest.durationSeconds;boolean completed=latest.completed;String source=latest.source==PlaybackResumePolicy.Source.PHONE?"phone":"computer";
+            if(active||pendingLocal){source="this phone";Long local=localResume.get(item.id);if(local!=null)position=local/1000.0;if(player!=null&&nativePlayingSeen&&autoResumeApplied&&player.getTime()>=0)position=player.getTime()/1000.0;if(player!=null&&player.getLength()>0)duration=player.getLength()/1000.0;else if(pendingLocal&&localActivityDuration>0)duration=localActivityDuration/1000.0;completed=completedOnPhone.contains(item.id)||player!=null&&player.getPlayerState()==Media.State.Ended;}
+            homeNowLabel.setText(active?"Now playing":latest.hasTimestamp?"Continue watching":"From your playlist");homeNowTitle.setText(item.title);
+            String when=active?(player!=null&&player.isPlaying()?"Playing on this phone":"Paused on this phone"):pendingLocal?"Last played on this phone · syncing with desktop":latest.hasTimestamp?"Last played on "+source+" · "+dashboardDate((long)(latest.updatedAtSeconds*1000)):"Ready to play from your desktop";
+            homeNowDetails.setText(when+"\n"+progressText(position,duration,completed)+(duration>0?"  /  "+time((long)(duration*1000)):""));
+            homeProgress.setVisibility(View.VISIBLE);homeProgress.setProgress(completed?1000:duration>0?(int)Math.max(0,Math.min(1000,position*1000/duration)):0);
+            setHomeContinueAction(PlayerIcon.Kind.PLAY,completed?"Play again":position>0?"Resume at "+time((long)(position*1000)):"Play video");homeDuration.setText(duration>0?time((long)(duration*1000)):"Desktop stream");bindHomeArtwork(homeArtwork,session.host.id,item.id);
+            if(!active||nativePlayingSeen&&autoResumeApplied)cacheHomeFeatured(item,position,duration,source,completed);
+            homeQueueItems=PlaybackResumePolicy.queueAfter(items,item.id);homeSuccessorCount=PlaybackResumePolicy.successorCount(items,item.id);
+        }else{
+            homeQueueItems=Collections.emptyList();homeSuccessorCount=0;String cachedTitle=getPreferences(MODE_PRIVATE).getString("home.last.title","");boolean cached=session==null&&!cachedTitle.isEmpty();
+            homeNowLabel.setText(cached?"Last played · Cached":"Continue watching");homeNowTitle.setText(cached?cachedTitle:session==null?"Your next watch starts here":"Your playlist is ready for a story");
+            long position=getPreferences(MODE_PRIVATE).getLong("home.last.position",0),duration=getPreferences(MODE_PRIVATE).getLong("home.last.duration",0);boolean completed=getPreferences(MODE_PRIVATE).getBoolean("home.last.completed",false);
+            String savedSource=getPreferences(MODE_PRIVATE).getString("home.last.source","your desktop");long savedAt=getPreferences(MODE_PRIVATE).getLong("home.last.seenAt",0);
+            homeNowDetails.setText(cached?"Cached from "+savedSource+" · last seen "+dashboardDate(savedAt)+"\n"+progressText(position/1000.0,duration/1000.0,completed)+". Connect to check the latest progress.":session==null?"Connect to your desktop to see what you last played.":"Add videos to Luma on your desktop. They will appear here automatically.");
+            homeProgress.setVisibility(cached?View.VISIBLE:View.GONE);homeProgress.setProgress(completed?1000:duration>0?(int)Math.min(1000,position*1000/duration):0);setHomeContinueAction(session==null?PlayerIcon.Kind.COMPUTER:PlayerIcon.Kind.RETRY,session==null?"Connect to continue":"Refresh playlist");homeDuration.setText(cached&&duration>0?time(duration):cached?"Cached":"Wi-Fi streaming");bindHomeArtwork(homeArtwork,cached?getPreferences(MODE_PRIVATE).getString("home.last.host",""):"",cached?getPreferences(MODE_PRIVATE).getString("home.last.id",""):"");
+        }
+        String query=homeSearch==null?"":homeSearch.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);if(!query.isEmpty()){List<LanApi.Item> matching=new ArrayList<>();for(LanApi.Item item:items)if(item.title.toLowerCase(java.util.Locale.ROOT).contains(query))matching.add(item);homeQueueItems=Collections.unmodifiableList(matching);homeSuccessorCount=0;}
+        playlistTitle.setText(!query.isEmpty()?"Search results":homeSuccessorCount>0||homeQueueItems.isEmpty()?"Up next":"Rest of playlist");
+        playlistInfo.setText(!query.isEmpty()?homeQueueItems.size()+" matching videos":session==null?"Connect from the menu to see your desktop playlist.":(homePlaylistSummary.isEmpty()?items.size()+" videos · desktop playlist order":homePlaylistSummary)+(homeSuccessorCount>0?" · "+homeSuccessorCount+" up next":""));
+        homeQueueEmpty.setVisibility(homeQueueItems.isEmpty()?View.VISIBLE:View.GONE);homeQueueEmpty.setText(!query.isEmpty()?"No videos match this search.":session==null?"Your next videos will appear here after pairing.":items.isEmpty()?"No videos have been added yet.":"You are at the end of this playlist.");
+        list.setVisibility(homeQueueItems.isEmpty()?View.GONE:View.VISIBLE);if(!homeQueueItems.equals(renderedHomeQueueItems)){renderedHomeQueueItems=homeQueueItems;homeQueueAdapter.notifyDataSetChanged();}
+    }
+    private String dashboardDate(long millis){return millis>0?java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT,java.text.DateFormat.SHORT).format(new java.util.Date(millis)):"earlier";}
+    private void cacheHomeFeatured(LanApi.Item item,double position,double duration,String source,boolean completed){
+        String host=session==null?"":session.host.id;long positionMillis=Math.max(0,Math.round(position*1000)),durationMillis=Math.max(0,Math.round(duration*1000));String signature=host+"|"+item.id+"|"+item.title+"|"+positionMillis+"|"+durationMillis+"|"+source+"|"+completed;
+        if(signature.equals(homeCacheSignature))return;long now=android.os.SystemClock.uptimeMillis();if(item.id.equals(homeCachedItemId)&&completed==homeCachedCompleted&&player!=null&&player.isPlaying()&&now-homeCacheSavedAt<5000)return;homeCacheSignature=signature;homeCachedItemId=item.id;homeCachedCompleted=completed;homeCacheSavedAt=now;
+        // Display metadata only. Pairing tokens, stream URLs and playback access
+        // are deliberately absent; a cold launch must pair before streaming.
+        getPreferences(MODE_PRIVATE).edit().putString("home.last.host",host).putString("home.last.id",item.id).putString("home.last.title",item.title).putLong("home.last.position",positionMillis).putLong("home.last.duration",durationMillis).putString("home.last.source",source).putBoolean("home.last.completed",completed).putLong("home.last.seenAt",System.currentTimeMillis()).apply();
+    }
+    private final class HomeQueueAdapter extends BaseAdapter {
+        public int getCount(){return homeQueueItems.size();}public Object getItem(int position){return homeQueueItems.get(position);}public long getItemId(int position){return position;}
+        public View getView(int position,View convert,ViewGroup parent){
+            LanApi.Item item=homeQueueItems.get(position);LinearLayout outer=column();if(position==homeSuccessorCount&&homeSuccessorCount>0){TextView heading=text("REST OF PLAYLIST",10,MUTED);heading.setLetterSpacing(.1f);outer.addView(heading,margin(0,14,0,10));}
+            LinearLayout tile=row();tile.setPadding(dp(11),dp(11),dp(11),dp(11));tile.setBackground(LiquidGlass.panel(MainActivity.this,20));ImageView artwork=artworkView(12);artwork.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);tile.addView(artwork,new LinearLayout.LayoutParams(dp(82),dp(57)));bindHomeArtwork(artwork,session==null?"":session.host.id,item.id);
+            LinearLayout words=column();words.setPadding(dp(12),0,dp(6),0);TextView title=text(item.title,14,TEXT);title.setTypeface(null,Typeface.BOLD);title.setMaxLines(2);title.setEllipsize(TextUtils.TruncateAt.END);words.addView(title);PlaybackResumePolicy.Snapshot latest=PlaybackResumePolicy.latest(item);TextView detail=text((items.indexOf(item)+1)+" · "+(latest.source==PlaybackResumePolicy.Source.PHONE?"Phone":"Computer")+" · "+progressText(latest.positionSeconds,latest.durationSeconds,latest.completed),10,0xffd3c9df);words.addView(detail,margin(0,6,0,0));tile.addView(words,new LinearLayout.LayoutParams(0,-2,1));View arrow=new View(MainActivity.this);arrow.setBackground(new PlayerIcon(PlayerIcon.Kind.CHEVRON_RIGHT,0xffddd6eb));arrow.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);tile.addView(arrow,new LinearLayout.LayoutParams(dp(18),dp(18)));outer.addView(tile);return outer;
+        }
+    }
+    private LinearLayout homeDockItem(PlayerIcon.Kind kind,String label,Runnable action,boolean selected){
+        LinearLayout item=column();item.setGravity(Gravity.CENTER);item.setFocusable(true);item.setContentDescription(label);item.setSelected(selected);if(selected)item.setBackground(LiquidGlass.control(this,28,false));
+        View image=new View(this);image.setBackground(new PlayerIcon(kind,TEXT));image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);item.addView(image,new LinearLayout.LayoutParams(dp(23),dp(23)));TextView caption=text(label,10,TEXT);caption.setGravity(Gravity.CENTER);caption.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);item.addView(caption,margin(0,4,0,0));item.setOnClickListener(v->action.run());return item;
+    }
+    private ImageView artworkView(int radius){ImageView image=new ImageView(this);image.setScaleType(ImageView.ScaleType.CENTER_CROP);image.setBackground(LiquidGlass.posterPlaceholder(this,radius));image.setForeground(LiquidGlass.outline(this,radius));image.setClipToOutline(true);return image;}
+    private PlayerArtworkStore ensureArtworkStore(){if(homeArtworkStore==null)homeArtworkStore=new PlayerArtworkStore(this);return homeArtworkStore;}
+    private void bindHomeArtwork(ImageView image,String host,String id){
+        String key=host+"\u0000"+id;if(key.equals(image.getTag()))return;image.setTag(key);image.setImageDrawable(null);if(host.isEmpty()||id.isEmpty())return;
+        ensureArtworkStore().load(host,id,bitmap->{if(!destroyed&&key.equals(image.getTag())&&bitmap!=null)image.setImageBitmap(bitmap);});
+    }
+    private void refreshHomeArtwork(){if(homeArtwork!=null)homeArtwork.setTag(null);renderedHomeQueueItems=Collections.emptyList();updateHomeDashboard();}
+    private void setHomeContinueAction(PlayerIcon.Kind kind,String description){if(homeContinue instanceof PlayerIcon.Button)((PlayerIcon.Button)homeContinue).setAction(kind,description);homeContinue.setEnabled(true);}
+    public boolean debugConnectionsOpen(){return BuildConfig.DEBUG&&connectionsOpen&&connectionsOverlay.getVisibility()==View.VISIBLE;}
+    public boolean debugConnectionsControlsHidden(){return BuildConfig.DEBUG&&!connectionsOpen&&!manual.isShown()&&!connect.isShown();}
+    public void debugOpenConnections(){if(!BuildConfig.DEBUG)throw new IllegalStateException();findViewById(R.id.home_connections).performClick();}
+    public String debugHomeFeaturedId(){return BuildConfig.DEBUG&&homeFeatured!=null?homeFeatured.id:"";}
+    public String debugHomeTitle(){return BuildConfig.DEBUG?homeNowTitle.getText().toString():"";}
+    public String debugHomeDetails(){return BuildConfig.DEBUG?homeNowDetails.getText().toString():"";}
+    public String debugHomeQueueIds(){if(!BuildConfig.DEBUG)return "";StringBuilder ids=new StringBuilder();for(LanApi.Item item:homeQueueItems){if(ids.length()>0)ids.append(',');ids.append(item.id);}return ids.toString();}
+    public void debugHomeContinue(){if(!BuildConfig.DEBUG)throw new IllegalStateException();homeContinue.performClick();}
     private void buildPlayer(){
         playback=new FrameLayout(this);playback.setBackgroundColor(Color.BLACK);root.addView(playback,new FrameLayout.LayoutParams(-1,-1));playback.setVisibility(View.GONE);
         videoContainer=new FrameLayout(this);playback.addView(videoContainer,new FrameLayout.LayoutParams(-1,-1));
         video=new VLCVideoLayout(this);videoContainer.addView(video,new FrameLayout.LayoutParams(-1,-1));
         videoTapTarget=new View(this);videoTapTarget.setBackgroundColor(Color.TRANSPARENT);videoTapTarget.setOnClickListener(v->{setChromeVisible(!chromeVisible);scheduleChromeHide();});videoTapTarget.setOnTouchListener(this::playbackTouch);videoContainer.addView(videoTapTarget,new FrameLayout.LayoutParams(-1,-1));
-        playerHeader=row();playerHeader.setClickable(true);playerHeader.setPadding(dp(14),dp(12),dp(14),dp(16));playerHeader.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xe60b0d14,0x000b0d14}));
-        PlayerIcon.Button back=icon(PlayerIcon.Kind.BACK,"Back to desktops",this::leavePlayer,false,48);back.setId(R.id.player_back);playerHeader.addView(back,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        playerHeader=row();playerHeader.setClickable(true);playerHeader.setPadding(dp(14),dp(12),dp(14),dp(16));playerHeader.setBackground(LiquidGlass.panel(this,24));
+        PlayerIcon.Button back=icon(PlayerIcon.Kind.BACK,"Back to library",this::leavePlayer,false,48);back.setId(R.id.player_back);playerHeader.addView(back,new LinearLayout.LayoutParams(dp(48),dp(48)));
         LinearLayout heading=column();heading.setPadding(dp(10),0,dp(8),0);playerTitle=text("",17,TEXT);playerTitle.setTypeface(null,Typeface.BOLD);playerTitle.setSingleLine();playerTitle.setEllipsize(TextUtils.TruncateAt.END);heading.addView(playerTitle);
         TextView origin=text("YOUR DESKTOP · LIVE STREAM",10,0xffbfc6d5);origin.setSingleLine();origin.setEllipsize(TextUtils.TruncateAt.END);origin.setLetterSpacing(.1f);origin.setPadding(0,dp(5),0,0);heading.addView(origin);playerHeader.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
         autoSkipButton=button("Auto-skip",this::showSkipSettings,false);autoSkipButton.setId(R.id.player_auto_skip);autoSkipButton.setTextSize(11);autoSkipButton.setPadding(dp(10),0,dp(10),0);autoSkipButton.setMinWidth(0);playerHeader.addView(autoSkipButton,new LinearLayout.LayoutParams(-2,dp(48)));updateAutoSkipLabel();
         PlayerIcon.Button queue=icon(PlayerIcon.Kind.PLAYLIST,"Open playlist",()->setPlaylistOpen(true),false,48);queue.setId(R.id.player_playlist);playerHeader.addView(queue,new LinearLayout.LayoutParams(dp(48),dp(48)));
+        pipButton=icon(PlayerIcon.Kind.PICTURE_IN_PICTURE,"Picture in picture",this::enterPip,false,48);pipButton.setVisibility(pipSupported?View.VISIBLE:View.GONE);pipButton.setEnabled(false);pipButton.setOnLongClickListener(v->{showPipSettings();return true;});playerHeader.addView(pipButton,new LinearLayout.LayoutParams(dp(48),dp(48)));
         fullButton=icon(PlayerIcon.Kind.FULLSCREEN,"Full screen",()->setFull(!full),false,48);playerHeader.addView(fullButton,new LinearLayout.LayoutParams(dp(48),dp(48)));
-        playback.addView(playerHeader,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
+        FrameLayout.LayoutParams headerPosition=new FrameLayout.LayoutParams(-1,-2,Gravity.TOP);headerPosition.setMargins(dp(12),dp(12),dp(12),0);playback.addView(playerHeader,headerPosition);
         centerTransport=row();centerTransport.setClickable(true);centerTransport.setGravity(Gravity.CENTER);centerTransport.setPadding(dp(8),dp(8),dp(8),dp(8));
         previousButton=icon(PlayerIcon.Kind.PREVIOUS,"Previous video",()->playAdjacent(-1),false,48);previousButton.setId(R.id.player_previous);centerTransport.addView(previousButton,new LinearLayout.LayoutParams(dp(48),dp(48)));
         centerTransport.addView(icon(PlayerIcon.Kind.REWIND,"Seek back ten seconds",()->jump(-10000),false,48),new LinearLayout.LayoutParams(dp(48),dp(48)));
@@ -170,7 +296,7 @@ public final class MainActivity extends Activity {
         centerTransport.addView(icon(PlayerIcon.Kind.FORWARD,"Seek forward ten seconds",()->jump(10000),false,48),new LinearLayout.LayoutParams(dp(48),dp(48)));
         nextButton=icon(PlayerIcon.Kind.NEXT,"Next video",()->playAdjacent(1),false,48);nextButton.setId(R.id.player_next);centerTransport.addView(nextButton,new LinearLayout.LayoutParams(dp(48),dp(48)));
         playback.addView(centerTransport,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));
-        playerControls=column();playerControls.setClickable(true);playerControls.setPadding(dp(22),dp(22),dp(22),dp(14));playerControls.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x000b0d14,0xf20b0d14}));
+        playerControls=column();playerControls.setClickable(true);playerControls.setPadding(dp(22),dp(22),dp(22),dp(14));playerControls.setBackground(LiquidGlass.panel(this,30));
         LinearLayout statusLine=row();playerStatus=text("Opening stream…",11,0xffc1c8d8);playerStatus.setId(R.id.player_status);playerStatus.setSingleLine();playerStatus.setEllipsize(TextUtils.TruncateAt.END);statusLine.addView(playerStatus,new LinearLayout.LayoutParams(0,-2,1));
         resumeComputerButton=button("Resume from computer",this::resumeFromComputer,false);resumeComputerButton.setTextSize(11);resumeComputerButton.setBackground(background(0x481f2634,24));resumeComputerButton.setMinHeight(dp(48));statusLine.addView(resumeComputerButton,new LinearLayout.LayoutParams(-2,dp(48)));playerControls.addView(statusLine);
         seek=new SeekBar(this);seek.setId(R.id.player_seek);seek.setContentDescription("Playback position");seek.setMax(1000);seek.setProgressTintList(ColorStateList.valueOf(ACCENT));seek.setProgressBackgroundTintList(ColorStateList.valueOf(0x55ffffff));seek.setThumbTintList(ColorStateList.valueOf(TEXT));playerControls.addView(seek,new LinearLayout.LayoutParams(-1,dp(36)));
@@ -181,18 +307,169 @@ public final class MainActivity extends Activity {
         };seek.setOnSeekBarChangeListener(seekListener);
         LinearLayout timing=row();clock=text("0:00 / 0:00",13,TEXT);clock.setTypeface(null,Typeface.BOLD);timing.addView(clock,new LinearLayout.LayoutParams(0,-2,1));deviceProgress=text("Computer · 0:00\nThis phone · 0:00",11,0xffbfc6d5);deviceProgress.setGravity(Gravity.END);deviceProgress.setMaxLines(2);timing.addView(deviceProgress);playerControls.addView(timing);
         progressShareStatus=text("",10,MUTED);progressShareStatus.setGravity(Gravity.END);progressShareStatus.setSingleLine();progressShareStatus.setEllipsize(TextUtils.TruncateAt.END);progressShareStatus.setPadding(0,dp(3),0,dp(2));playerControls.addView(progressShareStatus,new LinearLayout.LayoutParams(-1,-2));
-        TextView gestures=text("Swipe left/right to seek · left edge brightness · right edge volume",10,0xff8d97ad);gestures.setGravity(Gravity.CENTER);gestures.setPadding(0,dp(12),0,0);playerControls.addView(gestures);
-        playback.addView(playerControls,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
+        gestureHint=text("Swipe left/right to seek · left edge brightness · right edge volume",10,0xffa9a0bc);gestureHint.setGravity(Gravity.CENTER);gestureHint.setPadding(0,dp(12),0,0);playerControls.addView(gestureHint);
+        FrameLayout.LayoutParams controlsPosition=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM);controlsPosition.setMargins(dp(12),0,dp(12),dp(12));playback.addView(playerControls,controlsPosition);
         // A model-only seek bar preserves app-local volume across player graphs;
         // there is no persistent horizontal volume control over the video.
         volume=new SeekBar(this);volume.setMax(100);volume.setProgress(80);volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onStartTrackingTouch(SeekBar b){}public void onStopTrackingTouch(SeekBar b){}public void onProgressChanged(SeekBar b,int value,boolean user){if(player!=null)player.setVolume(value);}});
-        skipSegmentButton=button("Skip intro",this::skipCurrentSegment,false);skipSegmentButton.setId(R.id.player_skip_segment);skipSegmentButton.setTextSize(13);skipSegmentButton.setBackground(background(0xdc202938,24));skipSegmentButton.setVisibility(View.GONE);FrameLayout.LayoutParams skipPosition=new FrameLayout.LayoutParams(-2,dp(48),Gravity.TOP|Gravity.END);skipPosition.setMargins(dp(18),dp(86),dp(22),0);playback.addView(skipSegmentButton,skipPosition);
+        skipSegmentButton=button("Skip intro",this::skipCurrentSegment,false);skipSegmentButton.setId(R.id.player_skip_segment);skipSegmentButton.setTextSize(13);skipSegmentButton.setBackground(background(0xdc202938,24));skipSegmentButton.setVisibility(View.GONE);FrameLayout.LayoutParams skipPosition=new FrameLayout.LayoutParams(-2,dp(48),Gravity.TOP|Gravity.END);skipPosition.setMargins(dp(18),dp(100),dp(22),0);playback.addView(skipSegmentButton,skipPosition);
         buildGestureHuds();buildPlaybackPlaylist();updateNavigation();
+        View.OnLayoutChangeListener layout=(v,l,t,r,b,ol,ot,or,ob)->layoutPlayerTransport();playerHeader.addOnLayoutChangeListener(layout);playerControls.addOnLayoutChangeListener(layout);playback.addOnLayoutChangeListener(layout);
+    }
+    private void layoutPlayerTransport(){
+        if(playback==null||centerTransport==null||playerControls==null||gestureHint==null||pipUiHidden())return;
+        boolean compact=playback.getWidth()>playback.getHeight();
+        if(compactPlayer==null||compactPlayer!=compact){compactPlayer=compact;gestureHint.setVisibility(compact?View.GONE:View.VISIBLE);progressShareStatus.setVisibility(compact?View.GONE:View.VISIBLE);deviceProgress.setMaxLines(compact?1:2);playerControls.setPadding(dp(22),dp(compact?12:22),dp(22),dp(compact?12:14));refreshProgressDetails();}
+        if(centerTransport.getMeasuredHeight()==0||playerControls.getTop()==0)return;
+        int upper=playerHeader.getBottom()+dp(12),lower=playerControls.getTop()-dp(12);
+        int top=Math.max(upper,upper+(lower-upper-centerTransport.getMeasuredHeight())/2);
+        FrameLayout.LayoutParams params=(FrameLayout.LayoutParams)centerTransport.getLayoutParams();
+        if(params.gravity!=(Gravity.TOP|Gravity.CENTER_HORIZONTAL)||params.topMargin!=top){params.gravity=Gravity.TOP|Gravity.CENTER_HORIZONTAL;params.topMargin=top;centerTransport.setLayoutParams(params);}
     }
     private PlayerIcon.Button icon(PlayerIcon.Kind kind,String label,Runnable action,boolean prominent,int size){PlayerIcon.Button button=new PlayerIcon.Button(this,kind,label,prominent);button.setOnClickListener(v->{action.run();scheduleChromeHide();});return button;}
-    private void setPlayAction(String action){if(action.equals("Play"))sharePlaybackProgress(true);playButton.setAction(action.equals("Play")?PlayerIcon.Kind.PLAY:PlayerIcon.Kind.PAUSE,action);if(action.equals("Play")&&(userPaused||lastError!=null)){main.removeCallbacks(hideChrome);if(full&&!playlistOpen)setChromeVisible(true);}else scheduleChromeHide();}
+    private void setPlayAction(String action){if(action.equals("Play"))sharePlaybackProgress(true);playButton.setAction(action.equals("Play")?PlayerIcon.Kind.PLAY:PlayerIcon.Kind.PAUSE,action);if(action.equals("Play")&&(userPaused||lastError!=null)){main.removeCallbacks(hideChrome);if(full&&!playlistOpen)setChromeVisible(true);}else scheduleChromeHide();updatePipParams();}
     private void hideChromeIfPlaying(){if(full&&!userPaused&&!playlistOpen&&lastError==null)setChromeVisible(false);}
-    private void scheduleChromeHide(){main.removeCallbacks(hideChrome);if(full&&foreground&&current!=null&&!userPaused&&lastError==null&&!playlistOpen&&!((android.view.accessibility.AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled())main.postDelayed(hideChrome,3200);}
+    private void scheduleChromeHide(){main.removeCallbacks(hideChrome);if(!pipUiHidden()&&full&&foreground&&current!=null&&!userPaused&&lastError==null&&!playlistOpen&&!((android.view.accessibility.AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled())main.postDelayed(hideChrome,3200);}
+    private boolean pipUiHidden(){return pipPresentation||isInPictureInPictureMode();}
+    private boolean pipEligible(){
+        return !destroyed&&PipPlaybackPolicy.eligible(pipSupported,foreground,current!=null,
+            player!=null&&nativePlayingSeen&&nativeSurfacesReady&&validVideoSurface(video),
+            player!=null&&hasKnownVideoTrack()&&(videoWasDisplayed||videoOutputs>0),lastError!=null);
+    }
+    private boolean autoPipEligible(){return pipAutoEnabled&&pipEligible()&&!userPaused&&player.isPlaying();}
+    private double pipVideoAspect(){
+        double aspect=16.0/9;
+        if(player!=null)try{
+            IMedia.VideoTrack track=player.getCurrentVideoTrack();
+            if(track!=null&&track.width>0&&track.height>0){
+                double sample=track.sarNum>0&&track.sarDen>0?(double)track.sarNum/track.sarDen:1;
+                aspect=(double)track.width/track.height*sample;
+                if(track.orientation>=IMedia.VideoTrack.Orientation.LeftTop&&track.orientation<=IMedia.VideoTrack.Orientation.RightBottom)aspect=1/aspect;
+            }
+        }catch(RuntimeException ignored){}
+        return PipPlaybackPolicy.aspect(aspect,1,1);
+    }
+    private Rect pipSourceRect(double aspect){
+        Rect bounds=new Rect();View source=video==null?null:video.findViewById(org.videolan.R.id.surface_video);
+        if(source==null||!source.getGlobalVisibleRect(bounds)||bounds.isEmpty()){
+            if(videoContainer==null||!videoContainer.getGlobalVisibleRect(bounds)||bounds.isEmpty())return null;
+        }
+        // Use the fitted video content rather than any letterbox or controls.
+        int width=bounds.width(),height=bounds.height();
+        if((double)width/height>aspect)width=Math.max(1,(int)Math.round(height*aspect));else height=Math.max(1,(int)Math.round(width/aspect));
+        int left=bounds.left+(bounds.width()-width)/2,top=bounds.top+(bounds.height()-height)/2;
+        return new Rect(left,top,left+width,top+height);
+    }
+    private void cancelPipIntents(){
+        if(pipPlayIntent!=null)pipPlayIntent.cancel();if(pipPauseIntent!=null)pipPauseIntent.cancel();
+        pipPlayIntent=null;pipPauseIntent=null;pipActionGeneration=-1;
+    }
+    private PendingIntent pipControlIntent(String command,int request){
+        Intent intent=new Intent(this,PipPlaybackReceiver.class).setAction(PIP_ACTION)
+            .setData(Uri.parse("luma-pip://control/"+pipNonce+"/"+mediaGeneration+"/"+command))
+            .putExtra("nonce",pipNonce).putExtra("generation",mediaGeneration).putExtra("command",command);
+        return PendingIntent.getBroadcast(this,request,intent,PendingIntent.FLAG_IMMUTABLE|PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+    private void updatePipParams(){
+        if(!pipSupported||destroyed||pipButton==null)return;
+        boolean eligible=pipEligible(),automatic=autoPipEligible(),paused=userPaused||player!=null&&player.getPlayerState()==Media.State.Ended;
+        pipButton.setEnabled(eligible&&activityResumed);
+        double aspect=pipVideoAspect();Rect source=pipSourceRect(aspect);
+        // Integer rounding must not put very tall videos outside Android's bounds.
+        Rational ratio=new Rational(Math.max(418411,Math.min(2390000,(int)Math.round(aspect*1000000))),1000000);
+        String signature=eligible+"|"+automatic+"|"+paused+"|"+mediaGeneration+"|"+ratio+"|"+source;
+        if(signature.equals(pipParamsSignature))return;
+        PictureInPictureParams.Builder params=new PictureInPictureParams.Builder().setAspectRatio(ratio);
+        if(source!=null)params.setSourceRectHint(source);
+        if(player!=null&&current!=null){
+            if(pipActionGeneration!=mediaGeneration){cancelPipIntents();pipPlayIntent=pipControlIntent("play",1);pipPauseIntent=pipControlIntent("pause",2);pipActionGeneration=mediaGeneration;}
+            String label=paused?"Play":"Pause";
+            RemoteAction action=new RemoteAction(Icon.createWithResource(this,paused?android.R.drawable.ic_media_play:android.R.drawable.ic_media_pause),label,label,paused?pipPlayIntent:pipPauseIntent);
+            action.setEnabled(lastError==null);params.setActions(Collections.singletonList(action));
+        }else{cancelPipIntents();params.setActions(Collections.emptyList());}
+        if(Build.VERSION.SDK_INT>=31)params.setAutoEnterEnabled(automatic).setSeamlessResizeEnabled(true);
+        if(Build.VERSION.SDK_INT>=33&&current!=null)params.setTitle(current.title);
+        try{pipParams=params.build();setPictureInPictureParams(pipParams);pipParamsSignature=signature;}catch(IllegalArgumentException|IllegalStateException ignored){pipParamsSignature="";}
+    }
+    private void preparePipPresentation(){
+        cancelPlaybackTaps();
+        if(!pipPresentation){pipRestoreChrome=playlistOpen?drawerRestoreChrome:chromeVisible;pipPresentation=true;}
+        pipSession=true;pipRestorePending=false;
+        main.removeCallbacks(hideChrome);main.removeCallbacks(hideGestureHud);main.removeCallbacks(settleFullscreenBars);
+        gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;dragging=false;
+        for(View hud:new View[]{volumeHud,brightnessHud,seekHud})if(hud!=null){hud.animate().cancel();hud.setVisibility(View.GONE);hud.setAlpha(1);}
+        if(playlistPanel!=null){playlistPanel.animate().cancel();playlistPanel.animate().withEndAction(null);}
+        if(playlistOverlay!=null){playlistOverlay.animate().cancel();playlistOverlay.setVisibility(View.GONE);}playlistOpen=false;
+        closeConnectionsDrawer();
+        for(AlertDialog dialog:new AlertDialog[]{pairDialog,skipDialog,rangeDialog,pipSettingsDialog,aboutDialog})if(dialog!=null&&dialog.isShowing())dialog.dismiss();
+        pairDialog=null;skipDialog=null;rangeDialog=null;pipSettingsDialog=null;aboutDialog=null;
+        setChromeVisible(false);videoTapTarget.setVisibility(View.GONE);root.requestApplyInsets();
+    }
+    private void restorePipPresentation(){
+        if(isInPictureInPictureMode())return;
+        boolean restore=pipPresentation||pipRestorePending;pipPresentation=false;pipRestorePending=false;
+        videoTapTarget.setVisibility(View.VISIBLE);
+        if(restore&&current!=null)setChromeVisible(pipRestoreChrome||userPaused||lastError!=null);
+        applySystemBars();root.requestApplyInsets();scheduleFullscreenBars();scheduleChromeHide();updateSkipPlayback();updatePipParams();
+    }
+    private void enterPip(){
+        if(!activityResumed||!pipEligible()||isInPictureInPictureMode())return;
+        updatePipParams();preparePipPresentation();
+        try{if(pipParams!=null&&enterPictureInPictureMode(pipParams))return;}catch(IllegalArgumentException|IllegalStateException ignored){}
+        pipSession=false;restorePipPresentation();playerStatus.setText("Picture in picture is unavailable. Check Luma's app settings.");
+    }
+    private void showPipSettings(){
+        if(pipUiHidden())return;
+        android.widget.Switch toggle=new android.widget.Switch(this);toggle.setText("Picture in picture when leaving playback");toggle.setPadding(dp(20),dp(12),dp(20),dp(12));toggle.setChecked(pipAutoEnabled);
+        toggle.setOnCheckedChangeListener((button,enabled)->{pipAutoEnabled=enabled;getPreferences(MODE_PRIVATE).edit().putBoolean("pip.auto",enabled).apply();updatePipParams();});
+        pipSettingsDialog=new AlertDialog.Builder(this).setTitle("Picture in picture").setView(toggle).setMessage("Keep watching in a floating window when you go Home. Playback stops when the floating window is closed.").setPositiveButton("Done",null).show();
+    }
+    public static void dispatchPipControl(Intent intent){
+        MainActivity activity=pipOwner.get();if(activity==null||intent==null||!PIP_ACTION.equals(intent.getAction()))return;
+        activity.main.post(()->activity.receivePipControl(intent));
+    }
+    private void receivePipControl(Intent intent){
+        if(destroyed||!foreground||!isInPictureInPictureMode()||current==null||player==null||!pipNonce.equals(intent.getStringExtra("nonce"))||mediaGeneration!=intent.getIntExtra("generation",-1))return;
+        String command=intent.getStringExtra("command");
+        if("pause".equals(command)){
+            rememberUserPause();if(!userPaused){userPaused=true;setPlayAction("Play");playerStatus.setText("Paused");if(nativePlayingSeen||player.isPlaying())player.pause();}
+        }else if("play".equals(command)){
+            if(!ensurePlaybackAudioFocus())return;
+            if(userPaused)togglePlay();else if(player.getPlayerState()==Media.State.Ended||player.getPlayerState()==Media.State.Stopped)startMedia(current);
+        }
+        updatePipParams();
+    }
+    /** Called immediately before a user-intended native play, including resume. */
+    private boolean ensurePlaybackAudioFocus(){
+        clearAudioFocusResume();if(playbackAudioFocusHeld)return true;if(destroyed||!foreground)return false;
+        if(playbackAudioManager==null)playbackAudioManager=(AudioManager)getSystemService(AUDIO_SERVICE);
+        if(playbackAudioFocus==null)playbackAudioFocus=new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build())
+            .setWillPauseWhenDucked(true).setOnAudioFocusChangeListener(this::playbackAudioFocusChanged,main).build();
+        playbackAudioFocusRequested=true;playbackAudioFocusHeld=playbackAudioManager!=null&&playbackAudioManager.requestAudioFocus(playbackAudioFocus)==AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+        if(!playbackAudioFocusHeld)playbackAudioFocusRequested=false;
+        if(!playbackAudioFocusHeld){userPaused=true;setPlayAction("Play");playerStatus.setText("Paused · audio is being used by another app");}
+        return playbackAudioFocusHeld;
+    }
+    private void clearAudioFocusResume(){playbackAudioFocusResume=false;}
+    private void playbackAudioFocusChanged(int change){
+        if(destroyed||!playbackAudioFocusRequested)return;
+        if(change==AudioManager.AUDIOFOCUS_GAIN){
+            playbackAudioFocusHeld=true;boolean resume=playbackAudioFocusResume&&foreground&&playbackAudioFocusGeneration==mediaGeneration&&current!=null&&player!=null&&lastError==null;
+            clearAudioFocusResume();if(!foreground){abandonPlaybackAudioFocus();return;}
+            if(resume){userPaused=false;setPlayAction("Pause");if(nativeSurfacesReady&&validVideoSurface(video))player.play();}
+        }else if(change==AudioManager.AUDIOFOCUS_LOSS||change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT||change==AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK){
+            playbackAudioFocusHeld=false;
+            playbackAudioFocusResume=change!=AudioManager.AUDIOFOCUS_LOSS&&foreground&&player!=null&&lastError==null&&(!userPaused||playbackAudioFocusResume&&playbackAudioFocusGeneration==mediaGeneration);
+            playbackAudioFocusGeneration=mediaGeneration;
+            if(player!=null&&!userPaused){computerTimestampAtPause=current==null?0:latestItem(current).computerUpdatedAtUnixSeconds;manualResumePinned=false;userPaused=true;if(nativePlayingSeen||player.isPlaying())player.pause();setPlayAction("Play");playerStatus.setText("Paused · audio is being used by another app");}
+            if(change==AudioManager.AUDIOFOCUS_LOSS)abandonPlaybackAudioFocus();
+        }
+    }
+    private void abandonPlaybackAudioFocus(){
+        clearAudioFocusResume();playbackAudioFocusHeld=false;playbackAudioFocusRequested=false;
+        if(playbackAudioManager!=null&&playbackAudioFocus!=null)playbackAudioManager.abandonAudioFocusRequest(playbackAudioFocus);
+    }
     private void buildGestureHuds(){
         volumeHud=levelHud(PlayerIcon.Kind.VOLUME);volumeHudText=(TextView)volumeHud.getChildAt(2);volumeLevel=(GestureLevelView)volumeHud.getChildAt(1);FrameLayout.LayoutParams right=new FrameLayout.LayoutParams(dp(62),dp(172),Gravity.END|Gravity.CENTER_VERTICAL);right.setMargins(dp(18),0,dp(18),0);playback.addView(volumeHud,right);
         brightnessHud=levelHud(PlayerIcon.Kind.BRIGHTNESS);brightnessHudText=(TextView)brightnessHud.getChildAt(2);brightnessLevel=(GestureLevelView)brightnessHud.getChildAt(1);FrameLayout.LayoutParams left=new FrameLayout.LayoutParams(dp(62),dp(172),Gravity.START|Gravity.CENTER_VERTICAL);left.setMargins(dp(18),0,dp(18),0);playback.addView(brightnessHud,left);
@@ -201,7 +478,7 @@ public final class MainActivity extends Activity {
     private LinearLayout levelHud(PlayerIcon.Kind kind){LinearLayout panel=column();panel.setGravity(Gravity.CENTER);panel.setPadding(dp(12),dp(14),dp(12),dp(10));panel.setBackground(background(0xe8171c27,28));View image=new View(this);image.setBackground(new PlayerIcon(kind,TEXT));panel.addView(image,new LinearLayout.LayoutParams(dp(22),dp(22)));GestureLevelView level=new GestureLevelView(this);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(16),0,1);lp.setMargins(0,dp(10),0,dp(8));panel.addView(level,lp);TextView percent=text("",11,TEXT);percent.setGravity(Gravity.CENTER);panel.addView(percent);panel.setVisibility(View.GONE);return panel;}
     private void buildPlaybackPlaylist(){
         playlistOverlay=new FrameLayout(this);playlistOverlay.setVisibility(View.GONE);View dim=new View(this);dim.setBackgroundColor(0x66000000);dim.setOnClickListener(v->setPlaylistOpen(false));playlistOverlay.addView(dim,new FrameLayout.LayoutParams(-1,-1));
-        playlistPanel=column();playlistPanel.setClickable(true);playlistPanel.setPadding(dp(18),dp(16),dp(18),dp(12));playlistPanel.setBackground(background(0xf51a1e2a,22));
+        playlistPanel=column();playlistPanel.setClickable(true);playlistPanel.setPadding(dp(18),dp(16),dp(18),dp(12));playlistPanel.setBackground(LiquidGlass.strongPanel(this,26));
         LinearLayout title=row();TextView label=text("Playlist",23,TEXT);label.setTypeface(null,Typeface.BOLD);title.addView(label,new LinearLayout.LayoutParams(0,-2,1));title.addView(icon(PlayerIcon.Kind.CLOSE,"Close playlist",()->setPlaylistOpen(false),false,48),new LinearLayout.LayoutParams(dp(48),dp(48)));playlistPanel.addView(title);
         playbackPlaylistSummary=text("Your desktop playlist · playback stays open",11,MUTED);playbackPlaylistSummary.setPadding(0,dp(4),0,dp(16));playlistPanel.addView(playbackPlaylistSummary);
         playbackList=new ListView(this);playbackList.setId(R.id.playback_playlist);playbackList.setBackgroundColor(Color.TRANSPARENT);playbackList.setDividerHeight(dp(8));playbackList.setDivider(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));playbackList.setAdapter(playlistAdapter);playbackList.setOnItemClickListener((parent,view,position,id)->{LanApi.Item item=items.get(position);setPlaylistOpen(false);if(current==null||!current.id.equals(item.id))startMedia(item);});playlistPanel.addView(playbackList,new LinearLayout.LayoutParams(-1,0,1));
@@ -209,7 +486,8 @@ public final class MainActivity extends Activity {
     }
     private void layoutPlaylist(){if(playlistPanel==null||playback.getWidth()<=0)return;FrameLayout.LayoutParams p=(FrameLayout.LayoutParams)playlistPanel.getLayoutParams();int max=dp(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE?360:380);int width=Math.min(max,Math.round(playback.getWidth()*.86f));if(p.width!=width){p.width=width;playlistPanel.setLayoutParams(p);}}
     private void setPlaylistOpen(boolean open){
-        if(playlistOpen==open)return;playlistOpen=open;main.removeCallbacks(hideChrome);playlistOverlay.animate().cancel();playlistPanel.animate().cancel();
+        if(pipUiHidden())return;
+        if(playlistOpen==open)return;if(open)cancelPlaybackTaps();playlistOpen=open;main.removeCallbacks(hideChrome);playlistOverlay.animate().cancel();playlistPanel.animate().cancel();
         if(open){drawerRestoreChrome=chromeVisible;setChromeVisible(false);playlistAdapter.notifyDataSetChanged();layoutPlaylist();playlistOverlay.setAlpha(1);playlistOverlay.setVisibility(View.VISIBLE);playlistPanel.setTranslationX(-Math.max(dp(340),playlistPanel.getWidth()));playlistPanel.animate().translationX(0).setDuration(220).start();}
         else{playlistPanel.animate().translationX(-Math.max(dp(340),playlistPanel.getWidth())).setDuration(180).withEndAction(()->{if(!playlistOpen)playlistOverlay.setVisibility(View.GONE);}).start();setChromeVisible(drawerRestoreChrome);scheduleChromeHide();}
     }
@@ -220,12 +498,24 @@ public final class MainActivity extends Activity {
     private double computerProgress(LanApi.Item item){return latestItem(item).computerProgressSeconds;}
     private double phoneProgress(LanApi.Item item){Long local=localResume.get(item.id);return local==null?latestItem(item).mobileProgressSeconds:local/1000.0;}
     private String progressText(double seconds,double duration,boolean completed){if(completed)return "Finished";if(!Double.isFinite(seconds))return "Not started";String position=time((long)(Math.max(0,seconds)*1000));return duration>0?position+" · "+Math.min(100,Math.max(0,Math.round(seconds*100/duration)))+"%":position;}
-    private void refreshProgressDetails(){if(current==null||deviceProgress==null)return;LanApi.Item latest=latestItem(current);double computer=computerProgress(current),phone=phoneProgress(current);double duration=player!=null&&player.getLength()>0?player.getLength()/1000.0:latest.mobileDurationSeconds>0?latest.mobileDurationSeconds:latest.durationSeconds;boolean phoneComplete=player!=null&&player.getPlayerState()==Media.State.Ended||!localResume.containsKey(current.id)&&latest.mobileCompleted;deviceProgress.setText("Computer · "+progressText(computer,duration,latest.computerCompleted)+"\nThis phone · "+progressText(phone,duration,phoneComplete));deviceProgress.setContentDescription(deviceProgress.getText()+". "+progressSyncState);progressShareStatus.setText(progressSyncState);resumeComputerButton.setEnabled(player==null||!nativePlayingSeen||player.isSeekable());resumeComputerButton.setVisibility(computer>0&&!latest.computerCompleted?View.VISIBLE:View.GONE);resumeComputerButton.setText("Resume from computer · "+time((long)(computer*1000)));}
+    private void refreshProgressDetails(){if(current==null||deviceProgress==null)return;LanApi.Item latest=latestItem(current);double computer=computerProgress(current),phone=phoneProgress(current);double duration=player!=null&&player.getLength()>0?player.getLength()/1000.0:latest.mobileDurationSeconds>0?latest.mobileDurationSeconds:latest.durationSeconds;boolean phoneComplete=player!=null&&player.getPlayerState()==Media.State.Ended||!localResume.containsKey(current.id)&&latest.mobileCompleted;deviceProgress.setText("Computer · "+progressText(computer,duration,latest.computerCompleted)+(Boolean.TRUE.equals(compactPlayer)?"   ·   This phone · ":"\nThis phone · ")+progressText(phone,duration,phoneComplete));deviceProgress.setContentDescription(deviceProgress.getText()+". "+progressSyncState);progressShareStatus.setText(progressSyncState);resumeComputerButton.setEnabled(player==null||!nativePlayingSeen||player.isSeekable());resumeComputerButton.setVisibility(computer>0&&!latest.computerCompleted?View.VISIBLE:View.GONE);resumeComputerButton.setText("Resume from computer · "+time((long)(computer*1000)));}
     private long initialResumeFor(LanApi.Item item){
-        Long local=localResume.get(item.id);if(local!=null)return completedOnPhone.contains(item.id)?0:Math.max(0,local);
-        LanApi.Item latest=latestItem(item);
-        if(latest.hasMobileProgress()&&latest.mobileUpdatedAtUnixSeconds>=latest.computerUpdatedAtUnixSeconds)return latest.mobileCompleted?0:Math.round(latest.mobileProgressSeconds*1000);
-        return latest.computerCompleted?0:Math.round(latest.computerProgressSeconds*1000);
+        PlaybackResumePolicy.Snapshot saved=PlaybackResumePolicy.latest(latestItem(item));
+        Long local=localResume.get(item.id);
+        return !saved.hasTimestamp&&local!=null?(completedOnPhone.contains(item.id)?0:Math.max(0,local)):saved.initialPositionMillis();
+    }
+    private void rememberUserPause(){
+        clearAudioFocusResume();manualResumePinned=false;
+        computerTimestampAtPause=current==null?0:latestItem(current).computerUpdatedAtUnixSeconds;
+    }
+    private void applyPausedHandoff(){
+        if(current==null||player==null)return;
+        Long target=PlaybackResumePolicy.pausedComputerPositionMillis(latestItem(current),computerTimestampAtPause,manualResumePinned);
+        manualResumePinned=false;computerTimestampAtPause=latestItem(current).computerUpdatedAtUnixSeconds;
+        if(target==null)return;
+        initialResume=target;autoResumeApplied=false;completedOnPhone.remove(current.id);
+        if(surfaceRebindPending||surfaceRestartPending||surfaceRecoveryNeedsResume){surfaceRecoveryTime=target;return;}
+        if(nativePlayingSeen&&player.isSeekable()&&player.getLength()>0){autoResumeApplied=true;player.setTime(Math.min(target,Math.max(0,player.getLength()-250)),false);checkpointProgressSoon();}
     }
     private void beginProgressSync(LanApi client,LanApi.Session paired){
         endProgressSync();lastProgressOfferAt=0;lastProgressOfferedPosition=-1;lastProgressItemId=null;lastProgressCompleted=false;progressAcceptedCount=0;
@@ -250,9 +540,9 @@ public final class MainActivity extends Activity {
         progressSync.offer(current.id,position,length,complete);
     }
     private void resumeFromComputer(){
-        if(current==null)return;long target=Math.max(0,Math.round(computerProgress(current)*1000));completedOnPhone.remove(current.id);suppressSkipForUserSeek(target);localResume.put(current.id,target);initialResume=target;autoResumeApplied=false;userPaused=false;
+        if(current==null||!ensurePlaybackAudioFocus())return;long target=Math.max(0,Math.round(computerProgress(current)*1000));completedOnPhone.remove(current.id);suppressSkipForUserSeek(target);localResume.put(current.id,target);initialResume=target;autoResumeApplied=false;userPaused=false;
         int state=player==null?Media.State.Stopped:player.getPlayerState();
-        if(player==null||state==Media.State.Ended||state==Media.State.Stopped||state==Media.State.Error){startMedia(current);suppressSkipForUserSeek(target);return;}
+        if(player==null||state==Media.State.Ended||state==Media.State.Stopped||state==Media.State.Error){startMediaAt(latestItem(current),target);suppressSkipForUserSeek(target);return;}
         setPlayAction("Pause");playerStatus.setText("Resuming from computer…");
         // The explicit target survives Opening/font preparation. Use the same
         // first-frame/deferred seek guard as ordinary resume when not ready yet.
@@ -272,7 +562,7 @@ public final class MainActivity extends Activity {
     }
     private void updateAutoSkipLabel(){if(autoSkipButton==null)return;autoSkipButton.setText(autoSkipEnabled?"Auto-skip On":"Auto-skip Off");autoSkipButton.setTextColor(autoSkipEnabled?ACCENT:TEXT);autoSkipButton.setContentDescription("Auto-skip "+(autoSkipEnabled?"on":"off")+". Open skip settings");}
     private void setAutoSkip(boolean enabled){autoSkipEnabled=enabled;getPreferences(MODE_PRIVATE).edit().putBoolean("skip.enabled",enabled).apply();if(enabled)skipSession.reset();updateAutoSkipLabel();updateSkipPlayback();}
-    private void suppressSkipForUserSeek(long target){skipSession.userSeek(player==null?Double.NaN:player.getTime()/1000.0,target/1000.0,effectiveSkipRanges());skipUserSeekTarget=target;skipUserSeekUntil=android.os.SystemClock.uptimeMillis()+3000;}
+    private void suppressSkipForUserSeek(long target){if(userPaused)manualResumePinned=true;if(surfaceRebindPending||surfaceRestartPending||surfaceRecoveryNeedsResume)surfaceRecoveryTime=target;skipSession.userSeek(player==null?Double.NaN:player.getTime()/1000.0,target/1000.0,effectiveSkipRanges());skipUserSeekTarget=target;skipUserSeekUntil=android.os.SystemClock.uptimeMillis()+3000;}
     private void updateSkipPlayback(){
         if(skipSegmentButton==null||current==null||player==null){if(skipSegmentButton!=null)skipSegmentButton.setVisibility(View.GONE);return;}
         long now=android.os.SystemClock.uptimeMillis(),position=player.getTime(),length=player.getLength();
@@ -284,7 +574,7 @@ public final class MainActivity extends Activity {
         }
         List<SkipSegments.Range> ranges=effectiveSkipRanges();SkipSegments.Range active=SkipSegments.active(ranges,position/1000.0);
         boolean seekPending=skipUserSeekUntil>now&&Math.abs(position-skipUserSeekTarget)>750;if(!seekPending)skipUserSeekUntil=0;
-        skipSegmentButton.setVisibility(active!=null&&!playlistOpen&&!seekPending?View.VISIBLE:View.GONE);if(active!=null){skipSegmentButton.setText(active.title()+"  ›");skipSegmentButton.setContentDescription(active.title()+" to "+time((long)(active.endSeconds*1000)));skipSegmentButton.setEnabled(player.isSeekable()&&nativePlayingSeen&&autoResumeApplied);}
+        skipSegmentButton.setVisibility(!pipUiHidden()&&active!=null&&!playlistOpen&&!seekPending?View.VISIBLE:View.GONE);if(active!=null){skipSegmentButton.setText(active.title()+"  ›");skipSegmentButton.setContentDescription(active.title()+" to "+time((long)(active.endSeconds*1000)));skipSegmentButton.setEnabled(player.isSeekable()&&nativePlayingSeen&&autoResumeApplied);}
         if(!seekPending&&nativePlayingSeen&&autoResumeApplied&&!dragging&&gestureAxis==PlaybackGestureMath.Axis.NONE&&!surfaceRebindPending&&!surfaceRestartPending&&lastError==null&&nativeSurfacesReady&&(!hasKnownVideoTrack()||videoWasDisplayed)&&player.isSeekable()){
             SkipSegments.Range automatic=skipSession.automatic(ranges,position/1000.0,autoSkipEnabled,foreground&&!userPaused&&player.isPlaying());if(automatic!=null)performSkip(automatic);
         }
@@ -292,12 +582,12 @@ public final class MainActivity extends Activity {
     private void performSkip(SkipSegments.Range range){
         if(player==null||lastError!=null||!player.isSeekable()||!nativePlayingSeen||!autoResumeApplied)return;skipSession.consume(range);autoResumeApplied=true;player.setTime((long)(range.endSeconds*1000),false);skipSeekCount++;checkpointProgressSoon();skipSegmentButton.setVisibility(View.GONE);playerStatus.setText((userPaused?"Paused · ":"")+("intro".equals(range.kind)?"Skipped opening":"Skipped credits"));
     }
-    private void skipCurrentSegment(){if(player!=null){SkipSegments.Range active=SkipSegments.active(effectiveSkipRanges(),player.getTime()/1000.0);if(active!=null)performSkip(active);}}
+    private void skipCurrentSegment(){if(player!=null){SkipSegments.Range active=SkipSegments.active(effectiveSkipRanges(),player.getTime()/1000.0);if(active!=null){if(userPaused)manualResumePinned=true;performSkip(active);}}}
     private void savePhoneSkipRange(String kind,double start,double end){
         if(current==null)return;double duration=player!=null&&player.getLength()>0?player.getLength()/1000.0:current.durationSeconds;
         List<SkipSegments.Range> candidate=new ArrayList<>(phoneSkipOverride?phoneSkipRanges:latestItem(current).skipRanges);candidate.removeIf(r->r.kind.equals(kind));candidate.add(new SkipSegments.Range(kind,start,end,"manual","Saved on this phone"));
         List<SkipSegments.Range> valid=SkipSegments.validated(candidate,duration);
-        if(valid.size()!=candidate.size()){new AlertDialog.Builder(this).setTitle("Choose a valid range").setMessage("The end must follow the start, stay within the video, and not overlap another saved range.").setPositiveButton("OK",null).show();return;}
+        if(valid.size()!=candidate.size()){rangeDialog=new AlertDialog.Builder(this).setTitle("Choose a valid range").setMessage("The end must follow the start, stay within the video, and not overlap another saved range.").setPositiveButton("OK",null).show();return;}
         phoneSkipRanges=valid;phoneSkipOverride=true;persistPhoneSkipRanges();updateSkipPlayback();
     }
     private void persistPhoneSkipRanges(){
@@ -307,7 +597,7 @@ public final class MainActivity extends Activity {
         }catch(org.json.JSONException ignored){}
     }
     private void showSkipSettings(){
-        if(current==null)return;final String itemId=current.id;LinearLayout content=column();content.setPadding(dp(20),dp(10),dp(20),dp(12));
+        if(current==null||pipUiHidden())return;final String itemId=current.id;LinearLayout content=column();content.setPadding(dp(20),dp(10),dp(20),dp(12));
         android.widget.Switch toggle=new android.widget.Switch(this);toggle.setText("Auto-skip openings and credits");toggle.setTextColor(TEXT);toggle.setTextSize(14);toggle.setMinHeight(dp(48));toggle.setChecked(autoSkipEnabled);content.addView(toggle);toggle.setOnCheckedChangeListener((b,enabled)->setAutoSkip(enabled));
         StringBuilder detail=new StringBuilder("Uses labelled chapters or saved timings. No fixed-length guessing.\n");for(SkipSegments.Range r:effectiveSkipRanges())detail.append("intro".equals(r.kind)?"Opening ":"Credits ").append(time((long)(r.startSeconds*1000))).append("–").append(time((long)(r.endSeconds*1000))).append(" · ").append(r.source).append("\n");
         addText(content,detail.toString(),12,MUTED,8);boolean ready=player!=null&&nativePlayingSeen&&autoResumeApplied&&player.getLength()>0;
@@ -319,7 +609,7 @@ public final class MainActivity extends Activity {
         }
         content.addView(button("Clear saved timings on this phone",()->{if(current==null||!current.id.equals(itemId))return;phoneSkipRanges=Collections.emptyList();phoneSkipOverride=true;persistPhoneSkipRanges();holder[0].dismiss();updateSkipPlayback();},false),new LinearLayout.LayoutParams(-1,dp(48)));
         content.addView(button("Use desktop timings",()->{if(current==null||!current.id.equals(itemId))return;getPreferences(MODE_PRIVATE).edit().remove(phoneSkipKey()).apply();phoneSkipOverride=false;phoneSkipRanges=Collections.emptyList();holder[0].dismiss();updateSkipPlayback();},false),new LinearLayout.LayoutParams(-1,dp(48)));
-        ScrollView scroll=new ScrollView(this);scroll.addView(content);holder[0]=new AlertDialog.Builder(this).setTitle("Opening and credits").setView(scroll).setPositiveButton("Done",null).create();holder[0].show();
+        ScrollView scroll=new ScrollView(this);scroll.addView(content);holder[0]=new AlertDialog.Builder(this).setTitle("Opening and credits").setView(scroll).setPositiveButton("Done",null).create();skipDialog=holder[0];holder[0].show();
     }
     private int brightnessPercent(){float level=getWindow().getAttributes().screenBrightness;if(level<0)level=Settings.System.getInt(getContentResolver(),Settings.System.SCREEN_BRIGHTNESS,128)/255f;return Math.max(2,Math.min(100,Math.round(level*100)));}
     private void setBrightnessPercent(int percent){WindowManager.LayoutParams attributes=getWindow().getAttributes();attributes.screenBrightness=Math.max(.02f,Math.min(1,percent/100f));getWindow().setAttributes(attributes);}
@@ -327,14 +617,14 @@ public final class MainActivity extends Activity {
     private void showGestureLevel(boolean sound,int level){main.removeCallbacks(hideGestureHud);seekHud.setVisibility(View.GONE);(sound?brightnessHud:volumeHud).setVisibility(View.GONE);LinearLayout hud=sound?volumeHud:brightnessHud;hud.animate().cancel();hud.setAlpha(1);hud.setVisibility(View.VISIBLE);(sound?volumeLevel:brightnessLevel).setLevel(level);(sound?volumeHudText:brightnessHudText).setText(level+"%");hud.setContentDescription((sound?"Volume ":"Brightness ")+level+" percent");}
     @SuppressLint("ClickableViewAccessibility")
     private boolean playbackTouch(View target,MotionEvent event){
-        int action=event.getActionMasked();if(action==MotionEvent.ACTION_DOWN){if(playlistOpen||current==null)return false;float edge=dp(16);if(event.getX()<edge||event.getX()>target.getWidth()-edge)return false;gesturePointer=event.getPointerId(0);gestureDownX=event.getX();gestureDownY=event.getY();gestureAxis=PlaybackGestureMath.Axis.NONE;gestureMediaGeneration=mediaGeneration;gestureVolume=gestureDownX>=target.getWidth()/2f;gestureStartLevel=gestureVolume?volume.getProgress():brightnessPercent();gestureStartTime=player==null?0:Math.max(0,player.getTime());gestureLength=player==null?0:player.getLength();gestureSeekAllowed=player!=null&&player.isSeekable()&&gestureLength>0;gesturePreview=gestureStartTime;main.removeCallbacks(hideChrome);return true;}
+        int action=event.getActionMasked();if(action==MotionEvent.ACTION_DOWN){if(playlistOpen||pipUiHidden()||current==null){cancelPlaybackTaps();return false;}float edge=dp(16);if(event.getX()<edge||event.getX()>target.getWidth()-edge){cancelPlaybackTaps();return false;}gesturePointer=event.getPointerId(0);gestureDownX=event.getX();gestureDownY=event.getY();gestureAxis=PlaybackGestureMath.Axis.NONE;gestureMediaGeneration=mediaGeneration;gestureVolume=gestureDownX>=target.getWidth()/2f;gestureStartLevel=gestureVolume?volume.getProgress():brightnessPercent();gestureStartTime=player==null?0:Math.max(0,player.getTime());gestureLength=player==null?0:player.getLength();gestureSeekAllowed=player!=null&&player.isSeekable()&&gestureLength>0;gesturePreview=gestureStartTime;handlePlaybackTap(playbackTaps.down(event.getEventTime(),event.getX(),event.getY(),target.getWidth(),target.getHeight()));schedulePlaybackTap();main.removeCallbacks(hideChrome);return true;}
         if(gesturePointer<0)return false;
-        if(event.getPointerCount()!=1||action==MotionEvent.ACTION_CANCEL||gestureMediaGeneration!=mediaGeneration){gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;main.postDelayed(hideGestureHud,100);scheduleChromeHide();return true;}
+        if(event.getPointerCount()!=1||action==MotionEvent.ACTION_CANCEL||gestureMediaGeneration!=mediaGeneration){cancelPlaybackTaps();gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;main.postDelayed(hideGestureHud,100);scheduleChromeHide();return true;}
         float dx=event.getX()-gestureDownX,dy=event.getY()-gestureDownY;
-        if(action==MotionEvent.ACTION_MOVE||action==MotionEvent.ACTION_UP){if(gestureAxis==PlaybackGestureMath.Axis.NONE)gestureAxis=PlaybackGestureMath.axis(dx,dy,ViewConfiguration.get(this).getScaledTouchSlop());
-            if(gestureAxis==PlaybackGestureMath.Axis.HORIZONTAL){volumeHud.setVisibility(View.GONE);brightnessHud.setVisibility(View.GONE);if(gestureSeekAllowed){gesturePreview=PlaybackGestureMath.seek(gestureStartTime,dx,target.getWidth(),gestureLength);long offset=gesturePreview-gestureStartTime;gestureSeekText.setText((offset>=0?"+":"−")+time(Math.abs(offset))+"\n"+time(gesturePreview)+" / "+time(gestureLength));if(gestureLength>0)seek.setProgress((int)(gesturePreview*1000/gestureLength));}else gestureSeekText.setText("Seeking unavailable");seekHud.animate().cancel();seekHud.setAlpha(1);seekHud.setVisibility(View.VISIBLE);}
-            else if(gestureAxis==PlaybackGestureMath.Axis.VERTICAL){int level=PlaybackGestureMath.level(gestureStartLevel,dy,target.getHeight());if(gestureVolume)volume.setProgress(level);else setBrightnessPercent(level);showGestureLevel(gestureVolume,gestureVolume?level:Math.max(2,level));}if(action==MotionEvent.ACTION_MOVE)return true;}
-        if(action==MotionEvent.ACTION_UP){PlaybackGestureMath.Axis completed=gestureAxis;gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;if(completed==PlaybackGestureMath.Axis.HORIZONTAL&&gestureSeekAllowed&&player!=null){autoResumeApplied=true;suppressSkipForUserSeek(gesturePreview);player.setTime(gesturePreview,false);checkpointProgressSoon();}else if(completed==PlaybackGestureMath.Axis.NONE)target.performClick();main.postDelayed(hideGestureHud,650);scheduleChromeHide();return true;}
+        if(action==MotionEvent.ACTION_MOVE||action==MotionEvent.ACTION_UP){playbackTaps.move(event.getEventTime(),event.getX(),event.getY());if(gestureAxis==PlaybackGestureMath.Axis.NONE)gestureAxis=PlaybackGestureMath.axis(dx,dy,ViewConfiguration.get(this).getScaledTouchSlop());
+            if(gestureAxis==PlaybackGestureMath.Axis.HORIZONTAL){cancelPlaybackTaps();volumeHud.setVisibility(View.GONE);brightnessHud.setVisibility(View.GONE);if(gestureSeekAllowed){gesturePreview=PlaybackGestureMath.seek(gestureStartTime,dx,target.getWidth(),gestureLength);long offset=gesturePreview-gestureStartTime;gestureSeekText.setText((offset>=0?"+":"−")+time(Math.abs(offset))+"\n"+time(gesturePreview)+" / "+time(gestureLength));if(gestureLength>0)seek.setProgress((int)(gesturePreview*1000/gestureLength));}else gestureSeekText.setText("Seeking unavailable");seekHud.animate().cancel();seekHud.setAlpha(1);seekHud.setVisibility(View.VISIBLE);}
+            else if(gestureAxis==PlaybackGestureMath.Axis.VERTICAL){cancelPlaybackTaps();int level=PlaybackGestureMath.level(gestureStartLevel,dy,target.getHeight());if(gestureVolume)volume.setProgress(level);else setBrightnessPercent(level);showGestureLevel(gestureVolume,gestureVolume?level:Math.max(2,level));}if(action==MotionEvent.ACTION_MOVE)return true;}
+        if(action==MotionEvent.ACTION_UP){PlaybackGestureMath.Axis completed=gestureAxis;gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;if(completed==PlaybackGestureMath.Axis.HORIZONTAL&&gestureSeekAllowed&&player!=null){autoResumeApplied=true;suppressSkipForUserSeek(gesturePreview);player.setTime(gesturePreview,false);checkpointProgressSoon();}else if(completed==PlaybackGestureMath.Axis.NONE){handlePlaybackTap(playbackTaps.up(event.getEventTime(),event.getX(),event.getY()));schedulePlaybackTap();}main.postDelayed(hideGestureHud,650);scheduleChromeHide();return true;}
         return true;
     }
     private void renderDesktops(){
@@ -390,12 +680,13 @@ public final class MainActivity extends Activity {
     private void refresh(boolean explicit){
         if(session==null){if(explicit)status.setText("Connect and pair with your desktop first.");return;}if(polling)return;polling=true;LanApi.Session active=session;int version=generation;if(explicit)status.setText("Refreshing playlist…");
         LanApi client=api;
-        execute(()->{try{LanApi.Info info=client.info(active.endpoint);if(!info.id.equals(active.host.id))throw new LanApi.ApiException(401,"Sharing restarted. Pair again with the new desktop code.");LanApi.Playlist snapshot=client.playlistState(active);List<LanApi.Item> playlist=snapshot.items;main.post(()->{if(stale(version))return;polling=false;items=playlist;playlistAdapter.notifyDataSetChanged();updateNavigation();refreshProgressDetails();playlistInfo.setText(snapshot.summary());playbackPlaylistSummary.setText(snapshot.summary()+" · playback stays open");status.setText("Connected · "+snapshot.summary());
+        execute(()->{try{LanApi.Info info=client.info(active.endpoint);if(!info.id.equals(active.host.id))throw new LanApi.ApiException(401,"Sharing restarted. Pair again with the new desktop code.");LanApi.Playlist snapshot=client.playlistState(active);List<LanApi.Item> playlist=snapshot.items;main.post(()->{if(stale(version))return;polling=false;items=playlist;playlistAdapter.notifyDataSetChanged();updateNavigation();refreshProgressDetails();homePlaylistSummary=snapshot.summary();updateHomeDashboard();if(explicit)closeConnectionsDrawer();playbackPlaylistSummary.setText(snapshot.summary()+" · playback stays open");status.setText("Connected · "+snapshot.summary());
             if(current!=null&&playlist.stream().noneMatch(item->item.id.equals(current.id))){lastError="This item was removed from the desktop playlist.";stopPlayback();leavePlayer();status.setText(lastError);}
         });}catch(Exception error){main.post(()->{if(stale(version))return;polling=false;status.setText(safe(error));if(error instanceof LanApi.ApiException&&((LanApi.ApiException)error).status==401){disconnect(false);status.setText("Sharing restarted or pairing expired. Connect again to pair.");}});}});
     }
-    private void startMedia(LanApi.Item item){
-        if(session==null){status.setText("Pair again before streaming.");return;}if(retiringGraphs>=3){playerStatus.setText("Finishing the previous stream. Please retry in a moment.");return;}stopPlayback();graphStartedAt=android.os.SystemClock.uptimeMillis();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;nativeSurfacesReady=false;surfaceRebindPending=false;surfaceRestartPending=false;surfaceRestartStarted=false;surfaceRecoveryNeedsResume=false;surfaceRebinds=0;surfaceRebindAttempts=0;surfaceCreatedEvents=0;surfaceDestroyedEvents=0;lastOpeningDiagnostic=0;current=item;resetSkipForMedia();lastError=null;lastStats=null;initialResume=initialResumeFor(item);autoResumeApplied=false;nativeTimeEvents=0;lastNativeTimeEvent=-1;nativeBufferingEvents=0;nativeBufferingPercent=-1;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);if(playlistOpen)setPlaylistOpen(false);playerTitle.setText(item.title);updateNavigation();refreshProgressDetails();setPlayAction("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    private void startMedia(LanApi.Item item){startMediaAt(latestItem(item),null);}
+    private void startMediaAt(LanApi.Item item,Long explicitPosition){
+        if(session==null){status.setText("Pair again before streaming.");return;}if(!ensurePlaybackAudioFocus())return;cancelPlaybackTaps();if(retiringGraphs>=3){playerStatus.setText("Finishing the previous stream. Please retry in a moment.");return;}stopPlayback();LanApi.Item observed=PlaybackResumePolicy.mostRecent(items);localActivityHostTimestamp=observed==null?0:PlaybackResumePolicy.latest(observed).updatedAtSeconds;localActivityId=item.id;localActivityWasPlayed=false;localActivityDuration=0;graphStartedAt=android.os.SystemClock.uptimeMillis();softwarePlayback=softwareItems.contains(item.id);videoWasDisplayed=false;hadVideoTracks=false;videoOutputWasCreated=false;userPaused=false;videoOutputs=0;nativeStartedAt=0;playRequestedAt=0;nativePlayingSeen=false;nativeSurfacesReady=false;surfaceRebindPending=false;surfaceRestartPending=false;surfaceRestartStarted=false;surfaceRecoveryNeedsResume=false;surfaceRebinds=0;surfaceRebindAttempts=0;surfaceCreatedEvents=0;surfaceDestroyedEvents=0;lastOpeningDiagnostic=0;current=item;resetSkipForMedia();lastError=null;lastStats=null;initialResume=explicitPosition==null?initialResumeFor(item):Math.max(0,explicitPosition);manualResumePinned=false;computerTimestampAtPause=item.computerUpdatedAtUnixSeconds;autoResumeApplied=false;nativeTimeEvents=0;lastNativeTimeEvent=-1;nativeBufferingEvents=0;nativeBufferingPercent=-1;home.setVisibility(View.GONE);playback.setVisibility(View.VISIBLE);if(playlistOpen)setPlaylistOpen(false);playerTitle.setText(item.title);updateNavigation();refreshProgressDetails();setPlayAction("Pause");playerStatus.setText("Opening LAN stream…");getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try{
             if(engine==null)engine=new LibVLC(this,new ArrayList<>(java.util.Arrays.asList(BuildConfig.DEBUG&&nativeDiagnostics?"--verbose=2":"--quiet","--no-lua","--no-video-title-show","--no-osd","--no-metadata-network-access","--stats")));
             if(!enginePrepared){preparePlayback(item);return;}
@@ -464,7 +755,7 @@ public final class MainActivity extends Activity {
                 media.addOption(":network-caching=1200");media.addOption(":http-reconnect");
                 if(PlaybackPolicy.useAvformat(item.mimeType))media.addOption(":demux=avformat");
                 activePlayer.setMedia(media);media.release();
-                if(BuildConfig.DEBUG&&debugSkipSurfaceOnce&&!softwarePlayback){debugSkipSurfaceOnce=false;logPlayback("test-missing-native-output");playRequestedAt=android.os.SystemClock.uptimeMillis();activePlayer.play();return;}
+                if(BuildConfig.DEBUG&&debugSkipSurfaceOnce&&!softwarePlayback&&ensurePlaybackAudioFocus()){debugSkipSurfaceOnce=false;logPlayback("test-missing-native-output");playRequestedAt=android.os.SystemClock.uptimeMillis();activePlayer.play();return;}
                 surfaceCallback=new IVLCVout.Callback(){
                     public void onSurfacesCreated(IVLCVout vout){if(player!=activePlayer||video!=activeVideo||destroyed)return;surfaceCreatedEvents++;nativeSurfacesReady=validVideoSurface(activeVideo);surfaceRebindPending=false;logPlayback("native-surfaces-created");main.post(()->{startAfterSurfaces(activePlayer,activeVideo,item,waitingSince);resumeAfterSurfaceRecovery(activePlayer,activeVideo);});}
                     public void onSurfacesDestroyed(IVLCVout vout){if(player!=activePlayer||video!=activeVideo||destroyed)return;surfaceDestroyedEvents++;surfaceRecoveryTime=Math.max(0,activePlayer.getTime());surfaceRecoveryNeedsResume=playRequestedAt>0;nativeSurfacesReady=false;logPlayback("native-surfaces-destroyed");if(foreground&&!surfaceRebindPending){surfaceRebindPending=true;main.post(()->reattachLostSurfaces(activePlayer,activeVideo,item,android.os.SystemClock.uptimeMillis()));}}
@@ -494,7 +785,7 @@ public final class MainActivity extends Activity {
         // player on its restored valid surface, preserving the user's position.
         surfaceRestartPending=true;activePlayer.retain();final long began=android.os.SystemClock.uptimeMillis();playerStatus.setText("Restoring video…");logPlayback("surface-restart-requested");
         retiredPlayers.execute(()->{try{activePlayer.stop();}catch(RuntimeException ignored){}finally{main.post(()->{
-            try{if(destroyed||player!=activePlayer||video!=activeVideo)return;surfaceRestartPending=false;if(!foreground||userPaused||!nativeSurfacesReady||!validVideoSurface(activeVideo))return;
+            try{if(destroyed||player!=activePlayer||video!=activeVideo)return;surfaceRestartPending=false;if(!foreground||userPaused||!nativeSurfacesReady||!validVideoSurface(activeVideo)||!ensurePlaybackAudioFocus())return;
                 initialResume=surfaceRecoveryTime;autoResumeApplied=false;nativePlayingSeen=false;nativeStartedAt=0;videoWasDisplayed=false;videoOutputWasCreated=false;videoOutputs=0;lastStats=null;surfaceRestartStarted=true;playRequestedAt=android.os.SystemClock.uptimeMillis();logPlayback("resume-after-surface-recovery-stopMs="+(playRequestedAt-began));activePlayer.play();
             }finally{activePlayer.release();}
         });}});
@@ -502,7 +793,7 @@ public final class MainActivity extends Activity {
     private void startAfterSurfaces(MediaPlayer activePlayer,VLCVideoLayout activeVideo,LanApi.Item item,long waitingSince){
         if(destroyed||player!=activePlayer||video!=activeVideo||current!=item||!foreground||playRequestedAt>0)return;
         if(nativeSurfacesReady&&validVideoSurface(activeVideo)&&activePlayer.getVLCVout().areViewsAttached()){
-            if(userPaused){logPlayback("valid-surface-awaiting-play-intent");return;}
+            if(userPaused||!ensurePlaybackAudioFocus()){logPlayback("valid-surface-awaiting-play-intent");return;}
             playRequestedAt=android.os.SystemClock.uptimeMillis();logPlayback("native-surface-valid-start");activePlayer.play();return;
         }
         if(android.os.SystemClock.uptimeMillis()-waitingSince>=5000){lastError="The device could not create a valid video surface. Return to the playlist and retry.";playerStatus.setText(lastError);logPlayback("native-surface-timeout");stopPlayback();return;}
@@ -515,7 +806,7 @@ public final class MainActivity extends Activity {
     private boolean videoSurfaceReady(){return video.isAttachedToWindow()&&video.isShown()&&video.getWidth()>0&&video.getHeight()>0;}
     private boolean retrySoftware(){
         if(player==null||current==null||session==null||softwarePlayback||lastError!=null||!foreground||userPaused||videoWasDisplayed||videoOutputWasCreated||!(hadVideoTracks||hasKnownVideoTrack()))return false;
-        LanApi.Item item=current;logPlayback("retry-software-once");softwareItems.add(item.id);localResume.put(item.id,initialResume);startMedia(item);return true;
+        LanApi.Item item=current;logPlayback("retry-software-once");softwareItems.add(item.id);localResume.put(item.id,initialResume);startMediaAt(latestItem(item),initialResume);return true;
     }
     private String playbackDiagnostics(){
         Media.Stats value=stats();return "preparing="+enginePreparing+", prepared="+enginePrepared+", cacheVerified="+fontCacheVerified+", preparationMs="+(enginePreparing?android.os.SystemClock.uptimeMillis()-preparationStartedAt:preparationDurationMs)+", graph="+videoGraphSequence+", graphAgeMs="+(graphStartedAt==0?0:android.os.SystemClock.uptimeMillis()-graphStartedAt)+", retiring="+retiringGraphs+", lastRetirementMs="+lastRetirementMs+", software="+softwarePlayback+", nativeState="+(player==null?-1:player.getPlayerState())+", nativeTimeMs="+(player==null?-1:player.getTime())+", position="+(player==null?-1:player.getPosition())+", lengthMs="+(player==null?-1:player.getLength())+", timeEvents="+nativeTimeEvents+", lastTimeEventMs="+lastNativeTimeEvent+", bufferingPercent="+nativeBufferingPercent+", bufferingEvents="+nativeBufferingEvents+", openingAgeMs="+(playRequestedAt==0?0:android.os.SystemClock.uptimeMillis()-playRequestedAt)+", playingEventSeen="+nativePlayingSeen+", resumeApplied="+autoResumeApplied+", forwardedBytes="+(relay==null?0:relay.forwardedBytes())+", relay={"+(relay==null?"none":relay.diagnostics())+"}, surfaceReady="+videoSurfaceReady()+", nativeSurfaceReady="+nativeSurfacesReady+", holderValid="+validVideoSurface(video)+", surfaceCreated="+surfaceCreatedEvents+", surfaceDestroyed="+surfaceDestroyedEvents+", rebinds="+surfaceRebinds+", rebindPending="+surfaceRebindPending+", restartPending="+surfaceRestartPending+", recoveryNeedsResume="+surfaceRecoveryNeedsResume+", size="+video.getWidth()+"x"+video.getHeight()+", videoTracks="+(player==null?-1:player.getVideoTracksCount())+", outputs="+videoOutputs+", outputCreated="+videoOutputWasCreated+", decodedVideo="+(value==null?0:value.decodedVideo)+", displayed="+(value==null?0:value.displayedPictures)+", decodedAudio="+(value==null?0:value.decodedAudio)+", playing="+(player!=null&&player.isPlaying());
@@ -524,7 +815,9 @@ public final class MainActivity extends Activity {
     private void updatePlayer(){
         if(player==null||current==null)return;applyResume();long length=player.getLength(),time=Math.max(0,player.getTime());
         clock.setText(time(time)+" / "+time(length));if(!dragging&&gestureAxis!=PlaybackGestureMath.Axis.HORIZONTAL&&length>0)seek.setProgress((int)Math.min(1000,time*1000/length));seek.setEnabled(player.isSeekable());
-        if(player.getPlayerState()==Media.State.Ended&&length>0){time=length;localResume.put(current.id,length);completedOnPhone.add(current.id);}else if(time>=0&&nativePlayingSeen&&autoResumeApplied){localResume.put(current.id,time);if(player.isPlaying())completedOnPhone.remove(current.id);}sharePlaybackProgress(false);refreshProgressDetails();if(playlistOpen)playlistAdapter.notifyDataSetChanged();Media.Stats value=stats();if(value!=null){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}
+        if(nativePlayingSeen&&autoResumeApplied){localActivityWasPlayed=true;if(length>0)localActivityDuration=length;}
+        if(player.getPlayerState()==Media.State.Ended&&length>0){time=length;localResume.put(current.id,length);completedOnPhone.add(current.id);}else if(time>=0&&nativePlayingSeen&&autoResumeApplied){localResume.put(current.id,time);if(player.isPlaying())completedOnPhone.remove(current.id);}sharePlaybackProgress(false);refreshProgressDetails();updateHomeDashboard();if(playlistOpen)playlistAdapter.notifyDataSetChanged();Media.Stats value=stats();if(value!=null){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}
+        if(session!=null&&videoWasDisplayed&&nativePlayingSeen&&autoResumeApplied){View surface=video.findViewById(org.videolan.R.id.surface_video);if(surface instanceof SurfaceView)ensureArtworkStore().capture(session.host.id,current.id,(SurfaceView)surface,bitmap->{if(bitmap!=null)refreshHomeArtwork();});}
         updateSkipPlayback();
         hadVideoTracks|=hasKnownVideoTrack();
         long now=android.os.SystemClock.uptimeMillis(),openingAge=playRequestedAt==0?0:now-playRequestedAt;
@@ -551,18 +844,37 @@ public final class MainActivity extends Activity {
     }
     private Media.Stats stats(){if(player==null)return lastStats;IMedia media=player.getMedia();if(media==null)return lastStats;try{Media.Stats value=media.getStats();if(value!=null&&(value.decodedVideo>0||value.decodedAudio>0)){lastStats=value;if(value.displayedPictures>0)videoWasDisplayed=true;}return lastStats==null?value:lastStats;}finally{media.release();}}
     private void togglePlay(){
-        if(player==null&&enginePreparing&&current!=null){userPaused=!userPaused;setPlayAction(userPaused?"Play":"Pause");playerStatus.setText(userPaused?"Paused":"Preparing playback for first use…");return;}
+        if(player==null&&enginePreparing&&current!=null){if(!userPaused)rememberUserPause();else if(!ensurePlaybackAudioFocus())return;userPaused=!userPaused;setPlayAction(userPaused?"Play":"Pause");playerStatus.setText(userPaused?"Paused":"Preparing playback for first use…");updatePipParams();return;}
         if(player==null){if(current!=null)startMedia(current);return;}
-        if(lastError!=null){startMedia(current);return;}
-        if(surfaceRebindPending||surfaceRestartPending||surfaceRecoveryNeedsResume){userPaused=!userPaused;setPlayAction(userPaused?"Play":"Pause");playerStatus.setText(userPaused?"Paused":"Restoring video…");if(userPaused){if(player.isPlaying())player.pause();}else if(!surfaceRebindPending&&!surfaceRestartPending)resumeAfterSurfaceRecovery(player,video);return;}
+        if(lastError!=null){startMediaAt(latestItem(current),Math.max(0,player.getTime()));return;}
+        if(surfaceRebindPending||surfaceRestartPending||surfaceRecoveryNeedsResume){if(!userPaused)rememberUserPause();else{if(!ensurePlaybackAudioFocus())return;applyPausedHandoff();}userPaused=!userPaused;setPlayAction(userPaused?"Play":"Pause");playerStatus.setText(userPaused?"Paused":"Restoring video…");if(userPaused){if(player.isPlaying())player.pause();}else if(!surfaceRebindPending&&!surfaceRestartPending)resumeAfterSurfaceRecovery(player,video);updatePipParams();return;}
         int nativeState=player.getPlayerState();
-        if(nativeState==Media.State.Ended||nativeState==Media.State.Stopped){localResume.put(current.id,0L);startMedia(current);return;}
-        if(!userPaused){userPaused=true;setPlayAction("Play");playerStatus.setText("Paused");if(nativePlayingSeen||player.isPlaying())player.pause();}
-        else{userPaused=false;setPlayAction("Pause");playerStatus.setText("Resuming stream…");if(nativeSurfacesReady&&validVideoSurface(video)){if(!nativePlayingSeen)playRequestedAt=android.os.SystemClock.uptimeMillis();player.play();}}
+        if(nativeState==Media.State.Ended||nativeState==Media.State.Stopped){startMediaAt(latestItem(current),0L);return;}
+        if(!userPaused){rememberUserPause();userPaused=true;setPlayAction("Play");playerStatus.setText("Paused");if(nativePlayingSeen||player.isPlaying())player.pause();sharePlaybackProgress(true);updateHomeDashboard();}
+        else{if(!ensurePlaybackAudioFocus())return;applyPausedHandoff();userPaused=false;setPlayAction("Pause");playerStatus.setText("Resuming stream…");if(nativeSurfacesReady&&validVideoSurface(video)){if(!nativePlayingSeen)playRequestedAt=android.os.SystemClock.uptimeMillis();player.play();}}
+        updatePipParams();scheduleChromeHide();
     }
-    private void jump(long amount){if(player!=null&&player.isSeekable()){autoResumeApplied=true;long target=Math.max(0,Math.min(player.getLength(),player.getTime()+amount));suppressSkipForUserSeek(target);player.setTime(target,false);checkpointProgressSoon();}}
+    private void jump(long amount){
+        if(player==null||!player.isSeekable()||player.getLength()<=0)return;
+        long actual=Math.max(0,player.getTime()),now=android.os.SystemClock.uptimeMillis();
+        long base=now<skipUserSeekUntil&&Math.abs(actual-skipUserSeekTarget)>800?skipUserSeekTarget:actual;
+        long target=Math.max(0,Math.min(player.getLength(),base+amount));autoResumeApplied=true;
+        suppressSkipForUserSeek(target);player.setTime(target,false);checkpointProgressSoon();
+    }
+    private void cancelPlaybackTaps(){if(playbackTaps!=null)playbackTaps.cancel();main.removeCallbacks(confirmPlaybackTap);}
+    private void schedulePlaybackTap(){main.removeCallbacks(confirmPlaybackTap);if(playbackTaps==null)return;long deadline=playbackTaps.nextSingleDeadlineMillis();if(deadline!=PlaybackTapRecognizer.NO_DEADLINE)main.postAtTime(confirmPlaybackTap,deadline);}
+    private void handlePlaybackTap(PlaybackTapRecognizer.Action action){
+        if(current==null||!foreground||pipUiHidden()||playlistOpen)return;
+        if(action==PlaybackTapRecognizer.Action.SINGLE)videoTapTarget.performClick();
+        else if(action==PlaybackTapRecognizer.Action.DOUBLE_LEFT||action==PlaybackTapRecognizer.Action.DOUBLE_RIGHT){
+            boolean right=action==PlaybackTapRecognizer.Action.DOUBLE_RIGHT;boolean can=player!=null&&player.isSeekable()&&player.getLength()>0;
+            if(can)jump(right?10000:-10000);main.removeCallbacks(hideGestureHud);volumeHud.setVisibility(View.GONE);brightnessHud.setVisibility(View.GONE);
+            gestureSeekText.setText(can?(right?"+10 seconds":"−10 seconds")+"\n"+time(skipUserSeekTarget):"Seeking unavailable");seekHud.animate().cancel();seekHud.setAlpha(1);seekHud.setVisibility(View.VISIBLE);main.postDelayed(hideGestureHud,850);scheduleChromeHide();
+        }
+    }
     private void stopPlayback(){
         sharePlaybackProgress(true);
+        clearAudioFocusResume();cancelPipIntents();
         mediaGeneration++;
         pendingPreparationItem=null;
         final MediaPlayer old=player;player=null;final StreamRelay oldRelay=relay;relay=null;final IVLCVout.Callback oldCallback=surfaceCallback;surfaceCallback=null;nativeSurfacesReady=false;
@@ -583,34 +895,53 @@ public final class MainActivity extends Activity {
             });
         }else if(oldRelay!=null){retiredPlayers.execute(oldRelay::close);}
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        updatePipParams();
     }
     private void releaseEngineWhenIdle(){if(destroyed&&!enginePreparing&&retiringGraphs==0&&engine!=null){engine.release();engine=null;}}
     private static Media.Stats statsOf(MediaPlayer player){IMedia media=player.getMedia();if(media==null)return null;try{return media.getStats();}finally{media.release();}}
-    private void leavePlayer(){updatePlayer();stopPlayback();if(playlistOpen)setPlaylistOpen(false);current=null;playback.setVisibility(View.GONE);home.setVisibility(View.VISIBLE);setFull(false);restoreBrightness();}
-    private void setChromeVisible(boolean value){chromeVisible=value;playerHeader.setVisibility(value?View.VISIBLE:View.GONE);playerControls.setVisibility(value?View.VISIBLE:View.GONE);centerTransport.setVisibility(value?View.VISIBLE:View.GONE);videoTapTarget.setContentDescription(value?"Hide playback controls":"Show playback controls");videoTapTarget.setImportantForAccessibility(full?View.IMPORTANT_FOR_ACCESSIBILITY_YES:View.IMPORTANT_FOR_ACCESSIBILITY_NO);}
-    private void applySystemBars(){if(Build.VERSION.SDK_INT>=30){WindowInsetsController controller=getWindow().getInsetsController();if(controller!=null){if(full){controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);controller.hide(WindowInsets.Type.systemBars());}else controller.show(WindowInsets.Type.systemBars());}}else getWindow().getDecorView().setSystemUiVisibility(full?View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY:0);}
+    private void leavePlayer(){boolean wasPip=isInPictureInPictureMode();cancelPlaybackTaps();updatePlayer();updateHomeDashboard();stopPlayback();abandonPlaybackAudioFocus();if(playlistOpen)setPlaylistOpen(false);current=null;playback.setVisibility(View.GONE);home.setVisibility(View.VISIBLE);setFull(false);restoreBrightness();updateHomeDashboard();updatePipParams();if(wasPip)finish();}
+    private void setChromeVisible(boolean value){value=value&&!pipUiHidden();chromeVisible=value;playerHeader.setVisibility(value?View.VISIBLE:View.GONE);playerControls.setVisibility(value?View.VISIBLE:View.GONE);centerTransport.setVisibility(value?View.VISIBLE:View.GONE);videoTapTarget.setContentDescription(value?"Hide playback controls":"Show playback controls");videoTapTarget.setImportantForAccessibility(!pipUiHidden()&&full?View.IMPORTANT_FOR_ACCESSIBILITY_YES:View.IMPORTANT_FOR_ACCESSIBILITY_NO);}
+    private void applySystemBars(){if(pipUiHidden())return;if(Build.VERSION.SDK_INT>=30){WindowInsetsController controller=getWindow().getInsetsController();if(controller!=null){if(full){controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);controller.hide(WindowInsets.Type.systemBars());}else controller.show(WindowInsets.Type.systemBars());}}else getWindow().getDecorView().setSystemUiVisibility(full?View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY:0);}
     // Rotation/focus transitions can restore bars after the initial hide request.
     // Reapply once after geometry settles, rather than suppressing user swipes.
-    private void scheduleFullscreenBars(){main.removeCallbacks(settleFullscreenBars);if(full)main.postDelayed(settleFullscreenBars,500);}
+    private void scheduleFullscreenBars(){main.removeCallbacks(settleFullscreenBars);if(full&&!pipUiHidden())main.postDelayed(settleFullscreenBars,500);}
     private void setFull(boolean value){full=value;fullButton.setAction(value?PlayerIcon.Kind.EXIT_FULLSCREEN:PlayerIcon.Kind.FULLSCREEN,value?"Exit full screen":"Full screen");setChromeVisible(!value);applySystemBars();root.requestApplyInsets();scheduleFullscreenBars();setRequestedOrientation(value?ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE:ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);}
-    private void disconnect(boolean clearUrl){endProgressSync();generation++;ScopedWifiConnections<Network> scope=wifiConnections;wifiConnections=null;if(scope!=null)scope.close();polling=false;connecting=false;session=null;api=null;localResume.clear();completedOnPhone.clear();softwareItems.clear();items=Collections.emptyList();if(playlistInfo!=null)playlistInfo.setText("Pair with a desktop to see its current playlist.");if(list!=null)((BaseAdapter)list.getAdapter()).notifyDataSetChanged();if(pairDialog!=null){pairDialog.dismiss();pairDialog=null;}if(current!=null)leavePlayer();if(clearUrl)getPreferences(MODE_PRIVATE).edit().remove("desktopUrl").apply();}
+    private void disconnect(boolean clearUrl){endProgressSync();generation++;ScopedWifiConnections<Network> scope=wifiConnections;wifiConnections=null;if(scope!=null)scope.close();polling=false;connecting=false;session=null;api=null;localResume.clear();completedOnPhone.clear();softwareItems.clear();localActivityId="";localActivityWasPlayed=false;items=Collections.emptyList();if(playlistInfo!=null)playlistInfo.setText("Pair with a desktop to see its current playlist.");if(list!=null)((BaseAdapter)list.getAdapter()).notifyDataSetChanged();if(pairDialog!=null){pairDialog.dismiss();pairDialog=null;}if(current!=null)leavePlayer();if(clearUrl)getPreferences(MODE_PRIVATE).edit().remove("desktopUrl").apply();updateHomeDashboard();}
     private void execute(Runnable action){try{work.execute(action);}catch(java.util.concurrent.RejectedExecutionException error){status.setText("Please wait for the current desktop request to finish.");polling=false;connecting=false;connect.setEnabled(true);}}
     private boolean stale(int version){return destroyed||version!=generation;}
     private String permission(){return Build.VERSION.SDK_INT>=37?Manifest.permission.ACCESS_LOCAL_NETWORK:Build.VERSION.SDK_INT==36?Manifest.permission.NEARBY_WIFI_DEVICES:null;}
     private boolean hasPermission(){String permission=permission();return permission==null||checkSelfPermission(permission)==PackageManager.PERMISSION_GRANTED;}
     private void ensurePermission(){if(hasPermission()){discovery.start();return;}if(permissionAsked)return;permissionAsked=true;requestPermissions(new String[]{permission()},100);}
     @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==100){if(hasPermission())discovery.start();else{status.setText("Local-network access is needed to discover and stream. Tap Find to try again, or allow it in Settings.");}}}
-    @Override protected void onResume(){super.onResume();foreground=true;ensurePermission();main.post(pulse);main.post(poll);if(wasPlaying&&current!=null){wasPlaying=false;userPaused=false;if(player!=null){if(nativeSurfacesReady&&validVideoSurface(video))player.play();}else startMedia(current);}else if(current!=null&&player==null){setPlayAction("Play");playerStatus.setText("Paused · tap Play to resume streaming");}}
-    @Override protected void onPause(){sharePlaybackProgress(true);foreground=false;main.removeCallbacks(pulse);main.removeCallbacks(poll);main.removeCallbacks(settleFullscreenBars);main.removeCallbacks(hideChrome);main.removeCallbacks(hideGestureHud);discovery.stop();if(player!=null){int observed=player.getPlayerState();wasPlaying=!userPaused&&lastError==null&&observed!=Media.State.Ended&&observed!=Media.State.Error&&observed!=Media.State.Stopped;userPaused=true;if(nativePlayingSeen||player.isPlaying())player.pause();}else if(enginePreparing&&current!=null){wasPlaying=!userPaused;userPaused=true;}super.onPause();}
-    @Override protected void onStop(){if(player!=null&&current!=null){updatePlayer();stopPlayback();}super.onStop();}
-    @Override protected void onDestroy(){endProgressSync();destroyed=true;generation++;ScopedWifiConnections<Network> scope=wifiConnections;wifiConnections=null;if(scope!=null)scope.close();discovery.stop();stopPlayback();releaseEngineWhenIdle();retiredPlayers.shutdown();session=null;work.shutdownNow();super.onDestroy();}
-    @Override public void onConfigurationChanged(Configuration config){super.onConfigurationChanged(config);layoutPlaylist();scheduleFullscreenBars();MediaPlayer active=player;if(active!=null)main.post(()->{if(player==active)active.updateVideoSurfaces();});}
+    // STARTED means visible, including paused-but-visible PiP and multi-window.
+    // Do not tear down transport in onPause: auto-enter PiP can still be animating.
+    @Override protected void onStart(){super.onStart();foreground=true;main.removeCallbacks(pulse);main.removeCallbacks(poll);main.post(pulse);main.post(poll);updatePipParams();}
+    @Override protected void onResume(){super.onResume();activityResumed=true;ensurePermission();if(!isInPictureInPictureMode()){restorePipPresentation();pipSession=false;}updateHomeDashboard();updatePipParams();}
+    @Override protected void onPause(){cancelPlaybackTaps();activityResumed=false;sharePlaybackProgress(true);if(Build.VERSION.SDK_INT>=31&&autoPipEligible())preparePipPresentation();main.removeCallbacks(settleFullscreenBars);main.removeCallbacks(hideChrome);main.removeCallbacks(hideGestureHud);discovery.stop();updatePipParams();super.onPause();}
+    @Override protected void onStop(){
+        cancelPlaybackTaps();        foreground=false;activityResumed=false;main.removeCallbacks(pulse);main.removeCallbacks(poll);main.removeCallbacks(settleFullscreenBars);main.removeCallbacks(hideChrome);main.removeCallbacks(hideGestureHud);discovery.stop();
+        for(View hud:new View[]{volumeHud,brightnessHud,seekHud})if(hud!=null){hud.animate().cancel();hud.setVisibility(View.GONE);hud.setAlpha(1);}
+        for(AlertDialog dialog:new AlertDialog[]{skipDialog,rangeDialog,pipSettingsDialog})if(dialog!=null&&dialog.isShowing())dialog.dismiss();skipDialog=null;rangeDialog=null;pipSettingsDialog=null;
+        // A dismissed PiP may still report PiP mode here. Invisibility always
+        // closes its decoder/HTTP relay; a later launch shows a resume card.
+        if(player!=null&&current!=null&&nativePlayingSeen&&autoResumeApplied&&player.getTime()>=0)localResume.put(current.id,player.getTime());
+        updateHomeDashboard();userPaused=true;stopPlayback();abandonPlaybackAudioFocus();cancelPipIntents();
+        pipSession=false;pipPresentation=false;pipRestorePending=false;gesturePointer=-1;gestureAxis=PlaybackGestureMath.Axis.NONE;dragging=false;
+        if(playlistPanel!=null)playlistPanel.animate().cancel();if(playlistOverlay!=null)playlistOverlay.setVisibility(View.GONE);playlistOpen=false;
+        current=null;playback.setVisibility(View.GONE);home.setVisibility(View.VISIBLE);videoTapTarget.setVisibility(View.VISIBLE);setFull(false);restoreBrightness();updateHomeDashboard();updatePipParams();super.onStop();
+    }
+    @Override protected void onDestroy(){cancelPlaybackTaps();if(homeArtworkStore!=null)homeArtworkStore.close();endProgressSync();destroyed=true;foreground=false;activityResumed=false;generation++;cancelPipIntents();abandonPlaybackAudioFocus();if(pipOwner.get()==this)pipOwner.clear();ScopedWifiConnections<Network> scope=wifiConnections;wifiConnections=null;if(scope!=null)scope.close();discovery.stop();stopPlayback();releaseEngineWhenIdle();retiredPlayers.shutdown();session=null;work.shutdownNow();super.onDestroy();}
+    @Override protected void onUserLeaveHint(){super.onUserLeaveHint();if(autoPipEligible()){if(Build.VERSION.SDK_INT<31)enterPip();else preparePipPresentation();}}
+    @android.annotation.TargetApi(31)
+    @Override public void onPictureInPictureUiStateChanged(PictureInPictureUiState state){super.onPictureInPictureUiStateChanged(state);if(Build.VERSION.SDK_INT>=35){if(state.isTransitioningToPip())preparePipPresentation();else if(activityResumed&&!isInPictureInPictureMode())restorePipPresentation();}}
+    @Override public void onPictureInPictureModeChanged(boolean inPip,Configuration config){super.onPictureInPictureModeChanged(inPip,config);if(inPip){preparePipPresentation();}else{pipRestorePending=pipPresentation;if(activityResumed)restorePipPresentation();}updatePipParams();}
+    @Override public void onConfigurationChanged(Configuration config){super.onConfigurationChanged(config);layoutPlaylist();scheduleFullscreenBars();MediaPlayer active=player;if(active!=null)main.post(()->{if(player==active){active.updateVideoSurfaces();updatePipParams();}});updatePipParams();}
     @Override public void onWindowFocusChanged(boolean hasFocus){super.onWindowFocusChanged(hasFocus);windowFocused=hasFocus;if(hasFocus)scheduleFullscreenBars();}
     // Modern back gestures use the native API33 dispatcher registered in onCreate.
     @SuppressLint("GestureBackNavigation")
     @Override public void onBackPressed(){navigateBack();}
-    private void navigateBack(){if(playlistOpen)setPlaylistOpen(false);else if(full)setFull(false);else if(current!=null)leavePlayer();else finish();}
-    private void about(){new AlertDialog.Builder(this).setTitle("Luma · by sdas").setMessage("Free Android preview. Stream only from your trusted local desktop. No cloud relay, analytics, or saved media download.\n\nPlayback: "+(BuildConfig.LUMA_CUSTOM_RUNTIME?"locally built libVLC with filtered Android3.7.7 bindings":"official VideoLAN Android3.7.7 bindings")+". Third-party terms apply. "+(BuildConfig.LUMA_APPROVED_RUNTIME?"This build uses the repository's reviewed ARM64 component. License notices are included in the app assets; matching library and application sources accompany distribution.":"This development runtime is pending the repository's component/source audit.")+"\n\n"+(engine==null?"Engine starts when you play.":"libVLC "+LibVLC.version()+"\n"+LibVLC.changeset())).setPositiveButton("Done",null).setNeutralButton("Disconnect",(d,w)->{disconnect(true);status.setText("Disconnected. Pair again to stream.");}).setNegativeButton("Network settings",(d,w)->startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName())))).show();}
+    private void navigateBack(){if(connectionsOpen)closeConnectionsDrawer();else if(playlistOpen)setPlaylistOpen(false);else if(full)setFull(false);else if(current!=null)leavePlayer();else finish();}
+    private void about(){if(pipUiHidden())return;aboutDialog=new AlertDialog.Builder(this).setTitle("Luma · by sdas").setMessage("Free Android preview. Stream only from your trusted local desktop. No cloud relay, analytics, or saved media download.\n\nPlayback: "+(BuildConfig.LUMA_CUSTOM_RUNTIME?"locally built libVLC with filtered Android3.7.7 bindings":"official VideoLAN Android3.7.7 bindings")+". Third-party terms apply. "+(BuildConfig.LUMA_APPROVED_RUNTIME?"This build uses the repository's reviewed ARM64 component. License notices are included in the app assets; matching library and application sources accompany distribution.":"This development runtime is pending the repository's component/source audit.")+"\n\n"+(engine==null?"Engine starts when you play.":"libVLC "+LibVLC.version()+"\n"+LibVLC.changeset())).setPositiveButton("Done",null).setNeutralButton("Disconnect",(d,w)->{disconnect(true);status.setText("Disconnected. Pair again to stream.");}).setNegativeButton("Network settings",(d,w)->startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName())))).show();}
     private static String safe(Exception error){return error instanceof LanApi.ApiException?error.getMessage():"Could not connect. Check the local address and keep desktop sharing enabled.";}
     private int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
     private TextView text(String value,int size,int color){TextView v=new TextView(this);v.setText(value);v.setTextSize(size);v.setTextColor(color);return v;}
@@ -639,12 +970,27 @@ public final class MainActivity extends Activity {
     }
     private ProgressBar progressBar(int color){ProgressBar bar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);bar.setIndeterminate(false);bar.setMax(1000);bar.setProgressTintList(ColorStateList.valueOf(color));bar.setProgressBackgroundTintList(ColorStateList.valueOf(0x22ffffff));return bar;}
     // Debug-only observable hooks exercise actual UI/network/player paths from instrumentation.
-    public void debugConnect(String url){if(!BuildConfig.DEBUG)throw new IllegalStateException();manual.setText(url);connect.performClick();}
+    public void debugAutoPip(boolean enabled){if(!BuildConfig.DEBUG)throw new IllegalStateException();pipAutoEnabled=enabled;updatePipParams();}
+    public boolean debugInPip(){return BuildConfig.DEBUG&&isInPictureInPictureMode();}
+    /** Observes RESUMED lifecycle, deliberately distinct from visible PiP. */
+    public boolean debugForeground(){return BuildConfig.DEBUG&&activityResumed;}
+    public boolean debugPlaybackVisible(){return BuildConfig.DEBUG&&foreground;}
+    public int debugRelayIdentity(){return BuildConfig.DEBUG?System.identityHashCode(relay):0;}
+    public boolean debugRelayActive(){return BuildConfig.DEBUG&&relay!=null;}
+    public long debugForwardedBytes(){return BuildConfig.DEBUG&&relay!=null?relay.forwardedBytes():0;}
+    public int debugRetiringGraphs(){return BuildConfig.DEBUG?retiringGraphs:0;}
+    public void debugEnterPip(){if(!BuildConfig.DEBUG)throw new IllegalStateException();pipButton.performClick();}
+    public boolean debugPipChromeHidden(){if(!BuildConfig.DEBUG)return false;for(View view:new View[]{playerHeader,playerControls,centerTransport,playlistOverlay,volumeHud,brightnessHud,seekHud,skipSegmentButton,videoTapTarget})if(view.getVisibility()==View.VISIBLE)return false;return true;}
+    public void debugVideoTouch(int action,float x,float y,long downTime,long eventTime){if(!BuildConfig.DEBUG)throw new IllegalStateException();MotionEvent event=MotionEvent.obtain(downTime,eventTime,action,videoTapTarget.getWidth()*x,videoTapTarget.getHeight()*y,0);try{videoTapTarget.dispatchTouchEvent(event);}finally{event.recycle();}}
+    public void debugHome(){if(!BuildConfig.DEBUG)throw new IllegalStateException();if(current!=null)leavePlayer();}
+    public void debugRefresh(){if(!BuildConfig.DEBUG)throw new IllegalStateException();refresh(false);}
+    public boolean debugHomeVisible(){return BuildConfig.DEBUG&&home.isShown()&&current==null;}
+    public void debugConnect(String url){if(!BuildConfig.DEBUG)throw new IllegalStateException();openConnectionsDrawer();manual.setText(url);connect.performClick();}
     public void debugPair(String code){if(!BuildConfig.DEBUG||pairDialog==null)throw new IllegalStateException();EditText input=pairDialog.findViewById(R.id.pair_code);input.setText(code);pairDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();}
     public boolean debugPairVisible(){return BuildConfig.DEBUG&&pairDialog!=null&&pairDialog.isShowing();}
     public boolean debugPaired(){return BuildConfig.DEBUG&&session!=null;}
     public int debugPlaylistSize(){return BuildConfig.DEBUG?items.size():0;}
-    public void debugPlay(String id){if(!BuildConfig.DEBUG)throw new IllegalStateException();for(int i=0;i<items.size();i++)if(items.get(i).id.equals(id)){list.performItemClick(list.getAdapter().getView(i,null,list),i,i);return;}throw new IllegalArgumentException("Test media is unavailable");}
+    public void debugPlay(String id){if(!BuildConfig.DEBUG)throw new IllegalStateException();if(homeFeatured!=null&&homeFeatured.id.equals(id)){homeContinue.performClick();return;}for(int i=0;i<homeQueueItems.size();i++)if(homeQueueItems.get(i).id.equals(id)){list.performItemClick(list.getAdapter().getView(i,null,list),i,i);return;}throw new IllegalArgumentException("Test media is unavailable");}
     public long debugTime(){return player==null?-1:player.getTime();}
     public boolean debugPlaying(){return player!=null&&player.isPlaying();}
     public boolean debugSeekable(){return player!=null&&player.isSeekable();}
@@ -683,6 +1029,7 @@ public final class MainActivity extends Activity {
     public int debugPlayerIdentity(){return BuildConfig.DEBUG?System.identityHashCode(player):0;}
     public int debugVideoViewIdentity(){return BuildConfig.DEBUG?System.identityHashCode(video):0;}
     public int debugVideoOutputs(){return BuildConfig.DEBUG?videoOutputs:0;}
+    public boolean debugTransportUnobscured(){if(!BuildConfig.DEBUG||!chromeVisible)return false;return centerTransport.getTop()>=playerHeader.getBottom()&&centerTransport.getBottom()<=playerControls.getTop();}
     public boolean debugPlayUsesIcon(){return BuildConfig.DEBUG&&playButton.getText().length()==0&&playButton.getContentDescription()!=null;}
     public void debugPlaylist(boolean open){if(!BuildConfig.DEBUG)throw new IllegalStateException();setPlaylistOpen(open);}
     public boolean debugPlaylistOpen(){return BuildConfig.DEBUG&&playlistOpen&&playlistOverlay.getVisibility()==View.VISIBLE;}

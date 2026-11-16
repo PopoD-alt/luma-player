@@ -7,4 +7,6 @@
     <item name="player_previous" type="id" /><item name="player_next" type="id" />
     <item name="player_playlist" type="id" /><item name="playback_playlist" type="id" />
     <item name="player_auto_skip" type="id" /><item name="player_skip_segment" type="id" />
+    <item name="home_connections" type="id" /><item name="home_continue" type="id" />
+    <item name="connection_drawer" type="id" />
 </resources>

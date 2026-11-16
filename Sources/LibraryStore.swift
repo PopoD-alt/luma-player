@@ -55,6 +55,7 @@ final class LibraryStore: ObservableObject {
     private var lastProgressSave = Date.distantPast
     private var progressDirty = false
     private var pendingProgressSave: Task<Void, Never>?
+    private var followsLatestActivity = true
 
     init(storageURL: URL? = nil) {
         self.storageURL = storageURL ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -92,7 +93,10 @@ final class LibraryStore: ObservableObject {
     }
 
     func select(_ id: UUID) {
-        guard items.contains(where: { $0.id == id }), selectedID != id else { return }
+        guard items.contains(where: { $0.id == id }) else { return }
+        // Even choosing the already highlighted item is an explicit choice.
+        followsLatestActivity = false
+        guard selectedID != id else { return }
         selectedID = id
         save()
     }
@@ -109,6 +113,7 @@ final class LibraryStore: ObservableObject {
     func clear() {
         items.removeAll()
         selectedID = nil
+        followsLatestActivity = true
         save()
     }
 
@@ -154,6 +159,7 @@ final class LibraryStore: ObservableObject {
         item.mobileUpdatedAtUnixSeconds = updatedAt
         item.mobileCompleted = completed
         items[index] = item
+        if followsLatestActivity { selectedID = ResumePolicy.latestItem(in: items, fallbackID: selectedID)?.id }
         markProgressDirty()
         return true
     }
@@ -292,7 +298,7 @@ final class LibraryStore: ObservableObject {
                 item.bookmarks = source.bookmarks.filter { $0.time.isFinite && $0.time >= 0 }
                 return item
             }
-            selectedID = items.contains(where: { $0.id == snapshot.selectedID }) ? snapshot.selectedID : items.first?.id
+            selectedID = ResumePolicy.latestItem(in: items, fallbackID: snapshot.selectedID)?.id
         } catch {
             persistenceError = "Could not read the saved library: \(error.localizedDescription)"
         }

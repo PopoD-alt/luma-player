@@ -1,64 +1,64 @@
 {
-  "as_of": "2026-11-16T02:05:53+00:00",
-  "branch": "feature/auto-skip \u00b7 desktop0.9 / Android0.3 local review \u00b7 main0.8/public0.7 unchanged",
+  "as_of": "2026-11-16T21:26:40.245014+00:00",
+  "branch": "feature/android-pip-double-tap \u00b7 desktop0.10 / Android0.4 local review \u00b7 main0.8/public0.7 unchanged",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
-      "playback": "PASS0.9 native UI: intro native3.253s, credits10.221s plus displayed frames, separately marked postcredits preserved; same canvas, opt-in/paused/manual/rewind/rapid/late-metadata guards.",
-      "sharing": "PASS: saved ranges persist and are shared read-only. Actual local audio comparison found shifted opening/ending matches through production worker; preview and explicit atomic confirmation for both files, cancellation and file-change checks passed.",
-      "distribution": "Local ad-hoc signed0.9/build11 review app in build/review/auto-skip/Luma Player.app. Strict deep signature and exact approved native source verified. Public downloads/feeds unchanged.",
-      "evidence": "build/review/auto-skip/mac-native-evidence.json"
+      "playback": "PASS0.10 native new-load/paused-Play phone handoff: actual clock/display frames on retained canvas, manual seek priority, known zero/restart, incoming never seeks, startup Continue Watching without autoplay. Existing auto-skip/audio regressions pass.",
+      "sharing": "Newest valid server checkpoint wins; stale captured rows resolve fresh library entries. Idle recent activity can update until explicit selection. Active playback stays undisturbed.",
+      "distribution": "Local0.10/build12 ad-hoc signed review app; strict deep signature and approved runtime verified. Public downloads/feeds unchanged.",
+      "evidence": "build/review/mobile-pip/mac-native-evidence.json"
     },
     {
       "name": "Windows \u00b7 x64",
-      "playback": "PASS FINAL native0.9 CI43789628252/source9329a9: chapter names/current title, actual skip clock+frames, postcredit/paused/rewind guards, manual-range priority and conservative labels, keyboard checkbox activation, real audio matching and retained preview/decline/reopen/save.",
-      "sharing": "PASS all baseline playback and authenticated playlist/progress tests. Analysis launch and completion recheck the selected input and adjacent pair; local audio candidates require explicit Save.",
-      "distribution": "Local0.9/build6 portable review with approved runtime, full app/native sources and notices. EXE cross-built on Mac; same production inputs passed final native Windows CI. Main0.8/public0.7/feeds unchanged.",
-      "evidence": "build/windows-autoskip-final-native-evidence/smoke/smoke-results.json"
+      "playback": "PASS0.10 native CI43954997802/sourcebf03b1d: actual new-load and paused-Play handoff clock/frames, same player, manual seek priority, zero override, startup card without autoplay, existing skip/audio/sharing regressions.",
+      "sharing": "Production source/runtime verified against native CI. Incoming progress never seeks an active graph; newest saved positions feed normal Play and Continue Watching.",
+      "distribution": "Local0.10/build7 complete portable review with exact native-tested source/runtime inputs and all sources/notices. Local EXE cross-built; its exact bytes were not executed in CI. Public packages/feeds unchanged.",
+      "evidence": "build/review/mobile-pip/windows-owner-review-complete.json"
     },
     {
       "name": "Android \u00b7 API26+",
-      "playback": "PASS0.3 approved ARM64:52 JVM tests/lint; two native tests each against Mac38.819s and Windows-Core38.81s. Actual intro clock>=3.2s/credits>=10.2s plus displayed frames, postcredit scene, opt-in/paused/rewind/same surface/manual controls.",
-      "sharing": "PASS authenticated desktop saved range4\u20135 actually skips on phone; phone override6\u20137 survives reopen and takes priority. Existing independent phone/computer progress and AVC/HEVC streaming checks still pass.",
-      "distribution": "Local APK56841a9a, version0.3/code3, original public certificate24e6 retained. Same app bytes passed both hosts. Complete corresponding native/app sources and notices accompany review.",
-      "evidence": "build/review/auto-skip/android-native-evidence.json"
+      "playback": "PASS0.4 approved ARM64:84 JVM tests/lint;5 native cases each against Mac and Windows-Core. Real OS PiP Home/Pause/Close/expand, retained player/surface/relay, advancing frames, double-tap\u00b110 with hold/swipe/cancel guards and unobscured fullscreen controls.",
+      "sharing": "Reference-inspired glass library, actual-frame hero, ordered Up Next/search and hamburger connection drawer. Newest-device resume, last-played launch/cache without autoplay, pending local activity retained until fresher host state. Existing AVC/HEVC/auto-skip and independent device progress checks pass.",
+      "distribution": "Local0.4/code4 APK6add085f, original preview certificate retained; identical APK/test hashes pass both desktop suites. Complete sources/notices accompany review. No public update activated.",
+      "evidence": "build/review/mobile-pip/android-native-evidence.json"
     }
   ],
   "next": [
-    "Review local0.9 desktop /0.3 Android builds before another public package. All automated native checks pass. Main0.8 source, public0.7 downloads and stable update feeds are unchanged.",
-    "Review actual episodes: labelled chapters, exact manual ranges, repeated-theme audio suggestions and separately marked post-credit scenes. Audio matching requires confirmation and can take12minutes for bounded maximum windows.",
-    "Expand physical-phone Wi-Fi/gesture/audio coverage and the documented x64 emulator Wi-Fi limitation. A repeated audio passage is not proof that it is an opening or credits."
+    "Review the supplied0.10 desktop /0.4 Android copies before another public package. Main0.8, public0.7 downloads and stable feeds remain unchanged.",
+    "Test physical-phone PiP, double-tap/swipe controls, audio interruptions and device switching on real Wi-Fi; saved progress can lag several seconds.",
+    "Review real episodes and auto-skip audio suggestions separately. Confirmed repeated audio is not universal credit recognition or proof of every VLC format on every device."
   ],
   "previews": [
     {
-      "id": "android-auto-skip",
-      "name": "Android \u00b7 Auto-skip and Skip credits",
-      "path": "docs/images/android-auto-skip.png",
-      "caption": "Actual approved ARM64 app with Auto-skip On and manual Skip credits after deliberate rewind. Its native tests require real clock/frame advancement and preserve the post-credit segment."
+      "id": "android-glass-home",
+      "name": "Android \u00b7 glass library and Continue Watching",
+      "path": "docs/images/android-glass-home.png",
+      "caption": "Actual final ARM64 review app, real authored-video frame and saved phone progress. Pairing lives in the hamburger menu; launch does not autoplay."
     },
     {
-      "id": "audio-matches",
-      "name": "Mac \u00b7 review repeated audio matches",
-      "path": "docs/images/audio-match-review.png",
-      "caption": "Actual production review UI on short authored test audio; no implicit acceptance. Production uses15-second minimum repeats and up to3-minute head/tail windows."
+      "id": "android-glass-player",
+      "name": "Android \u00b7 glass fullscreen controls",
+      "path": "docs/images/android-glass-player.png",
+      "caption": "Actual final fullscreen UI with icon transport, PiP, seek and device progress. Native checks require controls to remain clear of the header/footer."
     },
     {
-      "id": "mac-auto-skip",
-      "name": "Mac \u00b7 Auto-skip menu",
-      "path": "build/review/auto-skip/mac/Luma-Mac-auto-skip.png",
-      "caption": "Actual Mac0.9 interface. NSView capture omits the native video child; genuine native chapter seeks and displayed-frame counters pass separately."
+      "id": "android-pip",
+      "name": "Android \u00b7 actual picture in picture",
+      "path": "docs/images/android-pip.png",
+      "caption": "Real OS floating window over the emulator launcher; native clock/display frames, Pause, expand/fullscreen intent and Close stream retirement pass."
     },
     {
-      "id": "windows-auto-skip",
-      "name": "Windows \u00b7 Auto-skip and saved ranges",
-      "path": "build/windows-autoskip-final-native-evidence/smoke/Luma-Windows-auto-skip.png",
-      "caption": "Actual native Windows0.9 test UI. WPF capture omits its native video child; real clock/frame assertions pass separately."
+      "id": "mac-continue",
+      "name": "Mac \u00b7 most recent device activity",
+      "path": "build/review/mobile-pip/mac/Luma-Mac-continue-watching.png",
+      "caption": "Actual Mac Continue Watching screen before autoplay; normal Play can resume the newer phone checkpoint on the same native canvas."
     },
     {
-      "id": "windows-matches",
-      "name": "Windows \u00b7 retained match preview",
-      "path": "build/windows-autoskip-final-native-evidence/smoke/Luma-Windows-detected-matches.png",
-      "caption": "Actual modeless Windows match review: Preview and explicit Save are separate, closing retains unconfirmed results for the current input."
+      "id": "windows-continue",
+      "name": "Windows \u00b7 Continue Watching",
+      "path": "build/review/mobile-pip/windows/Luma-Windows-continue-watching.png",
+      "caption": "Actual native Windows CI startup-card fixture. Native clock/frame and retained-graph handoff assertions pass separately."
     }
   ]
 }

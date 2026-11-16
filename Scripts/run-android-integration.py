@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 import re
+import signal
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -22,6 +24,24 @@ ROOT = Path(__file__).resolve().parents[1]
 LOG_LIMIT = 1024 * 1024
 LOG_LINE_LIMIT = 64 * 1024
 LOG_TAGS = ['LumaPlayback:I', 'VLC:V', 'AndroidRuntime:E', 'libc:E']
+TEST_CLASS = 'dev.sdas.luma.LanPlaybackTest'
+# Each case gets a fresh real sharing host. Production pairing throttles remain
+# unchanged; independent native checks must not spend one host's pairing budget.
+TEST_SCREENSHOTS = {
+    'pairBrowseStreamDecodePauseSeekVolumeAndFullscreen': (
+        ('luma-android-review.png', 'Luma-Android-review.png'),
+        ('luma-android-fullscreen.png', 'Luma-Android-fullscreen.png'),
+        ('luma-android-modern-controls.png', 'Luma-Android-modern-controls.png'),
+        ('luma-android-playlist.png', 'Luma-Android-playlist.png')),
+    'autoSkipNamedChaptersAndSavedDesktopTimings': (
+        ('luma-android-auto-skip.png', 'Luma-Android-auto-skip.png'),),
+    'doubleTapSeeksTenSecondsWithoutStealingOtherGestures': (),
+    'pictureInPictureKeepsStreamAndPreservesPauseAndFullscreen': (
+        ('luma-android-pip.png', 'Luma-Android-pip.png'),),
+    'dashboardUsesNewestSharedCheckpointAndCachesWithoutAutoplay': (
+        ('luma-android-home.png', 'Luma-Android-home.png'),),
+}
+CASE_TIMEOUT_SECONDS = 720
 
 
 def redact_diagnostics(text, pairing_code):
@@ -142,6 +162,94 @@ class NativeDiagnostics:
         (reports / 'native-diagnostics.log').write_text(self.evidence.render(), encoding='utf-8')
 
 
+def case_command(options, method, reports):
+    command = [sys.executable, str(Path(__file__).resolve()), '--desktop', options.desktop,
+               '--app-apk', str(options.app_apk.resolve()), '--test-apk', str(options.test_apk.resolve()),
+               '--reports-directory', str(reports), '--test-method', method]
+    for name in ('exercise_video_recovery', 'native_diagnostics', 'stress_transitions'):
+        if getattr(options, name):
+            command.append('--' + name.replace('_', '-'))
+    return command
+
+
+def run_case_process(command):
+    """Bound the whole child, including tools; terminate its owned host on timeout."""
+    process = subprocess.Popen(command, cwd=ROOT, start_new_session=os.name == 'posix')
+    try:
+        return process.wait(timeout=CASE_TIMEOUT_SECONDS), False
+    except (subprocess.TimeoutExpired, KeyboardInterrupt) as error:
+        if os.name == 'posix':
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        else:
+            process.terminate()
+        try:
+            process.wait(timeout=8)
+        except subprocess.TimeoutExpired:
+            if os.name == 'posix':
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            else:
+                process.kill()
+            process.wait(timeout=3)
+        if isinstance(error, KeyboardInterrupt):
+            raise
+        return process.returncode, True
+
+
+def run_suite(options, reports, inputs):
+    for screenshots in TEST_SCREENSHOTS.values():
+        for _, local_name in screenshots:
+            (reports / local_name).unlink(missing_ok=True)
+    cases = []
+    for method, screenshots in TEST_SCREENSHOTS.items():
+        case_reports = reports / 'cases' / method
+        case_reports.mkdir(parents=True, exist_ok=True)
+        # A failed child must not leave prior evidence looking current.
+        for name in ('test-inputs.json', 'instrumentation.log', 'native-diagnostics.log', 'sharing-host.log'):
+            (case_reports / name).unlink(missing_ok=True)
+        for _, name in screenshots:
+            (case_reports / name).unlink(missing_ok=True)
+        print('RUN: ' + method + ' (fresh production sharing host)', flush=True)
+        code, timed_out = run_case_process(case_command(options, method, case_reports))
+        case = {'method': method, 'reportsDirectory': str(case_reports.relative_to(reports)),
+                'exitCode': code, 'timedOut': timed_out, 'passed': code == 0 and not timed_out}
+        input_path = case_reports / 'test-inputs.json'
+        if input_path.is_file():
+            case['inputs'] = json.loads(input_path.read_text())
+        for _, local_name in screenshots:
+            source = case_reports / local_name
+            if case['passed']:
+                if not source.is_file() or not source.read_bytes().startswith(b'\x89PNG\r\n\x1a\n'):
+                    case['passed'] = False
+                    case['evidenceError'] = 'Missing or invalid current-case PNG: ' + local_name
+                else:
+                    shutil.copyfile(source, reports / local_name)
+        cases.append(case)
+        print(('PASS: ' if case['passed'] else 'FAIL: ') + method, flush=True)
+    # Child logs are already sanitized with their own temporary pairing code;
+    # no private host metadata or authentication input crosses this boundary.
+    for name in ('instrumentation.log', 'native-diagnostics.log', 'sharing-host.log'):
+        with (reports / name).open('w', encoding='utf-8') as aggregate:
+            for case in cases:
+                aggregate.write('\n[isolated case: ' + case['method'] + ']\n')
+                path = reports / case['reportsDirectory'] / name
+                aggregate.write(path.read_text(encoding='utf-8') if path.is_file() else '[no evidence captured]\n')
+    inputs['cases'] = [{'method': case['method'], 'inputs': case.get('inputs')} for case in cases]
+    (reports / 'test-inputs.json').write_text(json.dumps(inputs, indent=2) + '\n')
+    summary = {'isolation': 'fresh production sharing host per test method',
+               'passed': all(case['passed'] for case in cases), 'cases': cases}
+    (reports / 'suite-results.json').write_text(json.dumps(summary, indent=2) + '\n')
+    if not summary['passed']:
+        failed = ', '.join(case['method'] for case in cases if not case['passed'])
+        raise RuntimeError('Isolated Android suite failed: ' + failed + '. See suite-results.json and cases/.')
+    print('PASS: all five Android native cases passed with independent production sharing hosts', flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--desktop', choices=('portable', 'macos'), default='portable')
@@ -157,6 +265,8 @@ def main():
                         default=ROOT / 'Android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk')
     parser.add_argument('--reports-directory', type=Path,
                         help='Owned local directory for this run; no pairing credentials are retained.')
+    parser.add_argument('--test-method', choices=tuple(TEST_SCREENSHOTS),
+                        help='Run one allowlisted native case with its own sharing host; default runs all five independently.')
     options = parser.parse_args()
     reports = ROOT / 'build/android-integration'
     if options.desktop == 'macos':
@@ -166,29 +276,36 @@ def main():
     if options.reports_directory:
         reports = options.reports_directory.resolve()
     reports.mkdir(parents=True, exist_ok=True)
+    debug = options.app_apk.resolve()
+    tests = options.test_apk.resolve()
+    if not debug.is_file() or not tests.is_file():
+        raise RuntimeError('Build the development app and instrumentation APK first.')
+    inputs = {'desktop': options.desktop, 'exerciseVideoRecovery': options.exercise_video_recovery,
+              'nativeDiagnostics': options.native_diagnostics, 'stressTransitions': options.stress_transitions,
+              'testMethod': options.test_method, 'testMethods': [options.test_method] if options.test_method else list(TEST_SCREENSHOTS),
+              'isolation': 'fresh production sharing host per test method'}
+    for name, path in [('appApk', debug), ('testApk', tests)]:
+        with path.open('rb') as source:
+            inputs[name] = {'name': path.name, 'bytes': path.stat().st_size,
+                            'sha256': hashlib.file_digest(source, 'sha256').hexdigest()}
+    (reports / 'test-inputs.json').write_text(json.dumps(inputs, indent=2) + '\n')
+    if options.test_method is None:
+        run_suite(options, reports, inputs)
+        return
     if options.desktop == 'macos':
         library = ROOT / 'build/tests/mac-sharing-host'
         library.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run(['xcrun', 'swiftc', '-swift-version', '5', '-target', 'arm64-apple-macos14.0',
                         '-parse-as-library', '-module-cache-path', str(ROOT / '.cache/modules'),
                         'Sources/SharingHTTP.swift', 'Sources/LocalSharingServer.swift', 'Tests/SharingHost.swift',
-                        '-o', str(library)], check=True, cwd=ROOT)
+                        '-o', str(library)], check=True, cwd=ROOT, timeout=180)
         host = [str(library)]
     else:
-        subprocess.run(['dotnet', 'build', str(ROOT / 'Windows/Luma.Core.Tests'), '-c', 'Release'], check=True, cwd=ROOT)
+        subprocess.run(['dotnet', 'build', str(ROOT / 'Windows/Luma.Core.Tests'), '-c', 'Release'], check=True, cwd=ROOT, timeout=180)
         library = ROOT / 'Windows/Luma.Core.Tests/bin/Release/net10.0/Luma.Core.Tests.dll'
         host = ['dotnet', str(library), '--sharing-test-host']
-    debug = options.app_apk.resolve()
-    tests = options.test_apk.resolve()
-    if not debug.is_file() or not tests.is_file():
-        raise RuntimeError('Build the development app and instrumentation APK first.')
-    inputs = {'desktop': options.desktop, 'exerciseVideoRecovery': options.exercise_video_recovery,
-              'nativeDiagnostics': options.native_diagnostics, 'stressTransitions': options.stress_transitions}
-    for name, path in [('appApk', debug), ('testApk', tests)]:
-        with path.open('rb') as source:
-            inputs[name] = {'name': path.name, 'bytes': path.stat().st_size,
-                            'sha256': hashlib.file_digest(source, 'sha256').hexdigest()}
-    (reports / 'test-inputs.json').write_text(json.dumps(inputs, indent=2) + '\n')
+    for _, name in TEST_SCREENSHOTS[options.test_method]:
+        (reports / name).unlink(missing_ok=True)
     with tempfile.TemporaryDirectory(prefix='luma-android-pair-') as working, (reports / 'sharing-host.log').open('w') as log:
         ready = Path(working) / 'ready.json'
         server = subprocess.Popen(host + [str(ROOT / 'Tests/Fixtures'), str(ready)],
@@ -202,10 +319,13 @@ def main():
             parameters = json.loads(ready.read_text())
             if os.environ.get('GITHUB_ACTIONS') == 'true':
                 print('::add-mask::' + parameters['code'], flush=True)
-            subprocess.run(['adb', 'install', '-r', str(debug)], check=True)
-            subprocess.run(['adb', 'install', '-r', str(tests)], check=True)
+            subprocess.run(['adb', 'install', '-r', str(debug)], check=True, timeout=60)
+            subprocess.run(['adb', 'install', '-r', str(tests)], check=True, timeout=60)
+            if TEST_SCREENSHOTS[options.test_method]:
+                subprocess.run(['adb', 'shell', 'run-as', 'dev.sdas.luma.preview', 'rm', '-f',
+                                *['cache/' + name for name, _ in TEST_SCREENSHOTS[options.test_method]]], check=True, timeout=15)
             command = ['adb', 'shell', 'am', 'instrument', '-w',
-                       '-e', 'class', 'dev.sdas.luma.LanPlaybackTest',
+                       '-e', 'class', TEST_CLASS + '#' + options.test_method,
                        '-e', 'serverUrl', 'http://10.0.2.2:' + str(parameters['port']),
                        '-e', 'pairCode', parameters['code'],
                        '-e', 'demoId', parameters['ids']['demo'],
@@ -232,22 +352,17 @@ def main():
                 output = redact_diagnostics(result.stdout, parameters['code'])
                 (reports / 'instrumentation.log').write_text(output)
                 print(output, end='')
-                if result.returncode or not re.search(r'OK \([1-9][0-9]* tests?\)', output) or any(marker in output for marker in ('FAILURES!!!', 'INSTRUMENTATION_FAILED', 'Process crashed')):
+                if result.returncode or not re.search(r'OK \(1 tests?\)', output) or any(marker in output for marker in ('FAILURES!!!', 'INSTRUMENTATION_FAILED', 'Process crashed')):
                     raise RuntimeError('Android end-to-end playback checks did not pass.')
                 # Instrumentation captures playback before ActivityScenario closes;
                 # a screenshot here would show the launcher instead of the app.
-                for device_name, local_name in (
-                        ('luma-android-review.png', 'Luma-Android-review.png'),
-                        ('luma-android-fullscreen.png', 'Luma-Android-fullscreen.png'),
-                        ('luma-android-modern-controls.png', 'Luma-Android-modern-controls.png'),
-                        ('luma-android-playlist.png', 'Luma-Android-playlist.png'),
-                        ('luma-android-auto-skip.png', 'Luma-Android-auto-skip.png')):
+                for device_name, local_name in TEST_SCREENSHOTS[options.test_method]:
                     shot = subprocess.run(['adb', 'exec-out', 'run-as', 'dev.sdas.luma.preview',
-                                           'cat', 'cache/' + device_name], stdout=subprocess.PIPE, check=True)
+                                           'cat', 'cache/' + device_name], stdout=subprocess.PIPE, check=True, timeout=15)
                     if not shot.stdout.startswith(b'\x89PNG\r\n\x1a\n'):
                         raise RuntimeError('The in-app Android review capture is not a PNG.')
                     (reports / local_name).write_bytes(shot.stdout)
-                print('PASS: Android actual ' + options.desktop + ' desktop pairing/list/range streaming, native AVC/HEVC decode/render, transport and no saved media download')
+                print('PASS: Android ' + options.test_method + ' against actual ' + options.desktop + ' production sharing host')
                 print('SCOPE: emulator/manual-address path; physical Wi-Fi discovery, phone hardware and physical sound still need device review')
             finally:
                 diagnostics.stop_and_save(reports)

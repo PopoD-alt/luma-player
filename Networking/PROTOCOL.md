@@ -88,10 +88,10 @@ streams desktop original files on the same trusted Wi-Fi using discovery or a
 manual desktop URL; it does not provide a standalone local-file picker.
 
 Both device positions remain distinct. Interfaces label Computer and Phone,
-including completion and last position. Opening an item on Android prefers its
-existing session-local checkpoint, otherwise the latest available saved device
-position. Moving an already-running player to the other device's position requires
-an explicit resume action; arriving progress reports never seek a live player. Phone reports persist on the host with the library. Sharing
+including completion and last position. Opening an item uses the newest available saved device checkpoint. Normal
+Play on a paused item may accept newer remote progress; a deliberate paused
+seek takes priority. Explicit Resume from phone/computer remains available.
+Arriving progress reports never seek a live player. Phone reports persist on the host with the library. Sharing
 must be enabled for fresh cross-device updates; this is not cloud synchronization.
 
 Request/header reads have short deadlines. Authenticated media writes allow up
@@ -118,3 +118,9 @@ workflow43767190446; currentx64emulator Wi-Fi loss is recorded in the Android
 guide and is not a playback pass. Physical Wi-Fi discovery, firewalls and speaker/A/V
 synchronization remain target-device review; these fixture checks do not imply
 universal format/device compatibility or production publication approval.
+
+### Resume handoff (desktop 0.10 / Android 0.4 review)
+
+Clients choose the newest valid host timestamp across Computer and Phone when opening an item; equal timestamps prefer Computer. A known Phone zero is a real beginning checkpoint. A completed newest checkpoint restarts at zero. Old hosts without timestamps retain legacy `resumeSeconds` behavior. Phone wall clocks do not arbitrate these reports: the desktop assigns their saved timestamp.
+
+Startup selects/displays the most recently watched item across the saved library without autoplay. Normal Play on an already-paused item may apply a newer checkpoint from the other device, while a deliberate paused seek retains its target. Received progress alone never starts, replaces or seeks active playback. Progress polling/reporting can lag by several seconds; there is no synchronized remote-control session.

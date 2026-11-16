@@ -105,6 +105,9 @@ func clockLabel(_ time: Double) -> String {
     private var pendingResumeIsExplicit = false
     private var pendingSkipItemID: UUID?
     private var pendingResume: Double?
+    private var loadedItemID: UUID?
+    private var restartRequestedIDs: Set<UUID> = []
+    private var consumedResumeSeekRevision = 0
     private var handledEnd = false
     private var noticeDeadline: Date = .distantPast
     private var fullscreenObservers: [NSObjectProtocol] = []
@@ -147,7 +150,7 @@ func clockLabel(_ time: Double) -> String {
     func playBundledDemo(_ name: String, extension suffix: String) {
         guard let url = Bundle.main.url(forResource: name, withExtension: suffix) else { return }
         library.add(urls: [url])
-        if let item = library.items.first(where: { $0.url.standardizedFileURL == url.standardizedFileURL }) { play(item); pendingResume = nil }
+        if let item = library.items.first(where: { $0.url.standardizedFileURL == url.standardizedFileURL }) { play(item, from: 0, explicit: true) }
     }
     func playBitmapSubtitleDemo() {
         playBundledDemo("Luma-PGS", extension: "mkv")
@@ -171,21 +174,29 @@ func clockLabel(_ time: Double) -> String {
         else { tell("Added \(added.count) \(added.count == 1 ? "file" : "files") to queue") }
     }
 
-    func play(_ item: MediaItem) {
-        guard FileManager.default.fileExists(atPath: item.url.path) else { tell("This file has moved or is unavailable"); return }
+    func play(_ item: MediaItem, from position: Double? = nil, explicit: Bool = false) {
+        guard library.items.contains(where: { $0.id == item.id }) else { return }
         saveProgress()
-        library.select(item.id)
-        pendingResume = item.resumeTime > 3 ? item.resumeTime : nil
+        // SwiftUI actions can retain an older value while a phone report is
+        // arriving. Resolve the stored item only when a new load is requested.
+        guard let latest = library.items.first(where: { $0.id == item.id }) else { return }
+        guard latest.isAvailable else { tell("This file has moved or is unavailable"); return }
+        library.select(latest.id)
+        let reset = restartRequestedIDs.remove(latest.id) != nil
+        let checkpoint = ResumePolicy.preferred(for: latest)
+        pendingResume = position ?? (reset ? 0 : checkpoint.startPosition)
+        loadedItemID = latest.id
         handledEnd = false
         skipState.reset(); suppressedUserSeekPositions = []; engine.clearUserSeekHistory(); lastUserSeekRevision = engine.userSeekRevision
-        pendingResumeIsExplicit = false
+        consumedResumeSeekRevision = engine.userSeekRevision
+        pendingResumeIsExplicit = explicit || reset
         currentSkipRange = nil; resolvedSkipRanges = []
         pendingSkipStart = nil; pendingSkipKind = nil; pendingSkipItemID = nil
-        engine.load(item.url)
+        engine.load(latest.url)
     }
 
     func saveProgress() {
-        if let id = library.selectedID, engine.hasMedia, pendingResume == nil,
+        if let id = loadedItemID, engine.hasMedia, pendingResume == nil,
            engine.duration > 0, ["playing", "paused", "ended"].contains(engine.state) {
             library.updateProgress(id: id, time: engine.currentTime, duration: engine.duration)
         }
@@ -199,18 +210,20 @@ func clockLabel(_ time: Double) -> String {
         if engine.userSeekRevision != lastUserSeekRevision { pendingResume = nil; pendingResumeIsExplicit = false }
         if let resume = pendingResume, engine.isSeekable, engine.duration > 0, engine.isPlaying {
             pendingResume = nil
+            if let id = loadedItemID { restartRequestedIDs.remove(id) }
             let explicit = pendingResumeIsExplicit; pendingResumeIsExplicit = false
             engine.seek(to: min(resume, max(0, engine.duration - 1)), userInitiated: explicit)
             tell("Resumed at \(clockLabel(resume))")
         }
-        if let id = library.selectedID, engine.hasMedia, pendingResume == nil, engine.duration > 0, engine.state != "opening" {
+        if let id = loadedItemID, engine.hasMedia, pendingResume == nil, engine.duration > 0,
+           ["playing", "paused", "ended"].contains(engine.state) {
             library.updateProgress(id: id, time: engine.currentTime, duration: engine.duration)
         }
         updateAutoSkip()
         if engine.state == "ended", !handledEnd {
             handledEnd = true
-            if let id = library.selectedID { library.completeProgress(id: id) }
-            if loopMode == 1, let item = library.selectedItem { play(item) }
+            if let id = loadedItemID { library.completeProgress(id: id) }
+            if loopMode == 1, let item = library.selectedItem { play(item, from: 0) }
             else { next(wrap: loopMode == 2) }
         }
     }
@@ -377,12 +390,24 @@ func clockLabel(_ time: Double) -> String {
     func previous() {
         if engine.currentTime > 3 { engine.seek(to: 0); return }
         guard let index = library.items.firstIndex(where: { $0.id == library.selectedID }), index > 0 else { return }
-        play(library.items[index - 1])
+        play(library.items[index - 1], from: 0, explicit: true)
     }
 
     func toggle() {
         if engine.hasMedia, ["ended", "stopped"].contains(engine.state), let item = library.selectedItem { play(item) }
-        else if engine.hasMedia { engine.togglePause() }
+        else if engine.hasMedia, !engine.isPlaying, pendingResume == nil,
+                engine.userSeekRevision == consumedResumeSeekRevision,
+                let item = library.items.first(where: { $0.id == loadedItemID }),
+                ResumePolicy.preferred(for: item).device == .phone {
+            // A deliberate Play on the paused computer is a device handoff.
+            // Receiving the checkpoint itself never moves this native graph.
+            // A local seek/bookmark pins the next Play, even after a timer tick.
+            resumeFromPhone(item)
+        }
+        else if engine.hasMedia {
+            if !engine.isPlaying { consumedResumeSeekRevision = engine.userSeekRevision }
+            engine.togglePause()
+        }
         else if let item = library.selectedItem ?? library.items.first { play(item) }
         else { openFiles() }
     }
@@ -404,29 +429,45 @@ func clockLabel(_ time: Double) -> String {
     }
 
     func resetProgress(_ item: MediaItem) {
+        restartRequestedIDs.insert(item.id)
         if library.selectedID == item.id, engine.hasMedia {
             pendingResume = 0
-            if engine.isSeekable { engine.seek(to: 0); pendingResume = nil }
+            pendingResumeIsExplicit = true
+            if engine.isSeekable { engine.seek(to: 0); pendingResume = nil; restartRequestedIDs.remove(item.id) }
         }
         library.resetProgress(id: item.id)
     }
 
     func resumeFromPhone(_ item: MediaItem) {
-        guard let phoneTime = item.mobileProgressSeconds, item.isAvailable else { return }
-        let time = item.mobileCompleted == true ? 0 : phoneTime
+        resumeFromDevice(item, phone: true)
+    }
+
+    func resumeFromComputer(_ item: MediaItem) {
+        resumeFromDevice(item, phone: false)
+    }
+
+    private func resumeFromDevice(_ item: MediaItem, phone: Bool) {
+        guard let latest = library.items.first(where: { $0.id == item.id }), latest.isAvailable,
+              let rawTime = phone ? latest.mobileProgressSeconds : latest.computerProgressSeconds ?? latest.resumeTime,
+              rawTime.isFinite, rawTime >= 0, rawTime <= 31_536_000 else { return }
+        let completed = phone ? latest.mobileCompleted == true : latest.computerCompleted == true
+        let time = completed ? 0 : rawTime
+        restartRequestedIDs.remove(item.id)
         if library.selectedID == item.id, engine.hasMedia, engine.isSeekable,
            !["ended", "stopped", "error"].contains(engine.state) {
             saveProgress(); pendingResume = nil
             engine.seek(to: time)
+            consumedResumeSeekRevision = engine.userSeekRevision
             if !engine.isPlaying { engine.togglePause() }
         } else {
-            play(item); pendingResume = time; pendingResumeIsExplicit = true
+            play(latest, from: time, explicit: true)
         }
-        tell(time > 0 ? "Continuing from phone at \(clockLabel(time))" : "Playing again from the beginning")
+        tell(time > 0 ? "Continuing from \(phone ? "phone" : "computer") at \(clockLabel(time))" : "Playing again from the beginning")
     }
 
     func remove(_ item: MediaItem) {
-        if library.selectedID == item.id { engine.unload(); pendingResume = nil }
+        if loadedItemID == item.id { engine.unload(); pendingResume = nil; loadedItemID = nil }
+        restartRequestedIDs.remove(item.id)
         library.remove(item.id)
     }
 
@@ -449,7 +490,7 @@ func clockLabel(_ time: Double) -> String {
         sharing.start(provider: { [weak self] in
             guard let self else { return [] }
             return self.library.items.map { item in
-                let active = item.id == self.library.selectedID && self.engine.hasMedia && self.pendingResume == nil
+                let active = item.id == self.loadedItemID && self.engine.hasMedia && self.pendingResume == nil
                     && ["playing", "paused", "ended"].contains(self.engine.state)
                 let time = active ? self.engine.currentTime : item.computerProgressSeconds ?? item.resumeTime
                 let duration = active && self.engine.duration > 0 ? self.engine.duration : item.duration
@@ -740,6 +781,7 @@ struct PlayerView: View {
         }.buttonStyle(.plain).contextMenu {
             Button("Play") { player.play(item) }
             if item.mobileProgressSeconds != nil { Button(item.mobileCompleted == true ? "Play Again After Phone" : "Resume from Phone") { player.resumeFromPhone(item) } }
+            if item.computerProgressSeconds != nil || item.resumeTime > 0 { Button(item.computerCompleted == true ? "Play Again After Computer" : "Resume from Computer") { player.resumeFromComputer(item) } }
             Button("Show in Finder") { player.reveal(item) }
             Button("Reset Saved Position") { player.resetProgress(item) }
             Divider()
@@ -779,8 +821,8 @@ struct PlayerView: View {
     private var nowPlaying: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 7) {
-                Text(engine.hasMedia ? "Now Playing" : "Welcome to Luma").font(.system(size: 11, weight: .medium)).foregroundStyle(muted)
-                Text(engine.hasMedia ? library.selectedItem?.title ?? "Ready to play" : "A little more cinema.").font(.system(size: 23, weight: .semibold)).lineLimit(1)
+                Text(engine.hasMedia ? "Now Playing" : library.selectedItem == nil ? "Welcome to Luma" : "Continue Watching").font(.system(size: 11, weight: .medium)).foregroundStyle(muted)
+                Text(library.selectedItem?.title ?? "A little more cinema.").font(.system(size: 23, weight: .semibold)).lineLimit(1)
             }
             Spacer(minLength: 15)
             if engine.hasMedia {
@@ -802,9 +844,13 @@ struct PlayerView: View {
                             RoundedRectangle(cornerRadius: 28).stroke(LinearGradient(colors: [.white.opacity(0.5), .white.opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.75).frame(width: 94, height: 94)
                             Image(systemName: "play.fill").font(.system(size: 32, weight: .regular)).foregroundStyle(.white).offset(x: 4)
                         }.padding(.bottom, 9)
-                        Text("Make time for a great watch.").font(.system(size: 23, weight: .medium)).tracking(-0.6)
-                        Text("Drop a video or audio file here to get started.").font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.6))
-                        Button(action: player.openFiles) { Label("Open Media", systemImage: "folder").font(.system(size: 12, weight: .medium)).padding(.horizontal, 18).padding(.vertical, 10) }.buttonStyle(.plain).glassSurface(cornerRadius: 20).padding(.top, 5)
+                        if let item = library.selectedItem {
+                            continueWatching(item)
+                        } else {
+                            Text("Make time for a great watch.").font(.system(size: 23, weight: .medium)).tracking(-0.6)
+                            Text("Drop a video or audio file here to get started.").font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.6))
+                            Button(action: player.openFiles) { Label("Open Media", systemImage: "folder").font(.system(size: 12, weight: .medium)).padding(.horizontal, 18).padding(.vertical, 10) }.buttonStyle(.plain).glassSurface(cornerRadius: 20).padding(.top, 5)
+                        }
                     }
                 }
             }
@@ -828,6 +874,33 @@ struct PlayerView: View {
             if let notice = player.notice { VStack { Spacer(); Text(notice).font(.system(size: 12, weight: .medium)).padding(.horizontal, 16).padding(.vertical, 10).background(.ultraThinMaterial, in: Capsule()).padding(20) }.allowsHitTesting(false) }
         }.clipShape(RoundedRectangle(cornerRadius: player.isVideoFullscreen ? 0 : 20)).overlay(RoundedRectangle(cornerRadius: player.isVideoFullscreen ? 0 : 20).stroke(.white.opacity(player.isVideoFullscreen ? 0 : 0.065), lineWidth: 1)).padding(.horizontal, player.isVideoFullscreen ? 0 : 20).frame(maxWidth: .infinity, maxHeight: .infinity).foregroundStyle(.white).environment(\.colorScheme, .dark)
             .help(player.isVideoFullscreen ? "Double-click or press Escape to leave full screen" : "Double-click for video full screen")
+    }
+
+    private func continueWatching(_ item: MediaItem) -> some View {
+        let checkpoint = ResumePolicy.preferred(for: item)
+        let device = checkpoint.device == .phone ? "Phone" : "Computer"
+        return VStack(spacing: 14) {
+            Text(item.title).font(.system(size: 23, weight: .medium)).lineLimit(2).multilineTextAlignment(.center)
+            if let stamp = checkpoint.updatedAt {
+                HStack(spacing: 6) {
+                    Image(systemName: checkpoint.device == .phone ? "iphone" : "desktopcomputer")
+                    Text("Last played on \(device.lowercased())")
+                    Text("·")
+                    Text(Date(timeIntervalSince1970: stamp), style: .relative)
+                    Text("ago")
+                }.font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.65))
+            }
+            Text(checkpoint.completed ? "Finished · ready to watch again" : "Continue at \(clockLabel(checkpoint.startPosition))\(checkpoint.duration > 0 ? " of " + clockLabel(checkpoint.duration) : "")")
+                .font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.65)).monospacedDigit()
+            if checkpoint.duration > 0 {
+                ProgressView(value: min(1, checkpoint.position / checkpoint.duration)).tint(checkpoint.device == .phone ? phoneAccent : ember).frame(maxWidth: 300)
+            }
+            Button { player.play(item) } label: {
+                Label(checkpoint.completed ? "Play Again" : checkpoint.startPosition > 0 ? "Resume" : "Play", systemImage: "play.fill")
+                    .font(.system(size: 13, weight: .semibold)).padding(.horizontal, 24).padding(.vertical, 12)
+            }.buttonStyle(.plain).glassSurface(cornerRadius: 22).disabled(!item.isAvailable).accessibilityIdentifier("continueWatchingResume")
+            if !item.isAvailable { Text("The file has moved or is unavailable.").font(.system(size: 12)).foregroundStyle(Color.white.opacity(0.6)) }
+        }.padding(.horizontal, 30).accessibilityIdentifier("continueWatchingCard")
     }
 
     private var skipMenu: some View {

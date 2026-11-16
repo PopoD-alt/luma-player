@@ -2,6 +2,12 @@
 
 The public 0.7.0 preview uses libVLC 3 for native Mac/Windows playback and adds an Android Wi-Fi streaming companion. The owner tested the delivered copies and reported them working as expected. Current source and usage documentation are on `main`; the earlier Mac 0.6.1 and Windows build 3 remain older engines.
 
+## Glass UI, PiP and handoff review
+
+Desktop 0.10.0 / Android 0.4.0 source on `feature/android-pip-double-tap` adds the reference-inspired Android glass home, Continue Watching, ordered Up Next and hamburger connectivity. Android includes visible picture-in-picture and left/right double-tap ten-second seeking. New video loads use the latest saved device position, and normal Play on paused playback can accept newer remote progress while retaining deliberate paused seeks. Startup displays recent activity without autoplay. The public downloads and update feeds remain unchanged pending owner review.
+
+Physical-phone review should cover Home/expand/Close PiP transitions, gestures and interruptions from other audio apps, then switching devices after saved progress has reached the host. There is no cloud sync or automatic control of another running player.
+
 ## Auto-skip feature review
 
 Desktop 0.9.0 / Android 0.3.0 source on `feature/auto-skip` adds opt-in chapter-based/manual intro and credits skipping across all platforms. Desktop audio matching can suggest ranges by comparing two episodes; results require confirmation and take up to about 12 minutes for the bounded maximum windows. Confirmed desktop timings are visible to the phone. New public binaries and the stable feeds have not been changed.

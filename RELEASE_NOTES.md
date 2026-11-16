@@ -1,3 +1,17 @@
+# Luma Player 0.10.0 — local review, unreleased
+
+Android **0.4.0-preview / version code 4**, Mac **build 12**, Windows **review build 7**. Public packages and update feeds remain unchanged.
+
+- Android home and playback adopt the supplied glass design references, with Continue Watching, real-frame thumbnails, ordered Up Next and hamburger connection settings.
+- Android picture-in-picture retains visible native streaming and offers OS Play/Pause/Close controls; expanding preserves playback intent and fullscreen presentation.
+- Left/right double-taps rewind/advance ten seconds, alongside existing single-tap and swipe controls.
+- New video loads resume the newest saved checkpoint from either device. Normal paused Play can accept newer remote progress; deliberate paused seeks retain their destination. Incoming reports leave ongoing playback undisturbed.
+- Launch screens show the latest watched item without starting it automatically. Cached Android details refresh after pairing.
+
+Validation passes: **84 Android JVM tests and lint**, all five native cases against each production desktop sharing server using the identical final APK, Mac native resume/startup and existing skip/audio regressions, and [native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43954997802). Physical-device PiP, audio and Wi-Fi behavior still need owner review.
+
+---
+
 # Luma Player 0.9.0 — auto-skip review, unreleased
 
 Mac **build 11**, Windows **review build 6**, Android **0.3.0-preview / version code 3** on `feature/auto-skip`. Public 0.7.0 downloads, `main`'s approved 0.8.0 source and update feeds remain unchanged pending review of this feature.

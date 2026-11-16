@@ -2,15 +2,33 @@
 
 **A free native media player by sdas for Mac and Windows, with an Android Wi-Fi streaming companion.** Desktop playback uses bundled libVLC 3. The owner tested the public 0.7.0 preview and reported that it works as expected.
 
-**Review source: desktop 0.9.0 / Android 0.3.0-preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
+**Review source: desktop 0.10.0 / Android 0.4.0-preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
 
 **Public downloads remain desktop 0.7.0 / Android 0.1.0-preview.**
 
 [Downloads](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) · [Installation guide](INSTALL.md) · [Windows guide](Windows/README.md) · [Android guide](Android/README.md) · [Release notes](RELEASE_NOTES.md) · [Roadmap](ROADMAP.md)
 
+## Continue watching and Android glass UI preview
+
+The `feature/android-pip-double-tap` source is the current local review: **Mac 0.10.0 build 12**, **Windows 0.10.0 build 7**, and **Android 0.4.0-preview / version code 4**. Public downloads and update feeds are unchanged.
+
+- Android opens on **Continue Watching** and an ordered **Up Next** queue. The hamburger menu holds nearby computers, pairing, manual addresses and disconnect options. Its frosted cards, violet/rose backdrop and rounded icon controls follow the supplied design references. Poster thumbnails are small private cached frames from actual playback, not movie downloads.
+- **Double-tap the right/left half** of the video to seek forward/back ten seconds. Single taps show controls; swipes retain seek, volume and brightness gestures.
+- Use the **picture-in-picture icon** to keep a video visible over another app. Home also enters PiP on supported devices while video is playing. Long-press the icon to turn Home auto-entry off. Android's PiP controls pause/play; closing its window stops the stream.
+- Opening a video uses its newest saved computer/phone checkpoint. On desktop, normal Play/Space on a paused video also accepts newer phone progress; Android Play accepts a newer computer checkpoint. Deliberate paused seeks retain their destination. Incoming reports leave an already-playing video undisturbed.
+- Desktop launch shows the most recently watched item on either device. Android shows cached last-played details until you connect through the hamburger menu, then refreshes from the desktop. Launch does not autoplay. Completed videos restart at the beginning.
+
+![Android glass library](docs/images/android-glass-home.png)
+
+![Android glass playback controls](docs/images/android-glass-player.png)
+
+Validation: **84 Android JVM tests and lint**, **five native cases against each desktop sharing server**, Mac native resume/startup checks, and [Windows native review](https://github.com/PopoD-alt/luma-player/actions/runs/43954997802) pass. Emulator checks cover real clock/frame progression, OS PiP Pause/Close, gestures, no-overlap controls and newest-progress launch cards. Physical-phone Wi-Fi and audio remain owner review.
+
+Keep both apps updated for the full handoff behavior. Progress arrives roughly every five seconds and after pause/seek/leave; offline devices can only show their last saved information. This is resume handoff, with independent playback on each device.
+
 ## Auto-skip preview
 
-The `feature/auto-skip` branch adds **desktop 0.9.0 / Android 0.3.0-preview** for review. `main` still contains the approved 0.8.0 interface update; public downloads remain 0.7.0 / Android 0.1.0. No release or update feed is changed by this feature branch.
+The auto-skip changes from `feature/auto-skip` are included in this review branch. That earlier review added **desktop 0.9.0 / Android 0.3.0-preview**. `main` still contains the approved 0.8.0 interface update; public downloads remain 0.7.0 / Android 0.1.0. No release or update feed is changed by this feature branch.
 
 - **Auto-skip starts off.** Enable it in the video's Auto-skip menu on Mac, the checkbox on Windows, or the Auto-skip settings button on Android.
 - Recognised opening/intro and ending/credits chapters provide exact skip boundaries. A separate post-credit chapter remains playable. A **Skip intro / Skip credits** button also lets you jump manually.
@@ -27,7 +45,7 @@ The audio review image uses short authored test clips; normal analysis uses the 
 
 Auto-skip runs only during seekable playback. Pausing does not trigger a skip, and deliberately seeking into a skipped section lets you replay it. Generic numbered chapters are not guessed as credits. Chapter boundaries can preserve a separately marked post-credit scene; an unlabelled scene inside a chapter named Credits cannot be identified by that label alone.
 
-Validation passes: **52 Android JVM tests and lint**, two real native Android playback tests against each desktop server, Mac native chapter/seek/audio-confirmation tests, and [native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43789628252). Real episodes and physical-device Wi-Fi/audio still need broader review.
+Earlier 0.9.0 / 0.3.0 validation passed **52 Android JVM tests and lint**, two real native Android playback tests against each desktop server, Mac native chapter/seek/audio-confirmation tests, and [native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43789628252). Real episodes and physical-device Wi-Fi/audio still need broader review.
 
 See the [Android auto-skip guide](Android/README.md#auto-skip-preview) and [Windows guide](Windows/README.md#auto-skip-preview). Review copies keep the existing signing/distribution limits; a new public package has not been published.
 
@@ -73,12 +91,12 @@ The playlist references your files; adding media does not copy it into a new lib
 1. Add videos to the playlist on your Mac or Windows PC.
 2. **Mac:** click the Wi-Fi sharing icon and choose **Start sharing this playlist**. **Windows:** choose **Share playlist → Start sharing**. The sharing panel displays the desktop address and a six-digit pairing code.
 3. Connect Android to the **same trusted Wi-Fi**. Open Luma and allow local-network access when requested.
-4. Choose the nearby desktop, or enter the exact displayed `http://IP-address:port` if discovery is unavailable. Enter the six-digit code.
+4. In the 0.4.0 review, open the hamburger menu first. Choose the nearby desktop, or enter the exact displayed `http://IP-address:port` if discovery is unavailable. Enter the six-digit code.
 5. Tap a video. The public 0.7.0 companion provides **Play/Pause**, **±10 seconds**, the seek slider and volume. Choose **Full screen**; tap the video to show its controls and choose **Exit full screen** to leave. Choose **Playlist** to select another video. The latest 0.8.0 / 0.2.0 source adds the icon controls, gestures and overlay drawer described above.
 
 The files stay on your computer. The phone buffers the stream in memory instead of saving a downloaded movie. Playback on the phone is independent of desktop playback. The 0.8.0 / 0.2.0 builds exchange saved progress and offer explicit resume actions; they do not keep two running players in lockstep. Keep the computer on, Luma open and sharing enabled. Active streams request prevention of idle system sleep; lid closure, forced sleep or shutting down the host still interrupts playback.
 
-The list refreshes every five seconds while Android is foregrounded. Backgrounding the companion stops streaming. Removing a shared item cuts off its stream. To disconnect everyone, use **Stop sharing and disconnect** on Mac or **Stop and revoke** on Windows. Sharing is off at desktop launch. Pairing codes expire after ten minutes; generate a new code on Mac or stop/restart sharing on Windows. Existing paired access lasts until sharing stops; pair again after restarting sharing.
+The list refreshes every five seconds while Android is visible. In the 0.4.0 review, visible picture-in-picture keeps streaming; closing PiP or leaving with PiP disabled stops it. Earlier public builds stop when backgrounded. Removing a shared item cuts off its stream. To disconnect everyone, use **Stop sharing and disconnect** on Mac or **Stop and revoke** on Windows. Sharing is off at desktop launch. Pairing codes expire after ten minutes; generate a new code on Mac or stop/restart sharing on Windows. Existing paired access lasts until sharing stops; pair again after restarting sharing.
 
 Local HTTP is intended for a home network you trust. No cloud account, router port forwarding or uploading of your media is needed.
 
