@@ -1,10 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.ComponentModel;
 
 namespace Luma.Core.Library;
 
 public sealed record MediaBookmark(double Time, string Label);
-public sealed class MediaEntry
+public sealed class MediaEntry : INotifyPropertyChanged
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string FilePath { get; set; } = "";
@@ -12,6 +13,26 @@ public sealed class MediaEntry
     public string Detail => Duration > 0 ? $"{Clock(ResumeTime)} / {Clock(Duration)}" : Path.GetExtension(FilePath).TrimStart('.').ToUpperInvariant();
     public double Duration { get; set; }
     public double ResumeTime { get; set; }
+    public double? ComputerProgressSeconds { get; set; }
+    public double ComputerUpdatedAtUnixSeconds { get; set; }
+    public bool ComputerCompleted { get; set; }
+    public double? MobileProgressSeconds { get; set; }
+    public double MobileDurationSeconds { get; set; }
+    public double MobileUpdatedAtUnixSeconds { get; set; }
+    public bool MobileCompleted { get; set; }
+    [JsonIgnore] public string ComputerProgressDetail => ProgressDetail("Computer", ComputerProgressSeconds ?? ResumeTime, Duration, ComputerCompleted);
+    [JsonIgnore] public string PhoneProgressDetail => MobileProgressSeconds is { } value ? ProgressDetail("Phone", value, MobileDurationSeconds > 0 ? MobileDurationSeconds : Duration, MobileCompleted) : "Phone · Not played yet";
+    [JsonIgnore] public double ComputerProgressFraction => Duration > 0 ? Math.Clamp((ComputerProgressSeconds ?? ResumeTime) / Duration, 0, 1) : 0;
+    [JsonIgnore] public double PhoneProgressFraction => MobileProgressSeconds is { } position && (MobileDurationSeconds > 0 || Duration > 0) ? Math.Clamp(position / (MobileDurationSeconds > 0 ? MobileDurationSeconds : Duration), 0, 1) : 0;
+    public event PropertyChangedEventHandler? PropertyChanged;
+    internal void ProgressChanged()
+    {
+        foreach (string name in new[] { nameof(Detail), nameof(ComputerProgressDetail), nameof(PhoneProgressDetail), nameof(ComputerProgressFraction), nameof(PhoneProgressFraction), nameof(MobileProgressSeconds), nameof(ComputerProgressSeconds) })
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+    static string ProgressDetail(string device, double position, double duration, bool completed)
+        => duration > 0 ? $"{device} · {(completed ? "Finished · " : "")}{Math.Clamp(position / duration * 100, 0, 100):0}% · {Clock(position)} / {Clock(duration)}"
+            : $"{device} · {(completed ? "Finished · " : "")}{Clock(position)}";
     public List<MediaBookmark> Bookmarks { get; set; } = [];
     public static string Clock(double seconds)
     {
@@ -34,10 +55,12 @@ public sealed class LibraryStore
 {
     const int MaxItems = 2000;
     readonly string file;
+    readonly TimeProvider time;
     public LibraryDocument Data { get; private set; } = new();
     public string? RecoveryNotice { get; private set; }
-    public LibraryStore(string filePath)
+    public LibraryStore(string filePath, TimeProvider? timeProvider = null)
     {
+        time = timeProvider ?? TimeProvider.System;
         file = Path.GetFullPath(filePath);
         if (!File.Exists(file)) return;
         try
@@ -51,6 +74,12 @@ public sealed class LibraryStore
                 if (item is null || item.Id == Guid.Empty || string.IsNullOrWhiteSpace(item.FilePath) || !Path.IsPathFullyQualified(item.FilePath) || !seen.Add(item.Id)) throw new InvalidDataException("Invalid media entry.");
                 item.FilePath = Path.GetFullPath(item.FilePath);
                 item.Duration = ValidTime(item.Duration); item.ResumeTime = Math.Min(ValidTime(item.ResumeTime), item.Duration > 0 ? item.Duration : double.MaxValue);
+                item.ComputerProgressSeconds = item.ComputerProgressSeconds is { } computer ? Math.Min(ValidTime(computer), item.Duration > 0 ? item.Duration : double.MaxValue) : null;
+                item.ComputerUpdatedAtUnixSeconds = ValidTimestamp(item.ComputerUpdatedAtUnixSeconds);
+                item.MobileDurationSeconds = item.Duration > 0 ? item.Duration : ValidTime(item.MobileDurationSeconds);
+                item.MobileProgressSeconds = item.MobileProgressSeconds is { } mobile ? Math.Min(ValidTime(mobile), item.MobileDurationSeconds > 0 ? item.MobileDurationSeconds : double.MaxValue) : null;
+                item.MobileUpdatedAtUnixSeconds = item.MobileProgressSeconds is null ? 0 : ValidTimestamp(item.MobileUpdatedAtUnixSeconds);
+                if (item.MobileProgressSeconds is null) item.MobileCompleted = false;
                 item.Bookmarks = (item.Bookmarks ?? []).Where(b => b is not null && double.IsFinite(b.Time) && b.Time >= 0).Take(1000)
                     .Select(b => new MediaBookmark(Math.Min(ValidTime(b.Time), item.Duration > 0 ? item.Duration : double.MaxValue),
                         string.IsNullOrWhiteSpace(b.Label) ? MediaEntry.Clock(b.Time) : b.Label[..Math.Min(b.Label.Length, 256)])).ToList();
@@ -78,11 +107,28 @@ public sealed class LibraryStore
         }
         Flush(); return added;
     }
-    public void UpdateProgress(Guid id, double time, double duration)
+    public void UpdateProgress(Guid id, double time, double duration, bool completed = false)
     {
         var item = Data.Items.Find(x => x.Id == id); if (item is null || !double.IsFinite(time) || !double.IsFinite(duration) || duration <= 0) return;
-        item.Duration = ValidTime(duration); item.ResumeTime = Math.Clamp(time, 0, item.Duration);
-        if (item.Duration - item.ResumeTime < 1) item.ResumeTime = 0;
+        double length = ValidTime(duration), position = Math.Clamp(time, 0, length); bool finished = completed || length - position <= .05;
+        bool changed = item.ComputerProgressSeconds is not { } old || Math.Abs(old - position) > .05 || item.ComputerCompleted != finished || item.Duration != length;
+        item.Duration = length; item.ResumeTime = length - position < 1 ? 0 : position; item.ComputerProgressSeconds = position; item.ComputerCompleted = finished;
+        if (item.MobileProgressSeconds is { } mobile)
+        {
+            item.MobileDurationSeconds = length; item.MobileProgressSeconds = Math.Min(mobile, length);
+            item.MobileCompleted &= length - item.MobileProgressSeconds.Value <= 1;
+        }
+        if (changed) item.ComputerUpdatedAtUnixSeconds = ValidTimestamp(this.time.GetUtcNow().ToUnixTimeMilliseconds() / 1000d);
+        item.ProgressChanged();
+    }
+    public bool UpdateMobileProgress(Guid id, double position, double duration, bool completed, double updatedAtUnixSeconds)
+    {
+        var item = Data.Items.Find(x => x.Id == id);
+        if (item is null || !WireTime(position) || !WireTime(duration) || !double.IsFinite(updatedAtUnixSeconds) || updatedAtUnixSeconds is < 0 or > 4_102_444_800) return false;
+        double length = item.Duration > 0 ? item.Duration : duration;
+        item.MobileProgressSeconds = length > 0 ? Math.Min(position, length) : position;
+        item.MobileDurationSeconds = length; item.MobileCompleted = completed && (length <= 0 || length - item.MobileProgressSeconds.Value <= 1);
+        item.MobileUpdatedAtUnixSeconds = updatedAtUnixSeconds; item.ProgressChanged(); return true;
     }
     public void Bookmark(Guid id, double time)
     {
@@ -108,4 +154,6 @@ public sealed class LibraryStore
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
     static double ValidTime(double value) => double.IsFinite(value) ? Math.Clamp(value, 0, 86_400_000) : 0;
+    static bool WireTime(double value) => double.IsFinite(value) && value is >= 0 and <= 31_536_000;
+    static double ValidTimestamp(double value) => double.IsFinite(value) ? Math.Clamp(value, 0, 4_102_444_800) : 0;
 }

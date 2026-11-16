@@ -10,7 +10,11 @@ using System.Text.Json;
 
 namespace Luma.Core.Sharing;
 
-public sealed record SharedMediaItem(string Id, string FilePath, string Title, double DurationSeconds = 0, double ResumeSeconds = 0);
+public sealed record SharedMediaItem(string Id, string FilePath, string Title, double DurationSeconds = 0, double ResumeSeconds = 0,
+    double? MobileProgressSeconds = null, double MobileUpdatedAtUnixSeconds = 0, double ComputerUpdatedAtUnixSeconds = 0,
+    double MobileDurationSeconds = 0, bool MobileCompleted = false, double? ComputerProgressSeconds = null, bool ComputerCompleted = false);
+public sealed record SharedPlaybackProgress(string ItemId, string FilePath, double PositionSeconds, double DurationSeconds,
+    bool Completed, double UpdatedAtUnixSeconds, long Revision);
 
 /// <summary>Opt-in HTTP/1.1 implementation of Networking/PROTOCOL.md. No arbitrary path, upload, CORS or playback-control route.</summary>
 public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
@@ -22,13 +26,17 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
     readonly ConcurrentDictionary<int, Connection> connections = new();
     readonly ConcurrentDictionary<int, Task> workers = new();
     readonly object authentication = new();
+    readonly object playlistState = new();
     readonly List<byte[]> tokenHashes = [];
     readonly Dictionary<string, Queue<DateTimeOffset>> attempts = new(StringComparer.Ordinal);
     readonly Queue<DateTimeOffset> globalAttempts = [];
+    readonly Dictionary<string, Queue<DateTimeOffset>> progressAttempts = new(StringComparer.Ordinal);
     PlaylistSnapshot playlist = new(new(StringComparer.Ordinal), 0, false);
     TcpListener? listener;
     Task? accepting;
     int running, nextConnection;
+    long progressRevision;
+    public event Action<SharedPlaybackProgress>? ProgressReported;
     public string Id { get; } = Guid.NewGuid().ToString("N");
     public string Name => name;
     public string PairingCode { get; private set; } = "";
@@ -54,10 +62,25 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
         foreach (var item in source.Take(1000))
         {
             if (!OpaqueId(item.Id) || !Path.IsPathFullyQualified(item.FilePath)) throw new ArgumentException("Shared items require an opaque ID and an absolute local path.", nameof(items));
-            if (!updated.TryAdd(item.Id, item with { FilePath = Path.GetFullPath(item.FilePath), Title = CleanText(item.Title, 512),
-                DurationSeconds = SafeTime(item.DurationSeconds), ResumeSeconds = SafeTime(item.ResumeSeconds) })) throw new ArgumentException("Duplicate shared item ID.", nameof(items));
+            if (!updated.TryAdd(item.Id, NormalizeProgress(item with { FilePath = Path.GetFullPath(item.FilePath), Title = CleanText(item.Title, 512),
+                DurationSeconds = SafeTime(item.DurationSeconds), ResumeSeconds = SafeTime(item.ResumeSeconds),
+                ComputerProgressSeconds = item.ComputerProgressSeconds is { } computer ? SafeTime(computer) : null,
+                ComputerUpdatedAtUnixSeconds = SafeTimestamp(item.ComputerUpdatedAtUnixSeconds),
+                MobileProgressSeconds = item.MobileProgressSeconds is { } mobile ? SafeTime(mobile) : null,
+                MobileDurationSeconds = SafeTime(item.MobileDurationSeconds), MobileUpdatedAtUnixSeconds = SafeTimestamp(item.MobileUpdatedAtUnixSeconds) }))) throw new ArgumentException("Duplicate shared item ID.", nameof(items));
         }
-        Volatile.Write(ref playlist, new(updated, source.Length, source.Length > 1000));
+        lock (playlistState)
+        {
+            // A UI checkpoint can arrive while a received phone update is still
+            // queued for persistence. Do not replace that newer server snapshot.
+            var previous = Volatile.Read(ref playlist);
+            foreach (var item in updated.Values.ToArray())
+                if (previous.Items.TryGetValue(item.Id, out var old) && SamePath(old.FilePath, item.FilePath)
+                    && old.MobileProgressSeconds is not null && old.MobileUpdatedAtUnixSeconds >= item.MobileUpdatedAtUnixSeconds)
+                    updated[item.Id] = NormalizeProgress(item with { MobileProgressSeconds = old.MobileProgressSeconds, MobileDurationSeconds = old.MobileDurationSeconds,
+                        MobileUpdatedAtUnixSeconds = old.MobileUpdatedAtUnixSeconds, MobileCompleted = old.MobileCompleted });
+            Volatile.Write(ref playlist, new(updated, source.Length, source.Length > 1000));
+        }
         foreach (var connection in connections.Values)
             if (connection.Item is { } old && (!updated.TryGetValue(old.Id, out var live) || !SamePath(old.FilePath, live.FilePath))) connection.Client.Dispose();
     }
@@ -82,7 +105,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
         lock (authentication)
         {
             foreach (var hash in tokenHashes) CryptographicOperations.ZeroMemory(hash);
-            tokenHashes.Clear(); attempts.Clear(); globalAttempts.Clear(); PairingCode = "";
+            tokenHashes.Clear(); attempts.Clear(); globalAttempts.Clear(); progressAttempts.Clear(); PairingCode = "";
         }
         lifetime.Cancel(); listener?.Stop();
         foreach (var connection in connections.Values) connection.Client.Dispose();
@@ -130,7 +153,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
             if (!IsRunning) return;
             bool head = request.Method == "HEAD";
             if (request.Path == "/v1/info" && request.Query.Length == 0 && request.Method == "GET")
-            { await Reply(stream, 200, new { version = 1, name, id = Id, pairingRequired = true }, false, token).ConfigureAwait(false); return; }
+            { await Reply(stream, 200, new { version = 1, name, id = Id, pairingRequired = true, progressReporting = true }, false, token).ConfigureAwait(false); return; }
             if (request.Path == "/v1/pair" && request.Query.Length == 0 && request.Method == "POST")
             {
                 if (!PairAttemptAllowed(connection.Address)) { await Reply(stream, 429, new { error = "Too many pairing attempts" }, false, token).ConfigureAwait(false); return; }
@@ -151,8 +174,30 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
                 if (!Authorized(bearer)) { await Reply(stream, 401, new { error = "Pairing required" }, false, token).ConfigureAwait(false); return; }
                 var snapshot = Volatile.Read(ref playlist);
                 var items = snapshot.Items.Values.Where(i => File.Exists(i.FilePath)).Select(i => new
-                { id = i.Id, title = i.Title, durationSeconds = i.DurationSeconds, resumeSeconds = i.ResumeSeconds, mimeType = MimeType(i.FilePath), streamPath = "/v1/media/" + i.Id + "?token=" + bearer }).ToArray();
+                { id = i.Id, title = i.Title, durationSeconds = i.DurationSeconds, resumeSeconds = i.ResumeSeconds,
+                    computerProgressSeconds = i.ComputerProgressSeconds ?? i.ResumeSeconds, computerUpdatedAtUnixSeconds = i.ComputerUpdatedAtUnixSeconds,
+                    computerCompleted = i.ComputerCompleted, mobileProgressSeconds = i.MobileProgressSeconds,
+                    mobileDurationSeconds = i.MobileDurationSeconds, mobileUpdatedAtUnixSeconds = i.MobileUpdatedAtUnixSeconds,
+                    mobileCompleted = i.MobileCompleted, mimeType = MimeType(i.FilePath), streamPath = "/v1/media/" + i.Id + "?token=" + bearer }).ToArray();
                 await Reply(stream, 200, new { version = 1, name, items, truncated = snapshot.Truncated, totalItems = snapshot.TotalItems }, false, token).ConfigureAwait(false); return;
+            }
+            if (request.Path == "/v1/progress" && request.Query.Length == 0 && request.Method == "POST")
+            {
+                string? bearer = Bearer(request);
+                if (!Authorized(bearer)) { await Reply(stream, 401, new { error = "Pairing required" }, false, token).ConfigureAwait(false); return; }
+                if (!TryParseProgress(request.Body, out var incoming)) { await Reply(stream, 400, new { error = "Invalid progress" }, false, token).ConfigureAwait(false); return; }
+                var result = ApplyProgress(bearer!, incoming!);
+                if (result.Report is { } report)
+                {
+                    // Never hold the authentication/playlist locks while notifying
+                    // an observer. Desktop persistence revalidates the live session.
+                    if (ProgressReported is { } observers) foreach (Action<SharedPlaybackProgress> observer in observers.GetInvocationList())
+                        try { observer(report); } catch (Exception error) when (error is InvalidOperationException or ObjectDisposedException) { }
+                    await Reply(stream, 200, new { version = 1, positionSeconds = report.PositionSeconds, durationSeconds = report.DurationSeconds,
+                        completed = report.Completed, updatedAtUnixSeconds = report.UpdatedAtUnixSeconds }, false, token).ConfigureAwait(false);
+                }
+                else await Reply(stream, result.Status, new { error = result.Status == 401 ? "Pairing required" : result.Status == 429 ? "Progress rate limit" : "Media unavailable" }, false, token).ConfigureAwait(false);
+                return;
             }
             const string mediaPrefix = "/v1/media/";
             if (request.Path.StartsWith(mediaPrefix, StringComparison.Ordinal) && request.Method is "GET" or "HEAD")
@@ -163,7 +208,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
                 if (!OpaqueId(id) || !Volatile.Read(ref playlist).Items.TryGetValue(id, out var item)) { await Reply(stream, 404, new { error = "Media unavailable" }, head, token).ConfigureAwait(false); return; }
                 await StreamMedia(stream, request, connection, item, head, token).ConfigureAwait(false); return;
             }
-            await Reply(stream, request.Path is "/v1/info" or "/v1/pair" or "/v1/playlist" ? 405 : 404, new { error = "Route unavailable" }, head, token).ConfigureAwait(false);
+            await Reply(stream, request.Path is "/v1/info" or "/v1/pair" or "/v1/playlist" or "/v1/progress" ? 405 : 404, new { error = "Route unavailable" }, head, token).ConfigureAwait(false);
         }
         catch (Exception error) when (error is IOException or SocketException or OperationCanceledException or ObjectDisposedException) { }
     }
@@ -209,6 +254,55 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
             if (!attempts.TryGetValue(address, out var queue)) { if (attempts.Count >= 64) return false; attempts[address] = queue = new(); }
             if (queue.Count >= 5 || globalAttempts.Count >= 50) return false;
             queue.Enqueue(now); globalAttempts.Enqueue(now); return true;
+        }
+    }
+    sealed record IncomingProgress(string ItemId, double Position, double Duration, bool Completed);
+    static bool TryParseProgress(byte[] body, out IncomingProgress? progress)
+    {
+        progress = null;
+        try
+        {
+            using var document = JsonDocument.Parse(body, new JsonDocumentOptions { MaxDepth = 4 });
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return false;
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var property in root.EnumerateObject()) if (!names.Add(property.Name)) return false;
+            if (!names.SetEquals(["itemId", "positionSeconds", "durationSeconds", "completed"]) || !root.TryGetProperty("itemId", out var id)
+                || id.ValueKind != JsonValueKind.String || id.GetString() is not { } itemId || !OpaqueId(itemId)
+                || !root.TryGetProperty("positionSeconds", out var position) || position.ValueKind != JsonValueKind.Number || !position.TryGetDouble(out double seconds) || !WireTime(seconds)
+                || !root.TryGetProperty("durationSeconds", out var duration) || duration.ValueKind != JsonValueKind.Number || !duration.TryGetDouble(out double length) || !WireTime(length)
+                || !root.TryGetProperty("completed", out var completed) || completed.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) return false;
+            progress = new(itemId, seconds, length, completed.GetBoolean()); return true;
+        }
+        catch (JsonException) { return false; }
+    }
+    (int Status, SharedPlaybackProgress? Report) ApplyProgress(string bearer, IncomingProgress incoming)
+    {
+        lock (authentication)
+        {
+            // Authorization is repeated at the actual mutation boundary so Stop
+            // cannot revoke a session between parsing and state publication.
+            if (!Authorized(bearer)) return (401, null);
+            string hash = Convert.ToHexString(SHA256.HashData(Encoding.ASCII.GetBytes(bearer)));
+            DateTimeOffset now = time.GetUtcNow(), boundary = now.AddMinutes(-1);
+            if (!progressAttempts.TryGetValue(hash, out var queue)) progressAttempts[hash] = queue = new();
+            while (queue.TryPeek(out var oldAttempt) && oldAttempt <= boundary) queue.Dequeue();
+            if (queue.Count >= 30) return (429, null);
+            queue.Enqueue(now);
+            lock (playlistState)
+            {
+                var snapshot = Volatile.Read(ref playlist);
+                if (!snapshot.Items.TryGetValue(incoming.ItemId, out var item) || !File.Exists(item.FilePath)) return (404, null);
+                double duration = item.DurationSeconds > 0 ? item.DurationSeconds : incoming.Duration;
+                double position = duration > 0 ? Math.Min(incoming.Position, duration) : incoming.Position;
+                bool completed = incoming.Completed && (duration <= 0 || duration - position <= 1);
+                double stamp = SafeTimestamp(now.ToUnixTimeMilliseconds() / 1000d);
+                stamp = Math.Min(4_102_444_800, Math.Max(stamp, item.MobileUpdatedAtUnixSeconds + .001));
+                var updated = new Dictionary<string, SharedMediaItem>(snapshot.Items, StringComparer.Ordinal)
+                { [item.Id] = item with { MobileProgressSeconds = position, MobileDurationSeconds = duration, MobileCompleted = completed, MobileUpdatedAtUnixSeconds = stamp } };
+                Volatile.Write(ref playlist, snapshot with { Items = updated });
+                return (200, new(item.Id, item.FilePath, position, duration, completed, stamp, ++progressRevision));
+            }
         }
     }
     string? IssueToken(string? code)
@@ -312,6 +406,17 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
         return text.ToString();
     }
     static double SafeTime(double value) => double.IsFinite(value) ? Math.Clamp(value, 0, 31_536_000) : 0;
+    static SharedMediaItem NormalizeProgress(SharedMediaItem item)
+    {
+        double length = item.DurationSeconds > 0 ? item.DurationSeconds : item.MobileDurationSeconds;
+        double? phone = item.MobileProgressSeconds is { } position ? length > 0 ? Math.Min(position, length) : position : null;
+        return item with { MobileProgressSeconds = phone, MobileDurationSeconds = phone is null ? 0 : length,
+            MobileUpdatedAtUnixSeconds = phone is null ? 0 : item.MobileUpdatedAtUnixSeconds,
+            MobileCompleted = phone is { } value && item.MobileCompleted && (length <= 0 || length - value <= 1),
+            ComputerProgressSeconds = item.ComputerProgressSeconds is { } computer && item.DurationSeconds > 0 ? Math.Min(computer, item.DurationSeconds) : item.ComputerProgressSeconds };
+    }
+    static bool WireTime(double value) => double.IsFinite(value) && value is >= 0 and <= 31_536_000;
+    static double SafeTimestamp(double value) => double.IsFinite(value) ? Math.Clamp(value, 0, 4_102_444_800) : 0;
     static bool SamePath(string a, string b) => string.Equals(a, b, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
     sealed record PlaylistSnapshot(Dictionary<string, SharedMediaItem> Items, int TotalItems, bool Truncated);
     sealed class Connection(TcpClient client, string address) { public TcpClient Client { get; } = client; public string Address { get; } = address; public SharedMediaItem? Item; public int Streaming; }
