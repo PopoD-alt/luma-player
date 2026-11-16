@@ -16,12 +16,13 @@ using Microsoft.Win32;
 using Luma.Core.Library;
 using Luma.Core.Sharing;
 using Luma.Core.Updates;
+using Luma.Core.Analysis;
 
 namespace Luma.WindowsApp;
 
 internal sealed class PlayerWindow : Window
 {
-    const double ControlsHeight = 198;
+    const double ControlsHeight = 238;
     readonly LibraryStore library;
     readonly Grid layout = new(), viewport = new();
     readonly StackPanel empty = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
@@ -30,6 +31,18 @@ internal sealed class PlayerWindow : Window
     readonly TextBlock timing = new() { Text = "0:00 / 0:00", FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock deviceProgress = new() { FontSize = 11, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
     readonly Button resumePhone = new() { Content = "Resume from phone", ToolTip = "Use the phone's saved position on this computer. Playback is never moved automatically.", VerticalAlignment = VerticalAlignment.Center };
+    readonly CheckBox autoSkip = new() { Content = "Auto-skip intros / credits", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(3, 0, 12, 0), ToolTip = "Opt in to skipping labelled chapters and saved ranges. Unmarked scenes are left playing." };
+    readonly Button skipSegment = new() { Visibility = Visibility.Collapsed, Content = "Skip intro" };
+    readonly TextBlock skipInfo = new() { FontSize = 10, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+    readonly PlaybackSkipSession skipSession = new();
+    IReadOnlyList<PlaybackSkipRange> chapterSkips = [], activeSkipRanges = [];
+    PlaybackSkipRange? activeSkip;
+    (Guid Item, string Kind, double Start)? skipDraft;
+    DateTime lastChapterScan = DateTime.MinValue;
+    CancellationTokenSource? skipAnalysis;
+    string? skipAnalysisStatus;
+    readonly MenuItem analyzeSkips = new() { Header = "Analyze openings / credits with next queue item…" };
+    readonly MenuItem cancelSkipAnalysis = new() { Header = "Cancel intro / credit analysis", IsEnabled = false };
     readonly TextBlock queueCount = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock backend = new() { FontSize = 11, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 360 };
     readonly ListBox queue = new() { BorderThickness = new Thickness(0), Margin = new Thickness(6), Background = Brushes.Transparent, DisplayMemberPath = "Title" };
@@ -90,6 +103,11 @@ internal sealed class PlayerWindow : Window
         search.TextChanged += (_, _) => { searchHint.Visibility = search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed; RefreshQueue(); };
         play.Click += (_, _) => TogglePlayback(); shareButton.Click += (_, _) => ShowSharing();
         resumePhone.Click += (_, _) => ResumeFromPhone();
+        autoSkip.IsChecked = library.Data.AutoSkipEnabled;
+        autoSkip.Click += (_, _) => { bool enabled = autoSkip.IsChecked == true; if (enabled && !library.Data.AutoSkipEnabled) skipSession.Reset(); library.Data.AutoSkipEnabled = enabled; SaveLibrary(); UpdateSkipping(); };
+        skipSegment.Click += (_, _) => SkipActiveSegment();
+        analyzeSkips.Click += async (_, _) => await AnalyzeSkipsAsync();
+        cancelSkipAnalysis.Click += (_, _) => skipAnalysis?.Cancel();
         volume.ValueChanged += (_, _) => { if (vlc is not null) vlc.Volume = volume.Value; };
         speed.SelectionChanged += (_, _) => { if (speed.SelectedItem is ComboBoxItem item) { rate = (double)item.Tag; if (vlc is not null) vlc.Rate = rate; } };
         repeat.Click += (_, _) => { repeatMode = (repeatMode + 1) % 3; repeat.Content = new[] { "Repeat: off", "Repeat: all", "Repeat: one" }[repeatMode]; };
@@ -178,15 +196,20 @@ internal sealed class PlayerWindow : Window
         var symbol = Text("▶", 58); symbol.HorizontalAlignment = HorizontalAlignment.Center; symbol.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush"); empty.Children.Add(symbol); empty.Children.Add(nowTitle); var welcome = Text("Drop a local video or audio file here", 13); welcome.Foreground = new SolidColorBrush(Color.FromRgb(160, 169, 186)); welcome.HorizontalAlignment = HorizontalAlignment.Center; welcome.Margin = new Thickness(0, 12, 0, 0); empty.Children.Add(welcome);
         viewport.Children.Add(empty); stage.Child = viewport; Grid.SetRow(stage, 1); Grid.SetColumn(stage, 1); layout.Children.Add(stage);
 
-        var bottom = new Grid { Margin = new Thickness(18, 8, 18, 10) }; bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new());
+        var bottom = new Grid { Margin = new Thickness(18, 8, 18, 10) }; bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new());
         var progressRow = new DockPanel { Margin = new Thickness(0, 0, 0, 3) }; DockPanel.SetDock(resumePhone, Dock.Right); progressRow.Children.Add(resumePhone); deviceProgress.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush"); progressRow.Children.Add(deviceProgress); bottom.Children.Add(progressRow);
-        Grid.SetRow(seek, 1); bottom.Children.Add(seek);
-        var transport = new WrapPanel(); Grid.SetRow(transport, 2); var left = Row(); left.Margin = new Thickness(0, 0, 0, 4); left.Children.Add(Button("│◀", () => _ = NextAsync(-1), "Previous file")); left.Children.Add(Button("−10", () => Seek(CurrentTime - 10))); left.Children.Add(play); play.SetResourceReference(BackgroundProperty, "AccentBrush"); play.Foreground = Brushes.Black; left.Children.Add(Button("+10", () => Seek(CurrentTime + 10))); left.Children.Add(Button("▶│", () => _ = NextAsync(1), "Next file")); timing.Margin = new Thickness(12, 0, 10, 0); left.Children.Add(timing); transport.Children.Add(left);
+        var skipRow = new DockPanel { Margin = new Thickness(0, 3, 0, 0) };
+        autoSkip.SetResourceReference(Control.ForegroundProperty, "TextBrush"); DockPanel.SetDock(autoSkip, Dock.Left); skipRow.Children.Add(autoSkip);
+        var setupSkip = Button("Skip setup ▾", ShowSkipSetup, "Mark exact intro/credit ranges when a file has no labelled chapters"); DockPanel.SetDock(setupSkip, Dock.Right); skipRow.Children.Add(setupSkip);
+        DockPanel.SetDock(skipSegment, Dock.Right); skipRow.Children.Add(skipSegment); skipInfo.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush"); skipRow.Children.Add(skipInfo);
+        Grid.SetRow(skipRow, 1); bottom.Children.Add(skipRow);
+        Grid.SetRow(seek, 2); bottom.Children.Add(seek);
+        var transport = new WrapPanel(); Grid.SetRow(transport, 3); var left = Row(); left.Margin = new Thickness(0, 0, 0, 4); left.Children.Add(Button("│◀", () => _ = NextAsync(-1), "Previous file")); left.Children.Add(Button("−10", () => Seek(CurrentTime - 10))); left.Children.Add(play); play.SetResourceReference(BackgroundProperty, "AccentBrush"); play.Foreground = Brushes.Black; left.Children.Add(Button("+10", () => Seek(CurrentTime + 10))); left.Children.Add(Button("▶│", () => _ = NextAsync(1), "Next file")); timing.Margin = new Thickness(12, 0, 10, 0); left.Children.Add(timing); transport.Children.Add(left);
         var right = Row(); right.HorizontalAlignment = HorizontalAlignment.Right; right.Children.Add(Button("Bookmark", Bookmark)); right.Children.Add(Button("Captions", () => OpenSubtitles()));
         speed.Foreground = Brushes.Black;
         foreach (var value in new[] { .5, 1, 1.25, 1.5, 2 }) speed.Items.Add(new ComboBoxItem { Content = value.ToString("0.##", CultureInfo.InvariantCulture) + "×", Tag = value, Foreground = Brushes.Black }); speed.SelectedIndex = 1;
         right.Children.Add(speed); var volumeLabel = Text("Volume", 11); volumeLabel.Margin = new Thickness(10, 0, 4, 0); right.Children.Add(volumeLabel); right.Children.Add(volume); right.Children.Add(Button("⛶", ToggleFullscreen, "Video fullscreen (F11)")); DockPanel.SetDock(right, Dock.Right); transport.Children.Add(right); bottom.Children.Add(transport);
-        var meta = new DockPanel { VerticalAlignment = VerticalAlignment.Bottom }; backend.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush"); meta.Children.Add(backend); repeat.HorizontalAlignment = HorizontalAlignment.Right; DockPanel.SetDock(repeat, Dock.Right); meta.Children.Add(repeat); Grid.SetRow(meta, 2); meta.Margin = new Thickness(8, 0, 0, -4); bottom.Children.Add(meta); transport.VerticalAlignment = VerticalAlignment.Top;
+        var meta = new DockPanel { VerticalAlignment = VerticalAlignment.Bottom }; backend.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush"); meta.Children.Add(backend); repeat.HorizontalAlignment = HorizontalAlignment.Right; DockPanel.SetDock(repeat, Dock.Right); meta.Children.Add(repeat); Grid.SetRow(meta, 3); meta.Margin = new Thickness(8, 0, 0, -4); bottom.Children.Add(meta); transport.VerticalAlignment = VerticalAlignment.Top;
         controls = bottom; Grid.SetRow(bottom, 2); Grid.SetColumn(bottom, 1); layout.Children.Add(bottom);
         status.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush"); Grid.SetRow(status, 3); Grid.SetColumnSpan(status, 2); layout.Children.Add(status);
         return layout;
@@ -201,7 +224,8 @@ internal sealed class PlayerWindow : Window
         Item("Play original video demo", () => _ = ImportAsync([Path.Combine(AppContext.BaseDirectory, "Demos", "Luma-MSVideo1-16.avi")]));
         Item("Saved bookmarks", ShowBookmarks); Item("Caption timing −0.25s", () => ChangeCaptionDelay(-.25)); Item("Caption timing +0.25s", () => ChangeCaptionDelay(.25));
         Item("Turn captions off", () => TryControl(() => vlc?.SelectSubtitle(-1)));
-        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n0.8.0 · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
+        menu.Items.Add(new Separator()); menu.Items.Add(analyzeSkips); menu.Items.Add(cancelSkipAnalysis);
+        menu.Items.Add(new Separator()); Item("About Luma Player", () => MessageBox.Show(this, "Luma Player\n" + (typeof(PlayerWindow).Assembly.GetName().Version?.ToString(3) ?? "Unknown") + " · Windows review build " + currentBuild + "\n\nMade by sdas\nPlayback powered by libVLC3.\nLocal sharing stays off until you start it.\nThis review build is not digitally signed by a trusted Windows publisher.", "About Luma Player"));
         return menu;
     }
     async Task OpenMediaAsync()
@@ -229,8 +253,8 @@ internal sealed class PlayerWindow : Window
     Task LoadEntryAsync(MediaEntry entry, double? resume = null)
     {
         if (closing) return Task.CompletedTask;
-        SaveProgress(); ++generation; DisposePlayer(); lastError = null; duration = 0; subtitleDelay = 0; playing = false; opening = true;
-        current = entry; computerEnded = false; library.Data.SelectedId = entry.Id; pendingResume = resume ?? (entry.ResumeTime > 3 ? entry.ResumeTime : 0); RefreshQueue();
+        skipAnalysis?.Cancel(); SaveProgress(); ++generation; DisposePlayer(); lastError = null; duration = 0; subtitleDelay = 0; playing = false; opening = true;
+        current = entry; computerEnded = false; skipSession.Reset(); chapterSkips = activeSkipRanges = []; activeSkip = null; skipDraft = null; lastChapterScan = DateTime.MinValue; library.Data.SelectedId = entry.Id; pendingResume = resume ?? (entry.ResumeTime > 3 ? entry.ResumeTime : 0); RefreshQueue();
         nowTitle.Text = entry.Title; empty.Visibility = Visibility.Visible; backend.Text = "Opening with libVLC…"; Notice("Opening " + entry.Title);
         int version = generation;
         try
@@ -243,7 +267,7 @@ internal sealed class PlayerWindow : Window
                 if (!Active()) return; opening = false; openingClock.Reset(); duration = player.Duration;
                 if (pendingResume > 0) { player.Seek(Math.Min(pendingResume, Math.Max(0, duration - .2))); pendingResume = 0; }
                 player.Rate = rate; player.Volume = volume.Value; playing = !player.IsPaused; backend.Text = "libVLC " + VlcPlayer.RuntimeVersion.Split(' ')[0];
-                RefreshTracks(); Notice("Playing " + entry.Title); UpdateTransport();
+                RefreshTracks(); UpdateSkipping(); Notice("Playing " + entry.Title); UpdateTransport();
             };
             player.TracksChanged += (_, _) => { if (Active()) RefreshTracks(); };
             player.Ended += (_, _) => { if (Active()) Ended(); };
@@ -285,8 +309,14 @@ internal sealed class PlayerWindow : Window
         if (opening) return; if (playing) Pause(); else Play();
     }
     void Pause() { vlc?.Pause(); playing = false; UpdateTransport(); SaveProgress(); }
-    void Play() { if (duration > 0 && (computerEnded || CurrentTime >= duration - .05)) vlc?.Seek(0); computerEnded = false; vlc?.Play(); playing = vlc is not null; UpdateTransport(); }
-    void Seek(double value) { if (current is null || !double.IsFinite(value) || duration <= 0) return; computerEnded = false; vlc?.Seek(Math.Clamp(value, 0, duration)); UpdateTransport(); }
+    void Play() { if (duration > 0 && (computerEnded || CurrentTime >= duration - .05)) { skipSession.Reset(); vlc?.Seek(0); } computerEnded = false; vlc?.Play(); playing = vlc is not null; UpdateTransport(); }
+    void Seek(double value)
+    {
+        if (current is null || !double.IsFinite(value) || duration <= 0) return;
+        double target = Math.Clamp(value, 0, duration); skipSession.UserSeek(target);
+        if (PlaybackSkipPolicy.Active(activeSkipRanges, target) is { } segment) skipSession.Consume(segment);
+        computerEnded = false; vlc?.Seek(target); UpdateTransport();
+    }
     void Tick()
     {
         sharingPower.Update(sharing?.IsRunning == true && sharing.ActiveMediaStreams > 0);
@@ -297,8 +327,118 @@ internal sealed class PlayerWindow : Window
             double latest = vlc.Duration; if (latest > 0) duration = latest;
             bool video = vlc.NaturalVideoWidth > 0; vlc.Visibility = video ? Visibility.Visible : Visibility.Hidden; empty.Visibility = video ? Visibility.Collapsed : Visibility.Visible;
         }
-        UpdateTransport(); RefreshSharingUI();
+        UpdateSkipping(); UpdateTransport(); RefreshSharingUI();
         if ((DateTime.UtcNow - lastSave).TotalSeconds >= 3) { SaveProgress(); lastSave = DateTime.UtcNow; }
+    }
+    void UpdateSkipping()
+    {
+        if (current is null || vlc is null || opening || duration <= 0)
+        { activeSkip = null; skipSegment.Visibility = Visibility.Collapsed; skipInfo.Text = current is null ? "Open a video to configure skipping" : "Reading chapter metadata…"; return; }
+        if ((DateTime.UtcNow - lastChapterScan).TotalSeconds >= 1)
+        { lastChapterScan = DateTime.UtcNow; chapterSkips = PlaybackSkipPolicy.FromChapters(vlc.Chapters, duration); }
+        activeSkipRanges = PlaybackSkipPolicy.Merge(current.SkipRanges, chapterSkips, duration);
+        activeSkip = PlaybackSkipPolicy.Active(activeSkipRanges, CurrentTime);
+        skipSegment.Visibility = activeSkip is null ? Visibility.Collapsed : Visibility.Visible;
+        skipSegment.IsEnabled = vlc.IsSeekable;
+        skipSegment.Content = activeSkip?.Kind == "credits" ? "Skip credits" : "Skip intro";
+        skipSegment.ToolTip = activeSkip is null ? null : (activeSkip.Source == "chapter" ? "Labelled chapter: " + activeSkip.Label : "Saved range") + " · " + MediaEntry.Clock(activeSkip.StartSeconds) + "–" + MediaEntry.Clock(activeSkip.EndSeconds);
+        skipInfo.Text = skipAnalysisStatus ?? (skipDraft is { } draft ? "Mark the " + (draft.Kind == "intro" ? "intro" : "credits") + " end in Skip setup"
+            : activeSkipRanges.Count == 0 ? "No labelled chapters or saved ranges" : activeSkipRanges.Count + " known segment" + (activeSkipRanges.Count == 1 ? "" : "s"));
+        if (!dragging && skipDraft is null && skipSession.Automatic(activeSkipRanges, CurrentTime, library.Data.AutoSkipEnabled, playing && !vlc.IsPaused, vlc.IsSeekable) is { } automaticRange)
+            SeekSkipRange(automaticRange, automatic: true);
+    }
+    void SeekSkipRange(PlaybackSkipRange range, bool automatic)
+    {
+        if (vlc is null || !vlc.IsSeekable || duration <= 0) return;
+        skipSession.Consume(range); computerEnded = false;
+        vlc.Seek(Math.Min(range.EndSeconds, Math.Max(0, duration - .05)));
+        Notice((automatic ? "Auto-skipped " : "Skipped ") + (range.Kind == "intro" ? "intro" : "credits") + " · " + MediaEntry.Clock(range.StartSeconds) + "–" + MediaEntry.Clock(range.EndSeconds));
+    }
+    void SkipActiveSegment()
+    {
+        if (PlaybackSkipPolicy.Active(activeSkipRanges, CurrentTime) is { } range) SeekSkipRange(range, automatic: false);
+    }
+    void ShowSkipSetup()
+    {
+        var menu = new ContextMenu(); bool ready = current is not null && vlc?.IsSeekable == true && !opening && duration > 0;
+        void Item(string title, Action action, bool enabled)
+        { var item = new MenuItem { Header = title, IsEnabled = enabled }; item.Click += (_, _) => action(); menu.Items.Add(item); }
+        foreach (string kind in new[] { "intro", "credits" })
+        {
+            string name = kind == "intro" ? "intro" : "credits";
+            Item("Mark " + name + " start here", () => MarkSkipStart(kind), ready);
+            Item("Mark " + name + " end here", () => MarkSkipEnd(kind), ready && skipDraft is { } draft && draft.Item == current?.Id && draft.Kind == kind);
+        }
+        menu.Items.Add(new Separator());
+        Item("Clear saved intro / credit ranges", () => { if (current is not null) { library.SetSkipRanges(current.Id, []); skipDraft = null; skipSession.UserSeek(CurrentTime); PushSharedPlaylist(); UpdateSkipping(); Notice("Saved ranges cleared; labelled chapters remain available"); } }, current?.SkipRanges.Count > 0);
+        Item("Cancel unfinished range", () => { skipDraft = null; UpdateSkipping(); }, skipDraft is not null);
+        var note = new MenuItem { Header = "Uses labelled chapters or your saved ranges; no AI guesses", IsEnabled = false }; menu.Items.Add(note);
+        menu.PlacementTarget = autoSkip; menu.IsOpen = true;
+    }
+    void MarkSkipStart(string kind)
+    {
+        if (current is null || opening || duration <= 0 || vlc?.IsSeekable != true) return;
+        skipDraft = (current.Id, kind, CurrentTime); UpdateSkipping(); Notice("Now seek to the " + kind + " end, then choose Mark " + kind + " end here");
+    }
+    void MarkSkipEnd(string kind)
+    {
+        if (current is null || skipDraft is not { } draft || draft.Item != current.Id || draft.Kind != kind) return;
+        var range = new PlaybackSkipRange(kind, draft.Start, CurrentTime, "manual", kind == "intro" ? "Saved intro" : "Saved credits");
+        var candidate = current.SkipRanges.Where(r => r.Kind != kind).Append(range).ToArray();
+        if (!PlaybackSkipPolicy.ValidatedRanges(candidate, duration).Any(r => r == range)) { Notice("Choose an end after the start, within the video, without overlapping another saved range"); return; }
+        library.SetSkipRanges(current.Id, candidate); skipDraft = null; PushSharedPlaylist(); UpdateSkipping(); Notice("Saved " + kind + " range for this video and paired phones");
+    }
+    async Task AnalyzeSkipsAsync()
+    {
+        if (skipAnalysis is not null || current is not { } item || vlc is null) { Notice("Open a video before starting analysis"); return; }
+        int index = library.Data.Items.FindIndex(i => i.Id == item.Id);
+        var next = index >= 0 && index + 1 < library.Data.Items.Count ? library.Data.Items[index + 1] : null;
+        if (next is null || !File.Exists(item.FilePath) || !File.Exists(next.FilePath)) { Notice("Put another episode from the same series immediately after this one in the queue"); return; }
+        if (MessageBox.Show(this, "Compare repeated opening / ending audio in these two queue items?\n\n" + item.Title + "\n" + next.Title
+            + "\n\nAnalysis stays on this computer and can take about 12 minutes for long episodes. You can cancel from More. Any suggested ranges require your confirmation; the files are unchanged.", "Analyze intros / credits", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+        int expectedGeneration = generation; string expectedPath = item.FilePath; Guid expectedId = item.Id;
+        long firstLength, nextLength; DateTime firstWrite, nextWrite;
+        try
+        {
+            var firstInfo = new FileInfo(expectedPath); var nextInfo = new FileInfo(next.FilePath);
+            firstLength = firstInfo.Length; nextLength = nextInfo.Length; firstWrite = firstInfo.LastWriteTimeUtc; nextWrite = nextInfo.LastWriteTimeUtc;
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException) { Notice("A selected file is unavailable; choose the current files and try again"); return; }
+        bool FilesUnchanged()
+        {
+            try { var first = new FileInfo(expectedPath); var second = new FileInfo(next.FilePath); return first.Exists && second.Exists && first.Length == firstLength && first.LastWriteTimeUtc == firstWrite && second.Length == nextLength && second.LastWriteTimeUtc == nextWrite; }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException) { return false; }
+        }
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token); skipAnalysis = cancellation;
+        analyzeSkips.IsEnabled = false; cancelSkipAnalysis.IsEnabled = true;
+        try
+        {
+            skipAnalysisStatus = "Analyzing repeated audio · 0%"; UpdateSkipping();
+            var progress = new Progress<double>(fraction => { if (!closing && ReferenceEquals(skipAnalysis, cancellation)) { skipAnalysisStatus = "Analyzing repeated audio · " + Math.Clamp((int)(fraction * 100), 0, 100) + "% · More to cancel"; UpdateSkipping(); } });
+            var candidates = await SkipAudioAnalyzer.AnalyzeAsync(expectedPath, next.FilePath, VlcPlayer.RuntimePath, cancellation.Token, progress);
+            if (closing || cancellation.IsCancellationRequested || generation != expectedGeneration || current?.Id != expectedId || !string.Equals(current.FilePath, expectedPath, StringComparison.OrdinalIgnoreCase)
+                || !library.Data.Items.Any(entry => entry.Id == expectedId && string.Equals(entry.FilePath, expectedPath, StringComparison.OrdinalIgnoreCase)) || !FilesUnchanged()) return;
+            if (candidates.Count == 0) { Notice("No confident repeated opening / ending audio found; use labelled chapters or mark exact ranges in Skip setup"); return; }
+            foreach (var candidate in candidates.Take(2))
+            {
+                if (generation != expectedGeneration || current?.Id != expectedId || !FilesUnchanged()) return;
+                var range = new PlaybackSkipRange(candidate.Kind, candidate.FirstStartSeconds, candidate.FirstEndSeconds, "manual", "Confirmed repeated audio");
+                if (PlaybackSkipPolicy.ValidatedRanges([range], duration).Count != 1) continue;
+                string kind = range.Kind == "intro" ? "intro" : "credits";
+                if (MessageBox.Show(this, "Possible repeated " + kind + ": " + MediaEntry.Clock(range.StartSeconds) + "–" + MediaEntry.Clock(range.EndSeconds)
+                    + "\n\nAudio repetition is a suggestion and can also match story scenes. Save this range for this video? You can preview it with the seek bar and clear it in Skip setup. Auto-skip remains your separate opt-in setting.", "Confirm " + kind + " range", MessageBoxButton.YesNo) != MessageBoxResult.Yes) continue;
+                if (generation != expectedGeneration || current?.Id != expectedId || !FilesUnchanged()) return;
+                var combined = item.SkipRanges.Where(saved => saved.Kind != range.Kind).Append(range).ToArray();
+                if (!PlaybackSkipPolicy.ValidatedRanges(combined, duration).Any(saved => saved == range)) { Notice("Suggested range overlaps another saved range; nothing was changed"); continue; }
+                library.SetSkipRanges(expectedId, combined); PushSharedPlaylist(); Notice("Saved confirmed " + kind + " range; review it with the seek bar or Skip intro / credits button");
+            }
+        }
+        catch (OperationCanceledException) { if (!closing) Notice("Intro / credit analysis cancelled"); }
+        catch (Exception error) { if (!closing) Notice("Intro / credit analysis could not finish: " + error.Message); }
+        finally
+        {
+            if (ReferenceEquals(skipAnalysis, cancellation)) { skipAnalysis = null; skipAnalysisStatus = null; analyzeSkips.IsEnabled = true; cancelSkipAnalysis.IsEnabled = false; if (!closing) UpdateSkipping(); }
+        }
     }
     void UpdateTransport()
     {
@@ -361,7 +501,7 @@ internal sealed class PlayerWindow : Window
     }
     void SaveProgress() { if (current is not null && !opening && lastError is null) library.UpdateProgress(current.Id, computerEnded ? duration : CurrentTime, duration, computerEnded); SaveLibrary(); PushSharedPlaylist(); }
     void SaveLibrary() { try { library.Flush(); } catch (IOException error) { Notice("The saved library could not be written: " + error.Message); } }
-    void Unload() { SaveProgress(); ++generation; DisposePlayer(); current = null; playing = opening = false; duration = 0; openingClock.Reset(); empty.Visibility = Visibility.Visible; nowTitle.Text = "Make room for a good story"; backend.Text = ""; UpdateTransport(); }
+    void Unload() { skipAnalysis?.Cancel(); SaveProgress(); ++generation; DisposePlayer(); current = null; playing = opening = false; duration = 0; openingClock.Reset(); empty.Visibility = Visibility.Visible; nowTitle.Text = "Make room for a good story"; backend.Text = ""; UpdateTransport(); }
     void Fail(string error) { lastError = error; opening = playing = false; ++generation; DisposePlayer(); openingClock.Reset(); if (fullscreen) ToggleFullscreen(); Notice(error); nowTitle.Text = "This file could not be played"; empty.Visibility = Visibility.Visible; }
     void Notice(string message) => status.Text = message;
     void ShowDiagnostics()
@@ -372,7 +512,7 @@ internal sealed class PlayerWindow : Window
         new Window { Owner = this, Title = "Local playback diagnostics", Width = 760, Height = 540, Content = text, WindowStartupLocation = WindowStartupLocation.CenterOwner }.Show();
     }
     void PushSharedPlaylist() { sharing?.SetPlaylist(library.Data.Items.Select(i => new SharedMediaItem(i.Id.ToString("N"), i.FilePath, i.Title, i.Duration, i.ResumeTime,
-        i.MobileProgressSeconds, i.MobileUpdatedAtUnixSeconds, i.ComputerUpdatedAtUnixSeconds, i.MobileDurationSeconds, i.MobileCompleted, i.ComputerProgressSeconds, i.ComputerCompleted))); }
+        i.MobileProgressSeconds, i.MobileUpdatedAtUnixSeconds, i.ComputerUpdatedAtUnixSeconds, i.MobileDurationSeconds, i.MobileCompleted, i.ComputerProgressSeconds, i.ComputerCompleted, SkipRanges: PlaybackSkipPolicy.ValidatedRanges(i.SkipRanges, i.Duration)))); }
     void ReceiveMobileProgress(PlaylistSharingServer source, SharedPlaybackProgress report)
     {
         // Only the UI thread touches the saved library. A queued update from a
@@ -439,6 +579,7 @@ internal sealed class PlayerWindow : Window
     }
     void Shutdown()
     {
+        skipAnalysis?.Cancel();
         if (closing) return; closing = true; SaveProgress(); ++generation; timer.Stop(); updateTimer.Stop(); lifetimeCancellation.Cancel(); StopSharing(); sharingPower.Dispose(); sharingWindow?.Close(); DisposePlayer(); lifetimeCancellation.Dispose();
     }
     void ToggleFullscreen()
@@ -516,6 +657,44 @@ internal sealed class PlayerWindow : Window
         var subtitle = demo.SubtitleTracks.First(t => t.Id >= 0); demo.SelectSubtitle(subtitle.Id); ChangeCaptionDelay(.25); Check(demo.SubtitleTrack == subtitle.Id && demo.SubtitleDelay == .25, "Native external subtitle selection and delay"); demo.SelectSubtitle(-1);
         var snapshot = Path.Combine(output, "libvlc-avc-frame.png"); demo.Snapshot(snapshot); await Until(() => File.Exists(snapshot) && new FileInfo(snapshot).Length > 100, "Native libVLC AVC snapshot");
         Console.WriteLine("PASS: libVLC native displayed frames, snapshot, seek/pause/rate/volume/fullscreen and external caption selection/delay");
+        var chaptered = await Open(Path.Combine(fixtures, "Luma-Skip-Chapters.mkv"));
+        await Until(() => chaptered.DisplayedPictures is > 0 && chaptered.Chapters.Any(c => c.Name == "Opening") && chaptered.Chapters.Any(c => c.Name == "Credits"), "Native labelled chapter metadata and decoded frames");
+        Pause(); var nativeRanges = PlaybackSkipPolicy.FromChapters(chaptered.Chapters, duration);
+        Check(nativeRanges.Count == 2 && Math.Abs(nativeRanges[0].StartSeconds - 1) < .02 && Math.Abs(nativeRanges[0].EndSeconds - 3) < .02 && Math.Abs(nativeRanges[1].EndSeconds - 10) < .02, "Native chapter ABI uses milliseconds and preserves post-credit scene");
+        int introFrames = chaptered.DisplayedPictures ?? 0; autoSkip.IsChecked = true; library.Data.AutoSkipEnabled = true; skipSession.Reset(); chaptered.Seek(.7); Play();
+        await Until(() => skipSession.AutomaticSkips == 1 && CurrentTime >= 3.15 && chaptered.DisplayedPictures > introFrames, "Automatic opening skip advances real native time and frames"); Pause();
+        Check(ReferenceEquals(vlc, chaptered), "Automatic skip retains the native player");
+        Seek(1.4); Play(); await Task.Delay(350); Check(CurrentTime >= 1.4 && CurrentTime < 2.8 && skipSession.AutomaticSkips == 1, "Explicit rewind is respected without repeated automatic skip"); Pause();
+        int creditsFrames = chaptered.DisplayedPictures ?? 0; chaptered.Seek(7.7); Play(); await Until(() => skipSession.AutomaticSkips == 2 && CurrentTime >= 10.15 && chaptered.DisplayedPictures > creditsFrames, "Automatic credits skip advances into post-credit scene"); Pause();
+        Check(CurrentTime < duration - .1 && ReferenceEquals(vlc, chaptered), "Credits skip does not end media or skip post-credit content");
+        library.Data.AutoSkipEnabled = false; autoSkip.IsChecked = false; skipSession.Reset(); chaptered.Seek(1.3); Play(); await Task.Delay(350); Pause(); UpdateSkipping();
+        Check(CurrentTime >= 1.3 && CurrentTime < 2.8 && skipSession.AutomaticSkips == 0 && skipSegment.Visibility == Visibility.Visible, "Opt-out preserves opening and exposes manual skip button");
+        SkipActiveSegment(); await Until(() => CurrentTime >= 2.95, "Manual Skip intro button seeks the actual paused native player");
+        Check(chaptered.IsPaused && ReferenceEquals(vlc, chaptered), "Manual skip preserves paused intent and player");
+        Seek(1.4); autoSkip.IsChecked = true; library.Data.AutoSkipEnabled = true; UpdateSkipping(); UpdateLayout();
+        var skipImage = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); skipImage.Render(layout);
+        var skipPng = new PngBitmapEncoder(); skipPng.Frames.Add(BitmapFrame.Create(skipImage)); using (var skipFile = File.Create(Path.Combine(output, "Luma-Windows-auto-skip.png"))) skipPng.Save(skipFile);
+        library.Data.AutoSkipEnabled = false; autoSkip.IsChecked = false;
+        Console.WriteLine("PASS: actual libVLC3 labelled chapters, opt-in opening/credits automatic native seeks, preserved post-credit scene/paused intent/same player, explicit rewind and manual Skip intro UI");
+        var generatedAudio = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(output))!, "generated", "Luma-review-skip-audio.wav");
+        string secondAudio = Path.Combine(output, "original-audio-match-second.wav"); File.Copy(generatedAudio, secondAudio, true);
+        using (var audioAnalysisTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(90)))
+        {
+            var audioCandidates = await SkipAudioAnalyzer.AnalyzeAsync(generatedAudio, secondAudio, VlcPlayer.RuntimePath, audioAnalysisTimeout.Token, minimumMatchSeconds: 3, maxWindowSeconds: 4);
+            Check(audioCandidates.Any(candidate => candidate.Kind == "intro" && candidate.FirstEndSeconds - candidate.FirstStartSeconds >= 3)
+                && audioCandidates.Any(candidate => candidate.Kind == "credits" && candidate.FirstEndSeconds - candidate.FirstStartSeconds >= 3), "Real approved libVLC audio analysis captures matching authored PCM opening and ending windows");
+            Check(current is not null && current.SkipRanges.Count == 0 && ReferenceEquals(vlc, chaptered), "Analysis candidates do not apply ranges or replace playback without confirmation");
+        }
+        Console.WriteLine("PASS: approved native libVLC audio-memory decoding finds authored repeated opening/ending audio candidates without automatically applying ranges");
+        Pause(); chaptered.Seek(.5); await Until(() => CurrentTime is >= .45 and < .7, "Native manual intro start position"); MarkSkipStart("intro");
+        chaptered.Seek(1.2); await Until(() => CurrentTime is >= 1.15 and < 1.4, "Native manual intro end position"); MarkSkipEnd("intro");
+        var markedIntro = current!.SkipRanges.Single(); Check(markedIntro.Source == "manual" && markedIntro.Kind == "intro" && markedIntro.StartSeconds is >= .45 and < .7 && markedIntro.EndSeconds is >= 1.15 and < 1.4, "Skip setup saves actual native start/end positions");
+        chaptered.Seek(.8); await Until(() => CurrentTime is >= .75 and < 1, "Native saved intro revisit"); UpdateSkipping();
+        Check(activeSkip?.Source == "manual" && skipSegment.Visibility == Visibility.Visible, "Saved intro overrides native chapter and presents manual button");
+        SkipActiveSegment(); await Until(() => CurrentTime >= markedIntro.EndSeconds - .05, "Saved-range skip seeks actual native time");
+        Check(chaptered.IsPaused && ReferenceEquals(vlc, chaptered), "Saved-range skip preserves the paused native player");
+        library.SetSkipRanges(current.Id, []); skipDraft = null;
+        Console.WriteLine("PASS: Skip setup marks native timestamps, persists a manual range overriding chapters, and Skip intro seeks it without changing paused playback intent");
         var hevc = await Open(Path.Combine(fixtures, "Luma-HEVC10-AAC51.mp4"));
         await Until(() => hevc.DecodedVideo is > 0 && hevc.DecodedAudio is > 0 && hevc.DisplayedPictures is > 0, "HEVC Main10/AAC5.1 decoded audio and displayed video");
         Pause(); Seek(.75); Play(); await Task.Delay(300); Check(CurrentTime >= .75, "HEVC/AAC seek retained synchronized native clock"); Pause();
@@ -593,7 +772,7 @@ internal sealed class PlayerWindow : Window
             SetTheme(theme); await Task.Delay(100); UpdateLayout(); var image = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth), (int)Math.Ceiling(layout.ActualHeight), 96, 96, PixelFormats.Pbgra32); image.Render(layout);
             var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(image)); using var file = File.Create(Path.Combine(output, theme ? "Luma-Windows-dark.png" : "Luma-Windows-light.png")); png.Save(file);
         }
-        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", hevc10Matroska = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeChangeset = VlcPlayer.RuntimeChangeset, runtimeBundled = VlcPlayer.RuntimeBundled, dnsSdRegistration, idleSleepPrevention,
+        File.WriteAllText(Path.Combine(output, "smoke-results.json"), JsonSerializer.Serialize(new { libvlcPlayback = "passed", hevc10Aac51 = "passed", hevc10Matroska = "passed", subtitleSelection = "passed", lifecycleRecovery = "passed", sharingUi = "passed", autoSkipChapters = "passed", repeatedAudioAnalysis = "passed", runtimeVersion = VlcPlayer.RuntimeVersion, runtimeChangeset = VlcPlayer.RuntimeChangeset, runtimeBundled = VlcPlayer.RuntimeBundled, dnsSdRegistration, idleSleepPrevention,
             physicalAudio = endpoints == 0 ? "unverified-no-active-render-endpoint" : "system-output-requested-audibility-not-measured", activeAudioRenderEndpoints = endpoints }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine("PASS: libVLC native lifecycle/resume, opt-in sharing UI pairing/revoke, and native UI theme snapshots; physical audibility remains explicitly separate");
     }

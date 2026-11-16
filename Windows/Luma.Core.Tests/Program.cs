@@ -16,6 +16,7 @@ internal static class Program
             { RuntimeManifestTests.Run(); OwnerReviewBundleTests.Run(); return 0; }
             if (args.Length == 1 && args[0] == "--sharing-progress-tests")
             { SharedProgressTests.Run(); return 0; }
+            if (args.Length == 1 && args[0] == "--skip-tests") { PlaybackSkipTests.Run(); RepeatedAudioAnalysisTests.Run(); return 0; }
             if (args.Length == 3 && args[0] == "--sharing-test-host") return SharingTestHost.RunAsync(args[1], args[2]).GetAwaiter().GetResult();
             var root = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath("../Tests/Fixtures");
             PowerRequestTests.Run();
@@ -26,6 +27,8 @@ internal static class Program
             SharingTests.Run(root);
             SharedProgressTests.Run();
             FoundationTests.Run(root);
+            PlaybackSkipTests.Run(root);
+            RepeatedAudioAnalysisTests.Run();
             AudioTests.Run(root);
             VideoTests.Run(root);
             PcmContainerTests.Run(root);

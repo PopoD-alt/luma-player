@@ -1,3 +1,4 @@
+using Luma.Core.Library;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
@@ -12,7 +13,7 @@ namespace Luma.Core.Sharing;
 
 public sealed record SharedMediaItem(string Id, string FilePath, string Title, double DurationSeconds = 0, double ResumeSeconds = 0,
     double? MobileProgressSeconds = null, double MobileUpdatedAtUnixSeconds = 0, double ComputerUpdatedAtUnixSeconds = 0,
-    double MobileDurationSeconds = 0, bool MobileCompleted = false, double? ComputerProgressSeconds = null, bool ComputerCompleted = false);
+    double MobileDurationSeconds = 0, bool MobileCompleted = false, double? ComputerProgressSeconds = null, bool ComputerCompleted = false, IReadOnlyList<PlaybackSkipRange>? SkipRanges = null);
 public sealed record SharedPlaybackProgress(string ItemId, string FilePath, double PositionSeconds, double DurationSeconds,
     bool Completed, double UpdatedAtUnixSeconds, long Revision);
 
@@ -64,6 +65,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
             if (!OpaqueId(item.Id) || !Path.IsPathFullyQualified(item.FilePath)) throw new ArgumentException("Shared items require an opaque ID and an absolute local path.", nameof(items));
             if (!updated.TryAdd(item.Id, NormalizeProgress(item with { FilePath = Path.GetFullPath(item.FilePath), Title = CleanText(item.Title, 512),
                 DurationSeconds = SafeTime(item.DurationSeconds), ResumeSeconds = SafeTime(item.ResumeSeconds),
+                SkipRanges = PlaybackSkipPolicy.ValidatedRanges(item.SkipRanges ?? [], SafeTime(item.DurationSeconds)).Take(8).ToArray(),
                 ComputerProgressSeconds = item.ComputerProgressSeconds is { } computer ? SafeTime(computer) : null,
                 ComputerUpdatedAtUnixSeconds = SafeTimestamp(item.ComputerUpdatedAtUnixSeconds),
                 MobileProgressSeconds = item.MobileProgressSeconds is { } mobile ? SafeTime(mobile) : null,
@@ -176,7 +178,7 @@ public sealed class PlaylistSharingServer : IDisposable, IAsyncDisposable
                 var items = snapshot.Items.Values.Where(i => File.Exists(i.FilePath)).Select(i => new
                 { id = i.Id, title = i.Title, durationSeconds = i.DurationSeconds, resumeSeconds = i.ResumeSeconds,
                     computerProgressSeconds = i.ComputerProgressSeconds ?? i.ResumeSeconds, computerUpdatedAtUnixSeconds = i.ComputerUpdatedAtUnixSeconds,
-                    computerCompleted = i.ComputerCompleted, mobileProgressSeconds = i.MobileProgressSeconds,
+                    computerCompleted = i.ComputerCompleted, skipRanges = i.SkipRanges, mobileProgressSeconds = i.MobileProgressSeconds,
                     mobileDurationSeconds = i.MobileDurationSeconds, mobileUpdatedAtUnixSeconds = i.MobileUpdatedAtUnixSeconds,
                     mobileCompleted = i.MobileCompleted, mimeType = MimeType(i.FilePath), streamPath = "/v1/media/" + i.Id + "?token=" + bearer }).ToArray();
                 await Reply(stream, 200, new { version = 1, name, items, truncated = snapshot.Truncated, totalItems = snapshot.TotalItems }, false, token).ConfigureAwait(false); return;

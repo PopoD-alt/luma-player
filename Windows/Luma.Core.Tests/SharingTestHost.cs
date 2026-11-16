@@ -1,3 +1,4 @@
+using Luma.Core.Library;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Reflection;
@@ -13,9 +14,9 @@ internal static class SharingTestHost
         fixtures = Path.GetFullPath(fixtures); readyFile = Path.GetFullPath(readyFile);
         string demo = Path.Combine(fixtures, "Luma-Demo.mp4"), hevc = Path.Combine(fixtures, "Luma-HEVC10-AAC51.mp4");
         if (!File.Exists(demo) || !File.Exists(hevc)) throw new FileNotFoundException("Generated test media is missing.");
-        string demoId = Guid.NewGuid().ToString("N"), hevcId = Guid.NewGuid().ToString("N");
+        string demoId = Guid.NewGuid().ToString("N"), hevcId = Guid.NewGuid().ToString("N"), skipId = Guid.NewGuid().ToString("N");
         await using var server = new PlaylistSharingServer("Luma generated test playlist");
-        server.SetPlaylist([new(demoId, demo, "Luma Demo", 12, 1), new(hevcId, hevc, "Luma HEVC10 AAC 5.1", 2, .25)]);
+        server.SetPlaylist([new(demoId, demo, "Luma Demo", 12, 1, SkipRanges: [new("intro", 4, 5, "manual", "Desktop saved opening")]), new(hevcId, hevc, "Luma HEVC10 AAC 5.1", 2, .25), new(skipId, Path.Combine(fixtures, "Luma-Skip-Chapters.mkv"), "Luma Opening / Credits")]);
         using var diagnostics = new HostDiagnostics(server);
         server.Start(); Directory.CreateDirectory(Path.GetDirectoryName(readyFile)!);
         diagnostics.Start();
@@ -23,7 +24,7 @@ internal static class SharingTestHost
         string stopReason = "host-error";
         try
         {
-            await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(new { port = server.Port, code = server.PairingCode, ids = new { demo = demoId, hevc10 = hevcId } }));
+            await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(new { port = server.Port, code = server.PairingCode, ids = new { demo = demoId, hevc10 = hevcId, skip = skipId } }));
             if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(temporary, UnixFileMode.UserRead | UnixFileMode.UserWrite);
             File.Move(temporary, readyFile, true);
             Console.WriteLine("Sharing test host ready; generated fixtures only.");

@@ -34,6 +34,7 @@ public sealed class MediaEntry : INotifyPropertyChanged
         => duration > 0 ? $"{device} · {(completed ? "Finished · " : "")}{Math.Clamp(position / duration * 100, 0, 100):0}% · {Clock(position)} / {Clock(duration)}"
             : $"{device} · {(completed ? "Finished · " : "")}{Clock(position)}";
     public List<MediaBookmark> Bookmarks { get; set; } = [];
+    public List<PlaybackSkipRange> SkipRanges { get; set; } = [];
     public static string Clock(double seconds)
     {
         var time = TimeSpan.FromSeconds(double.IsFinite(seconds) ? Math.Clamp(seconds, 0, 86_400_000) : 0);
@@ -46,6 +47,7 @@ public sealed class LibraryDocument
     public List<MediaEntry> Items { get; set; } = [];
     public Guid? SelectedId { get; set; }
     public bool AutomaticallyCheckUpdates { get; set; } = true;
+    public bool AutoSkipEnabled { get; set; }
     [JsonIgnore]
     public bool AutoChecks { get => AutomaticallyCheckUpdates; set => AutomaticallyCheckUpdates = value; }
     public DateTimeOffset? LastUpdateAttempt { get; set; }
@@ -80,6 +82,7 @@ public sealed class LibraryStore
                 item.MobileProgressSeconds = item.MobileProgressSeconds is { } mobile ? Math.Min(ValidTime(mobile), item.MobileDurationSeconds > 0 ? item.MobileDurationSeconds : double.MaxValue) : null;
                 item.MobileUpdatedAtUnixSeconds = item.MobileProgressSeconds is null ? 0 : ValidTimestamp(item.MobileUpdatedAtUnixSeconds);
                 if (item.MobileProgressSeconds is null) item.MobileCompleted = false;
+                item.SkipRanges = PlaybackSkipPolicy.ValidatedRanges(item.SkipRanges, item.Duration).Where(r => r.Source == "manual").ToList();
                 item.Bookmarks = (item.Bookmarks ?? []).Where(b => b is not null && double.IsFinite(b.Time) && b.Time >= 0).Take(1000)
                     .Select(b => new MediaBookmark(Math.Min(ValidTime(b.Time), item.Duration > 0 ? item.Duration : double.MaxValue),
                         string.IsNullOrWhiteSpace(b.Label) ? MediaEntry.Clock(b.Time) : b.Label[..Math.Min(b.Label.Length, 256)])).ToList();
@@ -129,6 +132,12 @@ public sealed class LibraryStore
         item.MobileProgressSeconds = length > 0 ? Math.Min(position, length) : position;
         item.MobileDurationSeconds = length; item.MobileCompleted = completed && (length <= 0 || length - item.MobileProgressSeconds.Value <= 1);
         item.MobileUpdatedAtUnixSeconds = updatedAtUnixSeconds; item.ProgressChanged(); return true;
+    }
+    public bool SetSkipRanges(Guid id, IEnumerable<PlaybackSkipRange> ranges)
+    {
+        var item = Data.Items.Find(x => x.Id == id); if (item is null) return false;
+        item.SkipRanges = PlaybackSkipPolicy.ValidatedRanges(ranges, item.Duration).Where(r => r.Source == "manual").ToList();
+        Flush(); return true;
     }
     public void Bookmark(Guid id, double time)
     {

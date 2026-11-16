@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Luma.Core.Runtime;
+using Luma.Core.Library;
 
 namespace Luma.WindowsApp;
 
@@ -65,6 +66,38 @@ internal sealed class VlcPlayer : HwndHost
     public int SubtitleTrack { get { VerifyAccess(); return player == IntPtr.Zero ? -1 : Native.libvlc_video_get_spu(player); } }
     public IReadOnlyList<VlcTrack> AudioTracks => TrackList(false);
     public IReadOnlyList<VlcTrack> SubtitleTracks => TrackList(true);
+    public bool IsSeekable { get { VerifyAccess(); return player != IntPtr.Zero && Native.libvlc_media_player_is_seekable(player) != 0; } }
+    public IReadOnlyList<PlaybackChapter> Chapters
+    {
+        get
+        {
+            VerifyAccess(); if (player == IntPtr.Zero || !opened) return [];
+            int count = Native.libvlc_media_player_get_full_chapter_descriptions(player, -1, out IntPtr list);
+            try
+            {
+                if (count is <= 0 or > 1024 || list == IntPtr.Zero) return [];
+                var output = new List<PlaybackChapter>();
+                for (int index = 0; index < count; index++)
+                {
+                    IntPtr pointer = Marshal.ReadIntPtr(list, index * IntPtr.Size); if (pointer == IntPtr.Zero) continue;
+                    var item = Marshal.PtrToStructure<Native.ChapterDescription>(pointer);
+                    if (item.Offset is < 0 or > 31_536_000_000 || item.Duration > 31_536_000_000) continue;
+                    output.Add(new(item.Offset / 1000d, item.Duration / 1000d, BoundedChapterName(item.Name)));
+                }
+                return output;
+            }
+            finally { if (count > 0 && list != IntPtr.Zero) Native.libvlc_chapter_descriptions_release(list, (uint)count); }
+        }
+    }
+    static string BoundedChapterName(IntPtr pointer)
+    {
+        if (pointer == IntPtr.Zero) return "";
+        int length = 0; while (length < 640 && Marshal.ReadByte(pointer, length) != 0) length++;
+        if (length == 640) return "";
+        byte[] bytes = new byte[length]; Marshal.Copy(pointer, bytes, 0, length);
+        try { return new System.Text.UTF8Encoding(false, true).GetString(bytes); } catch (System.Text.DecoderFallbackException) { return ""; }
+    }
+
 
     public void Load(string path)
     {
@@ -196,6 +229,7 @@ internal sealed class VlcPlayer : HwndHost
         const string Library = "Luma.LibVLC3";
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)] internal delegate void EventCallback(IntPtr notification, IntPtr user);
         [StructLayout(LayoutKind.Sequential)] internal struct TrackDescription { public int Id; public IntPtr Name, Next; }
+        [StructLayout(LayoutKind.Sequential)] internal struct ChapterDescription { public long Offset, Duration; public IntPtr Name; }
         [StructLayout(LayoutKind.Sequential)] internal struct Statistics
         { public int ReadBytes; public float InputBitrate; public int DemuxReadBytes; public float DemuxBitrate; public int DemuxCorrupted, DemuxDiscontinuity, DecodedVideo, DecodedAudio, DisplayedPictures, LostPictures, PlayedAudioBuffers, LostAudioBuffers, SentPackets, SentBytes; public float SendBitrate; }
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern IntPtr libvlc_new(int count, IntPtr arguments);
@@ -211,6 +245,8 @@ internal sealed class VlcPlayer : HwndHost
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern void libvlc_media_player_set_pause(IntPtr value, int pause);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_is_playing(IntPtr value);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_is_seekable(IntPtr value);
+        [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_get_full_chapter_descriptions(IntPtr value, int title, out IntPtr descriptions);
+        [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern void libvlc_chapter_descriptions_release(IntPtr descriptions, uint count);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern int libvlc_media_player_get_state(IntPtr value);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern long libvlc_media_player_get_time(IntPtr value);
         [DllImport(Library, CallingConvention = CallingConvention.Cdecl)] internal static extern void libvlc_media_player_set_time(IntPtr value, long milliseconds);
