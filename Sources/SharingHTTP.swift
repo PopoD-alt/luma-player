@@ -7,6 +7,36 @@ struct SharedMedia {
     let title: String
     let durationSeconds: Double
     let resumeSeconds: Double
+    var computerProgressSeconds: Double? = nil
+    var computerUpdatedAtUnixSeconds: Double? = nil
+    var computerCompleted: Bool? = nil
+    var mobileProgressSeconds: Double? = nil
+    var mobileDurationSeconds: Double? = nil
+    var mobileUpdatedAtUnixSeconds: Double? = nil
+    var mobileCompleted: Bool? = nil
+}
+
+struct SharedProgressReport: Decodable {
+    let itemId: String
+    let positionSeconds: Double
+    let durationSeconds: Double
+    let completed: Bool
+
+    static func parse(_ body: Data, hostDuration: Double) throws -> SharedProgressReport {
+        guard body.count <= 4096, String(data: body, encoding: .utf8) != nil,
+              let object = try JSONSerialization.jsonObject(with: body) as? [String: Any],
+              Set(object.keys) == ["itemId", "positionSeconds", "durationSeconds", "completed"] else { throw SharingHTTP.Failure.malformed }
+        let value = try JSONDecoder().decode(Self.self, from: body)
+        guard UUID(uuidString: value.itemId) != nil, value.itemId.utf8.count <= 200,
+              value.positionSeconds.isFinite, value.durationSeconds.isFinite,
+              (0...31_536_000).contains(value.positionSeconds),
+              (0...31_536_000).contains(value.durationSeconds) else { throw SharingHTTP.Failure.malformed }
+        let duration = hostDuration.isFinite && hostDuration > 0 ? min(31_536_000, hostDuration) : value.durationSeconds
+        let position = value.completed && duration > 0 ? duration
+            : duration > 0 ? min(value.positionSeconds, duration) : value.positionSeconds
+        return SharedProgressReport(itemId: value.itemId, positionSeconds: position,
+                                    durationSeconds: duration, completed: value.completed)
+    }
 }
 
 enum SharingHTTP {
@@ -20,7 +50,7 @@ enum SharingHTTP {
     /// nil means the bounded request is incomplete. Request pipelining and
     /// transfer-encoded bodies are deliberately unsupported on this small API.
     static func parse(_ data: Data) throws -> Request? {
-        guard data.count <= 34_816 else { throw Failure.malformed }
+        guard data.count <= 36_864 else { throw Failure.malformed }
         guard let end = data.range(of: Data("\r\n\r\n".utf8)) else {
             if data.count > 32_768 { throw Failure.malformed }; return nil
         }
@@ -44,7 +74,7 @@ enum SharingHTTP {
         guard headers["transfer-encoding"] == nil else { throw Failure.malformed }
         let rawLength = headers["content-length"] ?? "0"
         guard !rawLength.isEmpty, rawLength.utf8.allSatisfy({ (48...57).contains($0) }),
-              let length = Int(rawLength), length <= 1024,
+              let length = Int(rawLength), length <= 4096,
               start[0] == "POST" || length == 0 else { throw Failure.malformed }
         let needed = end.upperBound + length
         guard data.count >= needed else { return nil }

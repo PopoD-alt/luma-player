@@ -14,7 +14,9 @@ Requests are HTTP/1.1 with bounded headers/body, no CORS, no directory serving,
 and no arbitrary input paths. Desktop implementations bind a random available
 port. Only local/private/link-local/loopback source addresses are accepted.
 
-- `GET /v1/info` is public: `{ "version":1,"name":"Luma on …","id":"…","pairingRequired":true }`.
+- `GET /v1/info` is public: `{ "version":1,"name":"Luma on …","id":"…","pairingRequired":true,"progressReporting":true }`.
+  `progressReporting` is an optional capability: missing/false means the client
+  must not send progress updates to that older/read-only host.
 - `POST /v1/pair`, JSON `{ "code":"123456" }`, checks the desktop's displayed
   random six-digit code, expiry, and rate limits. Success returns
   `{ "token":"<random 256-bit token>","name":"…" }`. Tokens are in memory
@@ -28,6 +30,31 @@ port. Only local/private/link-local/loopback source addresses are accepted.
   finite times from zero to 31,536,000 seconds, and 4 MiB of JSON. A bounded
   response sets `truncated:true` and preserves the available `totalItems` count;
   clients show that limit rather than pretending the entire playlist appeared.
+- New hosts add optional per-item `computerProgressSeconds`,
+  `computerUpdatedAtUnixSeconds`, `computerCompleted`, `mobileProgressSeconds`,
+  `mobileDurationSeconds`, `mobileUpdatedAtUnixSeconds` and `mobileCompleted`.
+  Unknown phone progress is omitted/null; zero is a known beginning position.
+  Older hosts remain readable: clients fall back to `resumeSeconds` for the
+  computer position. `resumeSeconds` retains its legacy resume/restart semantics;
+  the separate computer progress can show a completed item without resuming at
+  its end. Timestamps are server-generated Unix seconds (fractions allowed),
+  finite and between zero and 253,402,300,799. Completion fields are booleans.
+- `POST /v1/progress`, header `Authorization: Bearer <token>`, JSON
+  `{ "itemId":"opaque-id","positionSeconds":120,"durationSeconds":1200,"completed":false }`,
+  reports only the phone's playback position. Body size is at most 4,096 bytes;
+  IDs must refer to a live playlist item. Times must be finite numbers in the
+  existing one-year range, and completion must be a boolean. The host clamps the
+  position to its known media duration; a phone-reported duration is informational
+  and never replaces authoritative desktop media metadata. When the host duration
+  is unknown it may retain the bounded value separately as `mobileDurationSeconds`.
+  Success returns status200 and version1 JSON with accepted `positionSeconds`,
+  `durationSeconds`, `completed` and `updatedAtUnixSeconds`.
+  Auth/session and item liveness are rechecked before persistence; stopped,
+  expired/revoked or removed sessions/items cannot update the library. Invalid
+  data is400, missing media404, oversized bodies400/413, invalid authentication401,
+  and more than30 reports per token per minute429. Clients coalesce reports and
+  normally send every5seconds while playing, plus final pause/seek/leave updates.
+  Progress writes never open arbitrary paths or trigger desktop play/pause/seek.
 - `GET` or `HEAD /v1/media/<opaque-id>?token=<token>` streams the original
   playlist file directly from disk. The token is permitted in this URL because
   native media players do not consistently support Authorization headers.
@@ -38,6 +65,7 @@ port. Only local/private/link-local/loopback source addresses are accepted.
 Every authenticated request rechecks the live playlist. Removed/missing media
 is 404. Clients never receive absolute filesystem paths. No upload, delete,
 remote filesystem browsing or desktop playback-control endpoint is included.
+The only authenticated write is bounded progress metadata for a live item.
 Use constant-time token comparison and bounded simultaneous connections. Stop
 must cancel listeners, discovery, active streams and revoke pairing tokens.
 
@@ -46,6 +74,13 @@ and resume position, supports seeking via byte ranges, and stays on the phone;
 the host must remain on, the desktop app open and sharing enabled. The companion
 streams desktop original files on the same trusted Wi-Fi using discovery or a
 manual desktop URL; it does not provide a standalone local-file picker.
+
+Both device positions remain distinct. Interfaces label Computer and Phone,
+including completion and last position. Opening an item on Android prefers its
+existing session-local checkpoint, otherwise the latest available saved device
+position. Moving an already-running player to the other device's position requires
+an explicit resume action; arriving progress reports never seek a live player. Phone reports persist on the host with the library. Sharing
+must be enabled for fresh cross-device updates; this is not cloud synchronization.
 
 Request/header reads have short deadlines. Authenticated media writes allow up
 to 15 minutes of backpressure for a paused reader, while stop/removal still cancels
@@ -66,7 +101,8 @@ Verification is checkpoint-specific. Mac's approved bundled runtime and Windows'
 actual app-local route pass playback/sharing checks without an installed VLC
 fallback. Android's approved ARM64 debug owner copy passes both production
 servers, true-cold preparation, real native clock/seeking, surface restoration,
-fullscreen and independent re-signing. Fresh quiet x64 application checks also
-pass in workflow43767190446. Physical Wi-Fi discovery, firewalls and speaker/A/V
+fullscreen and independent re-signing. Earlier quiet x64 checks passed in
+workflow43767190446; currentx64emulator Wi-Fi loss is recorded in the Android
+guide and is not a playback pass. Physical Wi-Fi discovery, firewalls and speaker/A/V
 synchronization remain target-device review; these fixture checks do not imply
 universal format/device compatibility or production publication approval.

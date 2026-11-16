@@ -170,7 +170,7 @@ export default function LumaCodecProgress() {
   const [category,setCategory] = useCanvasState("luma-codecs-category", "all");
   const [detail,setDetail] = useCanvasState<string|null>("luma-codecs-detail", null);
   const [platform,setPlatform] = useCanvasState("luma-codecs-platform", "windows");
-  const [previewId,setPreviewId] = useCanvasState("luma-rebuild-preview", "macos");
+  const [previewId,setPreviewId] = useCanvasState("luma-modern-player-preview", "android-controls");
   const preview = snapshot.previews.find(p=>p.id===previewId) ?? snapshot.previews[0];
   const windows = platform === "windows";
   const entries = windows ? snapshot.windows_entries : snapshot.entries;
@@ -184,22 +184,22 @@ export default function LumaCodecProgress() {
   const open = (path:string) => dispatch({type:"openFile",path:path.startsWith("/")?path:`${snapshot.root}/${path}`});
   const native = snapshot.native_evidence;
   return <Stack gap={22} style={{padding:24,maxWidth:1400,margin:"0 auto",color:theme.text.primary,background:theme.bg.editor}}>
-    <Row justify="space-between" wrap><div><Text size="small" tone="tertiary">SDAS / LUMA PLAYER</Text><H1>Player rebuild progress</H1></div><Pill>Review preview</Pill></Row>
+    <Row justify="space-between" wrap><div><Text size="small" tone="tertiary">SDAS / LUMA PLAYER</Text><H1>Luma player review</H1></div><Pill>Local review</Pill></Row>
+    {preview && <Stack gap={12}>
+      <Row justify="space-between" wrap><H2>Review the app interfaces</H2><Select value={preview.id} onChange={setPreviewId} options={snapshot.previews.map(p=>({value:p.id,label:p.name}))}/></Row>
+      <img src={preview.image} alt={preview.name} style={{width:"100%",maxHeight:600,objectFit:"contain",background:theme.bg.editor}}/>
+      <Text size="small" tone="secondary">{preview.caption}</Text>
+      <Row><Button variant="ghost" onClick={()=>open(preview.path)}>Open full image</Button><Text size="small" tone="tertiary">Source: native app test capture · original synthetic media only</Text></Row>
+      <Divider/>
+    </Stack>}
     {snapshot.rebuild && <Stack gap={12}>
       <Text>Mac and Windows now use libVLC. Android streams the desktop playlist over the local network. The original-codec inventory below records earlier experiments; it does not measure this backend's compatibility.</Text>
       <Table headers={["Platform","Playback evidence","Local sharing","Distribution / review"]} rows={snapshot.rebuild.platforms.map(p=>[
         <div><Text weight="medium">{p.name}</Text><Button variant="ghost" onClick={()=>open(p.evidence)}>Open evidence</Button></div>,p.playback,p.sharing,p.distribution
       ])}/>
       <Text size="small" tone="tertiary">Source: local native test logs and CI evidence · {snapshot.rebuild.branch} · recorded {date(snapshot.rebuild.as_of)}. Synthetic fixtures do not establish every VLC format or physical audio output.</Text>
-      <H2>Remaining before packaging</H2>
+      <H2>Next steps</H2>
       {snapshot.rebuild.next.map(item=><Text key={item} size="small">{item}</Text>)}
-      <Divider/>
-    </Stack>}
-    {preview && <Stack gap={12}>
-      <Row justify="space-between" wrap><H2>Review the app interfaces</H2><Select value={preview.id} onChange={setPreviewId} options={snapshot.previews.map(p=>({value:p.id,label:p.name}))}/></Row>
-      <img src={preview.image} alt={preview.name} style={{width:"100%",maxHeight:600,objectFit:"contain",background:theme.bg.editor}}/>
-      <Text size="small" tone="secondary">{preview.caption}</Text>
-      <Row><Button variant="ghost" onClick={()=>open(preview.path)}>Open full image</Button><Text size="small" tone="tertiary">Source: native app test capture · original synthetic media only</Text></Row>
       <Divider/>
     </Stack>}
     <H2>Historical original-codec work</H2>

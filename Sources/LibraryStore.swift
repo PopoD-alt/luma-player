@@ -13,6 +13,16 @@ struct MediaItem: Identifiable, Codable, Equatable {
     var title: String
     var duration: Double = 0
     var resumeTime: Double = 0
+    // Separate checkpoints make watching on the phone visible without moving
+    // this computer's player or replacing its own resume position. Optional
+    // fields keep version-1 libraries written by earlier builds readable.
+    var computerProgressSeconds: Double? = nil
+    var computerUpdatedAtUnixSeconds: Double? = nil
+    var computerCompleted: Bool? = nil
+    var mobileProgressSeconds: Double? = nil
+    var mobileDurationSeconds: Double? = nil
+    var mobileUpdatedAtUnixSeconds: Double? = nil
+    var mobileCompleted: Bool? = nil
     var addedAt: Date = Date()
     var bookmarks: [MediaBookmark] = []
 
@@ -43,6 +53,7 @@ final class LibraryStore: ObservableObject {
     let storageURL: URL
     private var lastProgressSave = Date.distantPast
     private var progressDirty = false
+    private var pendingProgressSave: Task<Void, Never>?
 
     init(storageURL: URL? = nil) {
         self.storageURL = storageURL ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -107,12 +118,67 @@ final class LibraryStore: ObservableObject {
         let safeDuration = duration.isFinite && duration > 0 ? duration : items[index].duration
         var safeTime = time.isFinite ? max(0, time) : 0
         if safeDuration > 0 { safeTime = min(safeTime, safeDuration) }
-        if safeDuration > 0 && safeTime / safeDuration >= 0.98 { safeTime = 0 }
-        guard items[index].duration != safeDuration || abs(items[index].resumeTime - safeTime) > 0.05 else { return }
-        items[index].duration = safeDuration
-        items[index].resumeTime = safeTime
+        let actualTime = safeTime
+        let completed = safeDuration > 0 && safeTime / safeDuration >= 0.98
+        if completed { safeTime = 0 }
+        guard items[index].duration != safeDuration || abs(items[index].resumeTime - safeTime) > 0.05
+                || items[index].computerProgressSeconds == nil
+                || abs((items[index].computerProgressSeconds ?? 0) - actualTime) > 0.05
+                || items[index].computerCompleted != completed else { return }
+        var item = items[index]
+        item.duration = safeDuration
+        item.resumeTime = safeTime
+        item.computerProgressSeconds = actualTime
+        item.computerUpdatedAtUnixSeconds = Date().timeIntervalSince1970
+        item.computerCompleted = completed
+        items[index] = item
+        markProgressDirty()
+    }
+
+    /// A phone checkpoint is metadata only. In particular, its reported length
+    /// must never become the computer's authoritative media duration.
+    @discardableResult
+    func updateMobileProgress(id: UUID, time: Double, duration: Double, completed: Bool,
+                              updatedAt: Double = Date().timeIntervalSince1970) -> Bool {
+        guard let index = items.firstIndex(where: { $0.id == id }), time.isFinite, duration.isFinite,
+              updatedAt.isFinite, updatedAt > 0, updatedAt <= 253_402_300_799, time >= 0, duration >= 0,
+              time <= 31_536_000, duration <= 31_536_000 else { return false }
+        let hostDuration = items[index].duration
+        let acceptedDuration = hostDuration.isFinite && hostDuration > 0 ? min(hostDuration, 31_536_000) : duration
+        let acceptedTime = completed && acceptedDuration > 0 ? acceptedDuration
+            : acceptedDuration > 0 ? min(time, acceptedDuration) : time
+        var item = items[index]
+        item.mobileProgressSeconds = acceptedTime
+        item.mobileDurationSeconds = acceptedDuration > 0 ? acceptedDuration : nil
+        item.mobileUpdatedAtUnixSeconds = updatedAt
+        item.mobileCompleted = completed
+        items[index] = item
+        markProgressDirty()
+        return true
+    }
+
+    func completeProgress(id: UUID) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        var item = items[index]
+        item.resumeTime = 0
+        item.computerProgressSeconds = item.duration > 0 ? item.duration : item.computerProgressSeconds
+        item.computerCompleted = true
+        item.computerUpdatedAtUnixSeconds = Date().timeIntervalSince1970
+        items[index] = item
+        markProgressDirty()
+    }
+
+    private func markProgressDirty() {
         progressDirty = true
-        if Date().timeIntervalSince(lastProgressSave) >= 5 { save() }
+        let remaining = 5 - Date().timeIntervalSince(lastProgressSave)
+        if remaining <= 0 { save(); return }
+        guard pendingProgressSave == nil else { return }
+        pendingProgressSave = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(remaining))
+            guard !Task.isCancelled, let self else { return }
+            self.pendingProgressSave = nil
+            self.flush()
+        }
     }
 
     func addBookmark(id: UUID, time: Double) {
@@ -146,7 +212,12 @@ final class LibraryStore: ObservableObject {
 
     func resetProgress(id: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
-        items[index].resumeTime = 0
+        var item = items[index]
+        item.resumeTime = 0
+        item.computerProgressSeconds = 0
+        item.computerCompleted = false
+        item.computerUpdatedAtUnixSeconds = Date().timeIntervalSince1970
+        items[index] = item
         save()
     }
 
@@ -171,6 +242,23 @@ final class LibraryStore: ObservableObject {
                     item.resumeTime = min(item.resumeTime, item.duration)
                     if item.resumeTime / item.duration >= 0.98 { item.resumeTime = 0 }
                 }
+                func checkpoint(_ value: Double?) -> Double? {
+                    guard let value, value.isFinite, value >= 0, value <= 31_536_000 else { return nil }
+                    return value
+                }
+                func timestamp(_ value: Double?) -> Double? {
+                    guard let value, value.isFinite, value > 0, value <= 253_402_300_799 else { return nil }; return value
+                }
+                item.computerProgressSeconds = checkpoint(item.computerProgressSeconds)
+                if let time = item.computerProgressSeconds, item.duration > 0 { item.computerProgressSeconds = min(time, item.duration) }
+                item.computerUpdatedAtUnixSeconds = timestamp(item.computerUpdatedAtUnixSeconds)
+                item.mobileProgressSeconds = checkpoint(item.mobileProgressSeconds)
+                item.mobileDurationSeconds = checkpoint(item.mobileDurationSeconds).flatMap { $0 > 0 ? $0 : nil }
+                item.mobileUpdatedAtUnixSeconds = timestamp(item.mobileUpdatedAtUnixSeconds)
+                if let time = item.mobileProgressSeconds {
+                    let duration = item.duration > 0 ? item.duration : item.mobileDurationSeconds ?? 0
+                    if duration > 0 { item.mobileProgressSeconds = min(time, duration) }
+                }
                 item.bookmarks = source.bookmarks.filter { $0.time.isFinite && $0.time >= 0 }
                 return item
             }
@@ -181,6 +269,7 @@ final class LibraryStore: ObservableObject {
     }
 
     private func save() {
+        pendingProgressSave?.cancel(); pendingProgressSave = nil
         do {
             try FileManager.default.createDirectory(at: storageURL.deletingLastPathComponent(), withIntermediateDirectories: true)
             let encoder = JSONEncoder()

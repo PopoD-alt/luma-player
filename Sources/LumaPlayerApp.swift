@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 
 private let ember = Color.accentColor
 private let panel = Color(nsColor: .controlBackgroundColor)
+private let phoneAccent = Color(red: 0.27, green: 0.82, blue: 0.73)
 
 // Keep the window opaque; glass surfaces blend within a stable native base.
 struct NativeWindowMaterial: NSViewRepresentable {
@@ -166,7 +167,7 @@ func clockLabel(_ time: Double) -> String {
         }
         if engine.state == "ended", !handledEnd {
             handledEnd = true
-            if let id = library.selectedID { library.resetProgress(id: id) }
+            if let id = library.selectedID { library.completeProgress(id: id) }
             if loopMode == 1, let item = library.selectedItem { play(item) }
             else { next(wrap: loopMode == 2) }
         }
@@ -216,6 +217,20 @@ func clockLabel(_ time: Double) -> String {
         library.resetProgress(id: item.id)
     }
 
+    func resumeFromPhone(_ item: MediaItem) {
+        guard let phoneTime = item.mobileProgressSeconds, item.isAvailable else { return }
+        let time = item.mobileCompleted == true ? 0 : phoneTime
+        if library.selectedID == item.id, engine.hasMedia, engine.isSeekable,
+           !["ended", "stopped", "error"].contains(engine.state) {
+            saveProgress(); pendingResume = nil
+            engine.seek(to: time)
+            if !engine.isPlaying { engine.togglePause() }
+        } else {
+            play(item); pendingResume = time
+        }
+        tell(time > 0 ? "Continuing from phone at \(clockLabel(time))" : "Playing again from the beginning")
+    }
+
     func remove(_ item: MediaItem) {
         if library.selectedID == item.id { engine.unload(); pendingResume = nil }
         library.remove(item.id)
@@ -237,14 +252,27 @@ func clockLabel(_ time: Double) -> String {
         window.toggleFullScreen(nil)
     }
     func startSharing() {
-        sharing.start { [weak self] in
+        sharing.start(provider: { [weak self] in
             guard let self else { return [] }
             return self.library.items.map { item in
-                SharedMedia(id: item.id.uuidString.lowercased(), url: item.url, title: item.title,
-                    durationSeconds: item.id == self.library.selectedID && self.engine.hasMedia ? self.engine.duration : item.duration,
-                    resumeSeconds: item.id == self.library.selectedID && self.engine.hasMedia ? self.engine.currentTime : item.resumeTime)
+                let active = item.id == self.library.selectedID && self.engine.hasMedia && self.pendingResume == nil
+                    && ["playing", "paused", "ended"].contains(self.engine.state)
+                let time = active ? self.engine.currentTime : item.computerProgressSeconds ?? item.resumeTime
+                let duration = active && self.engine.duration > 0 ? self.engine.duration : item.duration
+                let completed = active ? self.engine.state == "ended" || duration > 0 && time / duration >= 0.98 : item.computerCompleted == true
+                return SharedMedia(id: item.id.uuidString.lowercased(), url: item.url, title: item.title,
+                    durationSeconds: duration,
+                    resumeSeconds: completed ? 0 : active ? self.engine.currentTime : item.resumeTime,
+                    computerProgressSeconds: time, computerUpdatedAtUnixSeconds: item.computerUpdatedAtUnixSeconds,
+                    computerCompleted: completed, mobileProgressSeconds: item.mobileProgressSeconds,
+                    mobileDurationSeconds: item.mobileDurationSeconds, mobileUpdatedAtUnixSeconds: item.mobileUpdatedAtUnixSeconds,
+                    mobileCompleted: item.mobileCompleted)
             }
-        }
+        }, onProgress: { [weak self] report, updatedAt in
+            guard let self, let id = UUID(uuidString: report.itemId) else { return false }
+            return self.library.updateMobileProgress(id: id, time: report.positionSeconds,
+                duration: report.durationSeconds, completed: report.completed, updatedAt: updatedAt)
+        })
     }
     func shutdown() { sharingLibraryObserver?.cancel(); sharing.stop(); saveProgress(); engine.shutdown() }
 }
@@ -499,13 +527,21 @@ struct PlayerView: View {
                 ZStack { RoundedRectangle(cornerRadius: 8).fill(selected ? ember.opacity(0.16) : labelColor.opacity(0.045)); Image(systemName: selected && engine.isPlaying ? "waveform" : "play.rectangle").font(.system(size: 17, weight: .light)).foregroundStyle(selected ? ember : muted) }.frame(width: 40, height: 45)
                 VStack(alignment: .leading, spacing: 5) {
                     Text(item.title).font(.system(size: 13, weight: selected ? .semibold : .medium)).lineLimit(2).multilineTextAlignment(.leading).foregroundStyle(selected ? labelColor : labelColor.opacity(0.8))
-                    HStack(spacing: 5) { Text(item.url.pathExtension.uppercased()); Text("·"); Text(!item.isAvailable ? "File unavailable" : item.resumeTime > 0 ? "Resume \(clockLabel(item.resumeTime))" : item.duration > 0 ? clockLabel(item.duration) : "Ready to play") }.font(.system(size: 9)).foregroundStyle(muted).lineLimit(1)
+                    HStack(spacing: 5) { Text(item.url.pathExtension.uppercased()); Text("·"); Text(!item.isAvailable ? "File unavailable" : item.duration > 0 ? clockLabel(item.duration) : "Ready to play") }.font(.system(size: 9)).foregroundStyle(muted).lineLimit(1)
+                    checkpointLine("Computer", symbol: "desktopcomputer", seconds: item.computerProgressSeconds ?? item.resumeTime,
+                                   duration: item.duration, completed: item.computerCompleted == true, color: ember)
+                    if let time = item.mobileProgressSeconds {
+                        checkpointLine("Phone", symbol: "iphone", seconds: time,
+                            duration: item.duration > 0 ? item.duration : item.mobileDurationSeconds ?? 0,
+                            completed: item.mobileCompleted == true, color: phoneAccent)
+                    }
                 }
                 Spacer(minLength: 0)
                 if selected { Circle().fill(ember).frame(width: 5, height: 5) }
             }.padding(10).background(selected ? ember.opacity(0.1) : .clear, in: RoundedRectangle(cornerRadius: 10)).overlay(RoundedRectangle(cornerRadius: 10).stroke(selected ? ember.opacity(0.18) : .clear, lineWidth: 1))
         }.buttonStyle(.plain).contextMenu {
             Button("Play") { player.play(item) }
+            if item.mobileProgressSeconds != nil { Button(item.mobileCompleted == true ? "Play Again After Phone" : "Resume from Phone") { player.resumeFromPhone(item) } }
             Button("Show in Finder") { player.reveal(item) }
             Button("Reset Saved Position") { player.resetProgress(item) }
             Divider()
@@ -513,6 +549,32 @@ struct PlayerView: View {
             Button("Move Later") { library.move(id: item.id, offset: 1) }
             Divider()
             Button("Remove from Queue", role: .destructive) { player.remove(item) }
+        }
+    }
+
+    private func checkpointLine(_ name: String, symbol: String, seconds: Double, duration: Double,
+                                completed: Bool, color: Color) -> some View {
+        let safeTime = seconds.isFinite ? min(31_536_000, max(0, seconds)) : 0
+        let safeDuration = duration.isFinite ? min(31_536_000, max(0, duration)) : 0
+        let fraction = completed ? 1 : safeDuration > 0 ? min(1, safeTime / safeDuration) : 0
+        return VStack(spacing: 3) {
+            HStack(spacing: 4) {
+                Image(systemName: symbol).foregroundStyle(color)
+                Text(name)
+                Spacer(minLength: 3)
+                Text(completed ? "Finished" : safeDuration > 0
+                     ? "\(clockLabel(safeTime)) · \(Int(fraction * 100))%" : clockLabel(safeTime))
+                    .monospacedDigit()
+            }.font(.system(size: 9)).foregroundStyle(muted).lineLimit(1)
+            if safeDuration > 0 {
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(labelColor.opacity(0.1))
+                        Capsule().fill(color.opacity(0.85)).frame(width: max(0, geometry.size.width * fraction))
+                    }
+                }.frame(height: 3).accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(name) watched progress").accessibilityValue("\(Int(fraction * 100)) percent")
+            }
         }
     }
 
@@ -605,6 +667,27 @@ struct PlayerView: View {
             HStack { Text("Details").font(.system(size: 15, weight: .semibold)).foregroundStyle(muted); Spacer(); GlyphButton(symbol: "xmark", label: "Close details") { player.showInspector = false } }
             if let item = library.selectedItem {
                 VStack(alignment: .leading, spacing: 8) { Text(item.title).font(.system(size: 16, weight: .medium)); Text(engine.backendName).font(.system(size: 11)).foregroundStyle(muted); if let note = engine.subtitleRenderingNote { Text(note).font(.system(size: 11)).foregroundStyle(muted) }; Text(item.url.lastPathComponent).font(.system(size: 11)).foregroundStyle(muted).textSelection(.enabled); Button("Show in Finder ↗") { player.reveal(item) }.buttonStyle(.plain).font(.system(size: 11)).foregroundStyle(ember) }
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Continue watching").font(.system(size: 12, weight: .semibold)).foregroundStyle(muted)
+                    checkpointLine("Computer", symbol: "desktopcomputer", seconds: item.computerProgressSeconds ?? item.resumeTime,
+                                   duration: item.duration, completed: item.computerCompleted == true, color: ember)
+                    if let time = item.mobileProgressSeconds {
+                        checkpointLine("Phone", symbol: "iphone", seconds: time,
+                            duration: item.duration > 0 ? item.duration : item.mobileDurationSeconds ?? 0,
+                            completed: item.mobileCompleted == true, color: phoneAccent)
+                        if let timestamp = item.mobileUpdatedAtUnixSeconds {
+                            HStack(spacing: 3) { Text("Phone updated"); Text(Date(timeIntervalSince1970: timestamp), style: .relative); Text("ago") }
+                                .font(.system(size: 9)).foregroundStyle(muted).lineLimit(1)
+                        }
+                        Button { player.resumeFromPhone(item) } label: {
+                            Label(item.mobileCompleted == true ? "Watch again from beginning" : "Resume from phone at \(clockLabel(time))", systemImage: "arrow.uturn.forward")
+                                .font(.system(size: 10, weight: .semibold)).foregroundStyle(phoneAccent)
+                                .frame(maxWidth: .infinity).padding(.horizontal, 8).padding(.vertical, 8)
+                                .background(phoneAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(phoneAccent.opacity(0.3), lineWidth: 0.7))
+                        }.buttonStyle(.plain).disabled(!item.isAvailable).opacity(item.isAvailable ? 1 : 0.45)
+                    } else { Text("Phone progress appears here after a paired phone starts watching.").font(.system(size: 10)).foregroundStyle(muted) }
+                }.padding(12).background(labelColor.opacity(0.035), in: RoundedRectangle(cornerRadius: 12))
                 HStack { Text("Saved Moments").font(.system(size: 12, weight: .semibold)).foregroundStyle(muted); Spacer(); Button(action: player.bookmark) { Image(systemName: "plus.circle").foregroundStyle(ember) }.buttonStyle(.plain).help("Save current moment · ⌘B") }
                 if item.bookmarks.isEmpty { Text("Mark a scene, a favorite line, or where you want to come back.\n\nPress ⌘B while watching.").font(.system(size: 12)).foregroundStyle(muted).lineSpacing(4) }
                 ScrollView {

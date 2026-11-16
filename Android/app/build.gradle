@@ -63,8 +63,8 @@ android {
         applicationId = 'dev.sdas.luma'
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = '0.1.0-preview'
+        versionCode = 2
+        versionName = '0.2.0-preview'
         buildConfigField 'boolean', 'LUMA_CUSTOM_RUNTIME', selectedLocalAar != null ? 'true' : 'false'
         buildConfigField 'boolean', 'LUMA_APPROVED_RUNTIME', runtimePackageId != null ? 'true' : 'false'
         testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'

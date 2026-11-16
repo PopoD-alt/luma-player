@@ -20,14 +20,17 @@ import Darwin
     private var tokens = Set<String>()
     private var attempts: [(Date, String)] = []
     private var provider: () -> [SharedMedia] = { [] }
+    private var progressConsumer: ((SharedProgressReport, Double) -> Bool)?
+    private var progressAttempts: [String: [Date]] = [:]
     private let instanceID = UUID().uuidString.lowercased()
     private var epoch = UUID()
     private var streamIDs = Set<UUID>()
     private var awakeActivity: NSObjectProtocol?
     var name = "Luma on " + (Host.current().localizedName ?? "Mac")
 
-    func start(provider: @escaping () -> [SharedMedia]) {
-        stop(); error = nil; self.provider = provider; epoch = UUID(); let revision = epoch
+    func start(provider: @escaping () -> [SharedMedia]) { start(provider: provider, onProgress: nil) }
+    func start(provider: @escaping () -> [SharedMedia], onProgress: ((SharedProgressReport, Double) -> Bool)?) {
+        stop(); error = nil; self.provider = provider; progressConsumer = onProgress; epoch = UUID(); let revision = epoch
         do {
             try renewPairingCode()
             let listener = try NWListener(using: .tcp, on: .any)
@@ -68,6 +71,7 @@ import Darwin
         streamIDs.removeAll(); activeStreams = 0
         if let awakeActivity { ProcessInfo.processInfo.endActivity(awakeActivity); self.awakeActivity = nil }
         addresses = []; port = 0; isSharing = false; status = "Sharing is off"; attempts = []; provider = { [] }
+        progressConsumer = nil; progressAttempts = [:]
     }
     func renewPairingCode() throws {
         var random: UInt32 = 0
@@ -94,13 +98,14 @@ import Darwin
         let path = parts.path
         if ProcessInfo.processInfo.environment["LUMA_SHARING_TRACE"] == "1" { print("Sharing request: \(request.method) \(path)") }
         if path == "/v1/info", request.method == "GET", parts.query == nil {
-            client.json(["version": 1, "name": name, "id": instanceID, "pairingRequired": true]); return
+            client.json(["version": 1, "name": name, "id": instanceID, "pairingRequired": true,
+                         "progressReporting": progressConsumer != nil]); return
         }
         if path == "/v1/pair", request.method == "POST", parts.query == nil {
             attempts.removeAll { Date().timeIntervalSince($0.0) > 60 }
             guard attempts.count < 20, attempts.filter({ $0.1 == client.peer }).count < 5, tokens.count < 16 else { client.reply(429); return }
             attempts.append((Date(), client.peer))
-            guard pairingExpires > Date(), let data = try? JSONSerialization.jsonObject(with: request.body) as? [String: Any],
+            guard request.body.count <= 1024, pairingExpires > Date(), let data = try? JSONSerialization.jsonObject(with: request.body) as? [String: Any],
                   let code = data["code"] as? String, code.utf8.count == 6, SharingHTTP.equalSecret(code, pairingCode) else { client.reply(401); return }
             var bytes = [UInt8](repeating: 0, count: 32)
             guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else { client.reply(500); return }
@@ -111,13 +116,44 @@ import Darwin
         if path == "/v1/playlist", request.method == "GET", parts.query == nil {
             guard let token = bearer(request), authorized(token) else { client.reply(401); return }
             let available = provider().filter { $0.url.isFileURL && FileManager.default.fileExists(atPath: $0.url.path) }
-            let items: [[String: Any]] = available.prefix(1000).map {
-                ["id": $0.id, "title": String(decoding: $0.title.utf16.prefix(512), as: UTF16.self),
-                 "durationSeconds": $0.durationSeconds.isFinite ? min(31_536_000, max(0, $0.durationSeconds)) : 0,
-                 "resumeSeconds": $0.resumeSeconds.isFinite ? min(31_536_000, max(0, $0.resumeSeconds)) : 0,
-                 "mimeType": SharingHTTP.mime($0.url), "streamPath": "/v1/media/\($0.id)?token=\(token)"]
+            let items: [[String: Any]] = available.prefix(1000).map { item in
+                var result: [String: Any] = ["id": item.id, "title": String(decoding: item.title.utf16.prefix(512), as: UTF16.self),
+                 "durationSeconds": item.durationSeconds.isFinite ? min(31_536_000, max(0, item.durationSeconds)) : 0,
+                 "resumeSeconds": item.resumeSeconds.isFinite ? min(31_536_000, max(0, item.resumeSeconds)) : 0,
+                 "mimeType": SharingHTTP.mime(item.url), "streamPath": "/v1/media/\(item.id)?token=\(token)"]
+                for (key, value) in [("computerProgressSeconds", item.computerProgressSeconds),
+                                     ("mobileProgressSeconds", item.mobileProgressSeconds),
+                                     ("mobileDurationSeconds", item.mobileDurationSeconds)] {
+                    if let value, value.isFinite, (0...31_536_000).contains(value) { result[key] = value }
+                }
+                for (key, value) in [("computerUpdatedAtUnixSeconds", item.computerUpdatedAtUnixSeconds),
+                                     ("mobileUpdatedAtUnixSeconds", item.mobileUpdatedAtUnixSeconds)] {
+                    if let value, value.isFinite, value > 0, value <= 253_402_300_799 { result[key] = value }
+                }
+                if let completed = item.computerCompleted { result["computerCompleted"] = completed }
+                if let completed = item.mobileCompleted { result["mobileCompleted"] = completed }
+                return result
             }
             client.json(["version": 1, "name": name, "items": items, "truncated": available.count > items.count, "totalItems": available.count]); return
+        }
+        if path == "/v1/progress", request.method == "POST", parts.query == nil {
+            guard let token = bearer(request), authorized(token) else { client.reply(401); return }
+            guard let progressConsumer else { client.reply(404); return }
+            let now = Date()
+            var recent = (progressAttempts[token] ?? []).filter { now.timeIntervalSince($0) < 60 }
+            guard recent.count < 30 else { client.reply(429); return }
+            recent.append(now); progressAttempts[token] = recent
+            guard request.headers["content-type"]?.split(separator: ";", maxSplits: 1).first?
+                .trimmingCharacters(in: .whitespaces).lowercased() == "application/json",
+                  let raw = try? SharedProgressReport.parse(request.body, hostDuration: 0) else { client.reply(400); return }
+            guard let item = provider().first(where: { $0.id == raw.itemId }), item.url.isFileURL,
+                  FileManager.default.fileExists(atPath: item.url.path) else { client.reply(404); return }
+            guard let report = try? SharedProgressReport.parse(request.body, hostDuration: item.durationSeconds) else { client.reply(400); return }
+            let updatedAt = now.timeIntervalSince1970
+            guard progressConsumer(report, updatedAt) else { client.reply(404); return }
+            client.json(["version": 1, "positionSeconds": report.positionSeconds,
+                         "durationSeconds": report.durationSeconds, "completed": report.completed,
+                         "updatedAtUnixSeconds": updatedAt]); return
         }
         if path.hasPrefix("/v1/media/"), ["GET", "HEAD"].contains(request.method) {
             let parameters = parts.queryItems ?? []

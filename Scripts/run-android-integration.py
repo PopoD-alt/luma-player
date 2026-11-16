@@ -235,11 +235,16 @@ def main():
                     raise RuntimeError('Android end-to-end playback checks did not pass.')
                 # Instrumentation captures playback before ActivityScenario closes;
                 # a screenshot here would show the launcher instead of the app.
-                shot = subprocess.run(['adb', 'exec-out', 'run-as', 'dev.sdas.luma.preview',
-                                       'cat', 'cache/luma-android-review.png'], stdout=subprocess.PIPE, check=True)
-                if not shot.stdout.startswith(b'\x89PNG\r\n\x1a\n'):
-                    raise RuntimeError('The in-app Android review capture is not a PNG.')
-                (reports / 'Luma-Android-review.png').write_bytes(shot.stdout)
+                for device_name, local_name in (
+                        ('luma-android-review.png', 'Luma-Android-review.png'),
+                        ('luma-android-fullscreen.png', 'Luma-Android-fullscreen.png'),
+                        ('luma-android-modern-controls.png', 'Luma-Android-modern-controls.png'),
+                        ('luma-android-playlist.png', 'Luma-Android-playlist.png')):
+                    shot = subprocess.run(['adb', 'exec-out', 'run-as', 'dev.sdas.luma.preview',
+                                           'cat', 'cache/' + device_name], stdout=subprocess.PIPE, check=True)
+                    if not shot.stdout.startswith(b'\x89PNG\r\n\x1a\n'):
+                        raise RuntimeError('The in-app Android review capture is not a PNG.')
+                    (reports / local_name).write_bytes(shot.stdout)
                 print('PASS: Android actual ' + options.desktop + ' desktop pairing/list/range streaming, native AVC/HEVC decode/render, transport and no saved media download')
                 print('SCOPE: emulator/manual-address path; physical Wi-Fi discovery, phone hardware and physical sound still need device review')
             finally:

@@ -1,3 +1,19 @@
+# Luma Player 0.8.0 — in review, unreleased
+
+Android companion **0.2.0-preview / version code 2**; Mac **build 10**; Windows **review build 5**. These changes are prepared on `feature/modern-mobile-player`. The public 0.7.0 downloads and stable update feeds are unchanged. Owner review of these changes is pending.
+
+- Android fullscreen now uses vector play/pause, previous/next, ten-second jump, playlist and fullscreen buttons, with fading glass/gradient controls.
+- Horizontal swipes preview and commit a seek. Vertical gestures control player volume on the right and window brightness on the left, with temporary indicators and restored brightness on exit.
+- The Android playlist opens as a left overlay drawer while the existing video keeps playing.
+- Mac, Windows and Android distinguish Computer and Phone positions, percentages, completion and saved phone updates. Explicit Resume from phone/computer actions transfer the saved position; arriving reports never seek another running player.
+- Authenticated, bounded progress reporting adds optional fields to protocol version 1. Older hosts retain read-only streaming compatibility. Desktop libraries persist the phone checkpoint without overwriting the desktop position or media duration.
+
+Approved-runtime Android builds pass **40 JVM tests and lint**, plus native ARM64 playback/UI/progress tests against both actual desktop server implementations. Mac's native sharing, persistence and explicit-resume UI checks pass. [Native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43781716148) passes the approved app-local runtime, new progress UI and explicit native resume. The final Android APK also passes an in-place upgrade from the public preview and the native UI/progress test. Real-phone gestures, speaker output and Wi-Fi continuity still need owner review.
+
+AI-assisted opening/credit detection remains proposed. No AI model or automatic skip behavior is included in this build.
+
+---
+
 # Luma Player 0.7.0 — owner-tested preview
 
 The owner tested the supplied copies and reported that they work as expected. The [0.7.0 preview release](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) provides an Apple Silicon Mac DMG, Windows x64 portable ZIP and Android ARM64 debug APK with matching source/notices. [INSTALL.md](INSTALL.md) and the [README](README.md) explain installation, controls, Wi-Fi pairing and troubleshooting. Android's internal app version remains 0.1.0-preview. These packages preserve the reviewed app binaries; production signing and automatic-update feeds are separate.

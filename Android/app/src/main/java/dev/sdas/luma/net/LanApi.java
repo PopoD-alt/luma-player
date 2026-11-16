@@ -23,7 +23,9 @@ public final class LanApi {
     }
     public static final class Info {
         public final String id, name;
-        Info(String id, String name) { this.id=id; this.name=name; }
+        public final boolean supportsProgress;
+        Info(String id, String name) { this(id,name,false); }
+        Info(String id, String name,boolean supportsProgress) { this.id=id; this.name=name;this.supportsProgress=supportsProgress; }
     }
     public static final class Session {
         public final LanEndpoint endpoint;
@@ -37,9 +39,22 @@ public final class LanApi {
     public static final class Item {
         public final String id, title, mimeType, streamPath;
         public final double durationSeconds, resumeSeconds;
+        public final double computerProgressSeconds,computerUpdatedAtUnixSeconds,mobileProgressSeconds,mobileDurationSeconds,mobileUpdatedAtUnixSeconds;
+        public final boolean computerCompleted,mobileCompleted;
         Item(String id,String title,String mimeType,String streamPath,double duration,double resume) {
-            this.id=id;this.title=title;this.mimeType=mimeType;this.streamPath=streamPath;this.durationSeconds=duration;this.resumeSeconds=resume;
+            this(id,title,mimeType,streamPath,duration,resume,resume,0,false,Double.NaN,0,0,false);
         }
+        Item(String id,String title,String mimeType,String streamPath,double duration,double resume,double computerProgress,double computerUpdated,boolean computerCompleted,double mobileProgress,double mobileDuration,double mobileUpdated,boolean mobileCompleted) {
+            this.id=id;this.title=title;this.mimeType=mimeType;this.streamPath=streamPath;this.durationSeconds=duration;this.resumeSeconds=resume;
+            this.computerProgressSeconds=computerProgress;this.computerUpdatedAtUnixSeconds=computerUpdated;this.computerCompleted=computerCompleted;
+            this.mobileProgressSeconds=mobileProgress;this.mobileDurationSeconds=mobileDuration;this.mobileUpdatedAtUnixSeconds=mobileUpdated;this.mobileCompleted=mobileCompleted;
+        }
+        public boolean hasMobileProgress(){return Double.isFinite(mobileProgressSeconds);}
+    }
+    public static final class ProgressReceipt {
+        public final double positionSeconds,durationSeconds,updatedAtUnixSeconds;
+        public final boolean completed;
+        ProgressReceipt(double position,double duration,boolean completed,double updated){this.positionSeconds=position;this.durationSeconds=duration;this.completed=completed;this.updatedAtUnixSeconds=updated;}
     }
     public static final class Playlist {
         public final List<Item> items;
@@ -62,7 +77,7 @@ public final class LanApi {
         try {
             JSONObject json=request(endpoint.api("/v1/info"),"GET",null,null);
             if (json.getInt("version") != 1 || !json.getBoolean("pairingRequired")) throw malformed();
-            return new Info(bounded(json.getString("id"),128),bounded(json.getString("name"),256));
+            return new Info(bounded(json.getString("id"),128),bounded(json.getString("name"),256),optionalBoolean(json,"progressReporting",false));
         } catch (JSONException | IllegalArgumentException e) { throw malformed(); }
     }
     public Session pair(LanEndpoint endpoint, Info info, String code) throws IOException {
@@ -77,6 +92,19 @@ public final class LanApi {
     }
     public Playlist playlistState(Session session) throws IOException {
         return parsePlaylistState(request(session.endpoint.api("/v1/playlist"),"GET",session.token,null),session);
+    }
+    /** Metadata only: this never sends a file path or controls the desktop player. */
+    public ProgressReceipt reportProgress(Session session,String itemId,double position,double duration,boolean completed)throws IOException{
+        if(!session.host.supportsProgress)throw new ApiException(0,"This desktop version does not support shared progress yet.");
+        if(itemId==null||!itemId.matches("[A-Za-z0-9_-]{1,200}")||!validTime(position)||!validTime(duration))throw malformed();
+        if(duration>0)position=Math.min(position,duration);
+        try{
+            JSONObject body=new JSONObject().put("itemId",itemId).put("positionSeconds",position).put("durationSeconds",duration).put("completed",completed);
+            if(body.toString().getBytes(StandardCharsets.UTF_8).length>4096)throw malformed();
+            JSONObject response=request(session.endpoint.api("/v1/progress"),"POST",session.token,body.toString());
+            if(response.getInt("version")!=1)throw malformed();
+            return new ProgressReceipt(optionalNumber(response,"positionSeconds",position,31536000),optionalNumber(response,"durationSeconds",duration,31536000),optionalBoolean(response,"completed",completed),optionalNumber(response,"updatedAtUnixSeconds",0,253402300799.0));
+        }catch(JSONException error){throw malformed();}
     }
     public static List<Item> parsePlaylist(JSONObject json, Session session) throws ApiException {
         return parsePlaylistState(json,session).items;
@@ -106,7 +134,12 @@ public final class LanApi {
                 if (!Double.isFinite(duration)||!Double.isFinite(resume)||duration<0||resume<0||duration>31536000||resume>31536000) throw malformed();
                 if (duration>0) resume=Math.min(resume,duration);
                 String mime=bounded(item.getString("mimeType"),128);
-                result.add(new Item(id,title,mime,path,duration,resume));
+                double computer=optionalNumber(item,"computerProgressSeconds",resume,31536000),computerUpdated=optionalNumber(item,"computerUpdatedAtUnixSeconds",0,253402300799.0);
+                double mobile=optionalNumber(item,"mobileProgressSeconds",Double.NaN,31536000),mobileDuration=optionalNumber(item,"mobileDurationSeconds",0,31536000),mobileUpdated=optionalNumber(item,"mobileUpdatedAtUnixSeconds",0,253402300799.0);
+                if(duration>0)computer=Math.min(computer,duration);
+                if(duration>0)mobileDuration=duration;
+                if(Double.isFinite(mobile)){double known=duration>0?duration:mobileDuration;if(known>0)mobile=Math.min(mobile,known);}
+                result.add(new Item(id,title,mime,path,duration,resume,computer,computerUpdated,optionalBoolean(item,"computerCompleted",false),mobile,mobileDuration,mobileUpdated,optionalBoolean(item,"mobileCompleted",false)));
             }
             return new Playlist(Collections.unmodifiableList(result),truncated,total);
         } catch (JSONException | IllegalArgumentException e) { throw malformed(); }
@@ -145,6 +178,15 @@ public final class LanApi {
     }
     private static String bounded(String value,int limit) throws ApiException {
         if(value==null||value.isEmpty()||value.length()>limit||value.indexOf('\0')>=0)throw malformed();return value;
+    }
+    private static boolean validTime(double value){return Double.isFinite(value)&&value>=0&&value<=31536000;}
+    private static double optionalNumber(JSONObject object,String key,double fallback,double maximum)throws ApiException{
+        if(!object.has(key)||object.isNull(key))return fallback;
+        Object value=object.opt(key);if(!(value instanceof Number))throw malformed();double number=((Number)value).doubleValue();
+        if(!Double.isFinite(number)||number<0||number>maximum)throw malformed();return number;
+    }
+    private static boolean optionalBoolean(JSONObject object,String key,boolean fallback)throws ApiException{
+        if(!object.has(key)||object.isNull(key))return fallback;Object value=object.opt(key);if(!(value instanceof Boolean))throw malformed();return (Boolean)value;
     }
     private static ApiException malformed(){return new ApiException(0,"The desktop returned an unsupported or unsafe sharing response.");}
 }

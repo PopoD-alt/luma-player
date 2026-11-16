@@ -1,53 +1,59 @@
 {
-  "as_of": "2026-11-15T23:42:00+00:00",
-  "branch": "main · v0.7.0-preview.1 · owner reports tested copies working · app08e746d / CI harness5b4ff1a",
+  "as_of": "2026-11-16T00:42:53+00:00",
+  "branch": "feature/modern-mobile-player \u00b7 desktop0.8 / Android0.2 in local review \u00b7 public0.7 unchanged",
   "platforms": [
     {
-      "name": "Mac · Apple Silicon",
-      "playback": "PASS: self-contained approved runtime; AVC, HEVC Main10 MP4/MKV, AAC5.1, captions and transport. Space and fullscreen pass actual key events.",
-      "sharing": "PASS: actual Mac listener and Android app interoperability; pairing, original-file AVC/HEVC streaming, range seeking and revocation. Native Mac server checks include sparse5GiB reads.",
-      "distribution": "Owner-tested preview: ad-hoc signed Apple Silicon Mac DMG with approved runtime and complete source/notices. Not Apple-notarized; stable update feed remains0.6.1.",
-      "evidence": "build/mac-final-bundled-runtime-native.log"
+      "name": "Mac \u00b7 Apple Silicon",
+      "playback": "PASS: approved bundled runtime; native coordinator accepted a phone checkpoint without moving the paused computer player. Explicit Resume from phone sought/played on the same native view.",
+      "sharing": "PASS: actual NW listener progress bounds/auth/persistence; Android ARM64 native interoperability, independent GET matched phone5.496s while computer remained0.5s.",
+      "distribution": "Local review only: ad-hoc signed0.8 build10 in build/review/modern-player/Luma Player.app, strict deep signature verified. Public0.7 DMG and stable0.6.1 feed unchanged.",
+      "evidence": "build/mac-progress-ui-native.log"
     },
     {
-      "name": "Windows · x64",
-      "playback": "PASS: actual app-local Windows CI43765447494, including HEVC Main10 MP4/MKV, AAC, AVC, captions, transport, fullscreen and lifecycle/resume. Current Windows CI43773929495 also passes.",
-      "sharing": "PASS: production listener, pairing/ranges/revocation, DNS-SD shutdown and real SystemRequired power handle create/release. Physical discovery and speakers remain unverified.",
-      "distribution": "Owner-tested preview: portable x64 ZIP with app-local runtime, complete native/application sources and notices. EXE cross-built on Mac; same application/runtime passed native Windows CI. Public package instructions supersede preserved historical review metadata.",
-      "evidence": "build/windows-bundled-review-evidence/smoke/smoke-results.json"
+      "name": "Windows \u00b7 x64",
+      "playback": "PASS actual Windows0.8 CI43781716148: approved app-local runtime, HEVC Main10 MP4/MKV, AAC/AVC, captions, transport, fullscreen/lifecycle plus separate device progress and explicit native Resume from phone.",
+      "sharing": "PASS actual native WPF UI: paired phone7s persists and is visible without moving paused computer or replacing its native player. Explicit Resume from phone seeks that retained player. Portable Core auth/bounds/persistence/removal/throttle checks also pass.",
+      "distribution": "Local0.8/build5 review portable folder with approved runtime, source/notices and .NET runtime. EXE cross-built on Mac; matching Windows source/runtime passed native CI. Public0.7 archive and feeds unchanged.",
+      "evidence": "build/windows-device-progress-native-evidence/smoke/smoke-results.json"
     },
     {
-      "name": "Android · API26+",
-      "playback": "PASS current approved ARM64: cold Mac25.033s, independently re-signed cold Mac recovery31.495s, and portable-server ten-switch stress46.396s. Actual native clock/precise seek, surfaces, fullscreen and AVC/HEVC Main10/AAC5.1 pass;29 unit tests and lint pass.",
-      "sharing": "Wi-Fi route repair passes actual public-info revalidation before credentials. Fresh x64 CI initially had Wi-Fi, then lost it and activated cellular; the app correctly refused the stream before any upstream connection. That run failed and its later network change remains unexplained. Physical phone Wi-Fi/discovery needs review.",
-      "distribution": "Owner-tested preview: exact approved ARM64 APK f3289333, complete matching source/notices companion and independent re-sign proof. Current x64 emulator Wi-Fi failure remains documented; debug signing and manual updates.",
-      "evidence": "build/owner-review/android-arm64-08e746d/private-debug-manifest.json"
+      "name": "Android \u00b7 API26+",
+      "playback": "PASS approved ARM64: modern icons, previous/next, cancelled/committed swipe seek, hidden volume/brightness HUDs, overlay drawer/same advancing player;40 JVM tests and lint. Native both hosts plus final original-key33.874s proof.",
+      "sharing": "PASS: real phone report5.496s matches independent host GET; computer position unchanged. Explicit Resume from computer advances native clock/frames on the same player. Phone and computer bars remain separate.",
+      "distribution": "Local Android0.2/code2 APK2997eff1 matches original public preview certificate. In-place code1\u2192code2 upgrade plus native playback/progress passes33.874s;267 nonsignature APK entries match both-server-tested payload. Complete native/app source and notices accompany review.",
+      "evidence": "build/android-modern-ui-evidence.json"
     }
   ],
   "next": [
-    "Collect feedback on the owner-tested Mac, Windows and Android preview downloads.",
-    "Expand physical Wi-Fi discovery/continuity, firewall, audio/surround and A/V synchronization coverage; the owner did not supply a device matrix.",
-    "Investigate the x64 emulator Wi-Fi loss without treating failed CI as playback success.",
-    "Prepare production signing/installers and distinct platform update feeds when ready for a stable release."
+    "Review the local0.8 desktop /0.2 Android copies before preparing another public release. All new native automated checks pass; public0.7 downloads and stable update feeds remain unchanged.",
+    "Owner review: new fullscreen gestures, playlist drawer and cross-device progress on physical devices. Public0.7 assets and update feeds remain unchanged.",
+    "AI opening/credit skipping is proposed only: start with optional local Skip intro suggestions, then evaluate confidence on real episodes before optional auto skip.",
+    "Expand physical Wi-Fi discovery/continuity, speaker/surround output and A/V synchronization coverage; retain the documented x64 emulator Wi-Fi limitation."
   ],
   "previews": [
     {
+      "id": "android-controls",
+      "name": "Android \u00b7 modern fullscreen",
+      "path": "docs/images/android-modern-controls.png",
+      "caption": "Actual approved-runtime ARM64 emulator capture with vector controls, separate device times and visible progress-sharing state."
+    },
+    {
+      "id": "android-playlist",
+      "name": "Android \u00b7 left playlist drawer",
+      "path": "docs/images/android-playlist-drawer.png",
+      "caption": "Actual landscape left drawer over the same continuing native video. Computer blue / Phone orange bars distinguish their saved positions."
+    },
+    {
       "id": "macos",
-      "name": "Mac · dark appearance",
-      "path": "build/review/mac/Luma-dark.png",
-      "caption": "Native Mac review interface. The rebuilt app is available locally in build/Luma Player.app; the library is empty in this isolated capture."
+      "name": "Mac \u00b7 separate device progress",
+      "path": "build/review/mac-progress/desktop-phone-progress.png",
+      "caption": "Actual isolated Mac UI: Computer2s, Phone8s, explicit Resume from phone. NSView capture omits native video child; native playback counters and same-view resume were checked separately."
     },
     {
       "id": "windows",
-      "name": "Windows · native WPF",
-      "path": "build/windows-bundled-review-evidence/smoke/Luma-Windows-dark.png",
-      "caption": "Actual native Windows app with its approved app-local runtime and no installed VLC fallback. This WPF capture omits its separate native video child; AVC/HEVC snapshot content and native displayed-frame counters passed separately."
-    },
-    {
-      "id": "android",
-      "name": "Android · streaming playback",
-      "path": "build/owner-review/android-arm64-08e746d/Review/Fullscreen.png",
-      "caption": "Actual current ARM64 owner-review app with the Wi-Fi route repair. The normal interface includes native pause/play, seeking and volume; fullscreen hides its chrome. Physical phones and actual Wi-Fi discovery remain a separate review."
+      "name": "Windows \u00b7 separate device progress",
+      "path": "build/windows-device-progress-native-evidence/smoke/Luma-Windows-dark.png",
+      "caption": "Actual native0.8 Windows app with approved app-local runtime. WPF capture omits native video child; native snapshots/frame counters and explicit resume passed separately."
     }
   ]
 }

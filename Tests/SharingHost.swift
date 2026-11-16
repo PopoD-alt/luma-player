@@ -13,11 +13,18 @@ import Darwin
                 let fixtures = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
                 let ready = URL(fileURLWithPath: CommandLine.arguments[2])
                 let demo = UUID().uuidString.lowercased(), hevc = UUID().uuidString.lowercased()
-                let items = [SharedMedia(id: demo, url: fixtures.appendingPathComponent("Luma-Demo.mp4"), title: "Luma Demo", durationSeconds: 12, resumeSeconds: 0.5),
+                var items = [SharedMedia(id: demo, url: fixtures.appendingPathComponent("Luma-Demo.mp4"), title: "Luma Demo", durationSeconds: 12, resumeSeconds: 0.5),
                              SharedMedia(id: hevc, url: fixtures.appendingPathComponent("Luma-HEVC10-AAC51.mp4"), title: "Luma HEVC Main10 / AAC5.1", durationSeconds: 2, resumeSeconds: 0)]
                 guard items.allSatisfy({ FileManager.default.fileExists(atPath: $0.url.path) }) else { throw CocoaError(.fileNoSuchFile) }
                 let server = LocalSharingServer()
-                server.start { items }
+                server.start(provider: { items }, onProgress: { report, stamp in
+                    guard let index = items.firstIndex(where: { $0.id == report.itemId }) else { return false }
+                    items[index].mobileProgressSeconds = report.positionSeconds
+                    items[index].mobileDurationSeconds = report.durationSeconds > 0 ? report.durationSeconds : nil
+                    items[index].mobileUpdatedAtUnixSeconds = stamp
+                    items[index].mobileCompleted = report.completed
+                    return true
+                })
                 let deadline = Date().addingTimeInterval(15)
                 while server.port == 0 {
                     guard server.isSharing, Date() < deadline else { throw CocoaError(.fileReadUnknown) }

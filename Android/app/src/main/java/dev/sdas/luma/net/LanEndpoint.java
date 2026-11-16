@@ -51,7 +51,7 @@ public final class LanEndpoint {
     }
 
     public URL api(String path) {
-        if (!path.equals("/v1/info") && !path.equals("/v1/pair") && !path.equals("/v1/playlist")) throw invalid();
+        if (!path.equals("/v1/info") && !path.equals("/v1/pair") && !path.equals("/v1/playlist") && !path.equals("/v1/progress")) throw invalid();
         return url(path);
     }
 

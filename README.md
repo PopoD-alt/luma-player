@@ -1,10 +1,27 @@
 # Luma Player
 
-**A free native media player by sdas for Mac and Windows, with an Android Wi-Fi streaming companion.** Desktop playback uses bundled libVLC 3. The owner tested this version and reported that it works as expected.
+**A free native media player by sdas for Mac and Windows, with an Android Wi-Fi streaming companion.** Desktop playback uses bundled libVLC 3. The owner tested the public 0.7.0 preview and reported that it works as expected.
 
 **0.7.0 preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
 
 [Downloads](https://github.com/PopoD-alt/luma-player/releases/tag/v0.7.0-preview.1) · [Installation guide](INSTALL.md) · [Windows guide](Windows/README.md) · [Android guide](Android/README.md) · [Release notes](RELEASE_NOTES.md) · [Roadmap](ROADMAP.md)
+
+## Next preview: modern Android playback and device progress
+
+The `feature/modern-mobile-player` branch prepares **desktop 0.8.0 / Android 0.2.0-preview** for owner review. The public downloads below remain **0.7.0 / Android 0.1.0** and do not include these changes. No stable update feed has been changed.
+
+- Icon controls, previous/next, ten-second jumps and a seek bar in Android fullscreen; tap the picture to show/hide controls.
+- Swipe horizontally across the video to seek. Slide vertically on the **right** for player volume or on the **left** for this window's brightness. The level indicator appears during the gesture, then disappears.
+- Open the **playlist icon** for a left drawer over the playing video. Choosing another item starts it in the same playback screen.
+- Separate **Computer** and **Phone** times, percentages and progress bars on both platforms. Choose **Resume from computer** on Android or **Resume from phone** on desktop to move playback explicitly. Incoming progress never seeks another running player.
+
+![Android fullscreen icon controls](docs/images/android-modern-controls.png)
+
+![Playlist drawer over continuing video](docs/images/android-playlist-drawer.png)
+
+Update both desktop and Android to the review versions for two-way progress reporting. The phone sends a checkpoint roughly every five seconds while playing and after pause/seek/leave; the desktop stores it locally. Multiple paired phones share the single **Phone** position for each video, rather than having separate profiles. With an older host, streaming still works and phone progress sharing is unavailable. See the [Android guide](Android/README.md#modern-player-review) for gestures and progress details.
+
+AI-assisted intro/credit detection is a proposed next step, **not included** in this preview. Repeated opening music/scenes and chapter metadata could support a local “Skip intro” suggestion; automatic skipping should be optional and validated against real episodes first.
 
 ## Download and install
 
@@ -32,9 +49,9 @@ The playlist references your files; adding media does not copy it into a new lib
 2. **Mac:** click the Wi-Fi sharing icon and choose **Start sharing this playlist**. **Windows:** choose **Share playlist → Start sharing**. The sharing panel displays the desktop address and a six-digit pairing code.
 3. Connect Android to the **same trusted Wi-Fi**. Open Luma and allow local-network access when requested.
 4. Choose the nearby desktop, or enter the exact displayed `http://IP-address:port` if discovery is unavailable. Enter the six-digit code.
-5. Tap a video. Use **Play/Pause**, **±10 seconds**, the seek slider and volume. Choose **Full screen**; tap the video to show its controls and choose **Exit full screen** to leave. Choose **Playlist** to select another video.
+5. Tap a video. The public 0.7.0 companion provides **Play/Pause**, **±10 seconds**, the seek slider and volume. Choose **Full screen**; tap the video to show its controls and choose **Exit full screen** to leave. Choose **Playlist** to select another video. The review branch adds the icon controls, gestures and overlay drawer described above.
 
-The files stay on your computer. The phone buffers the stream in memory instead of saving a downloaded movie. Playback on the phone is independent of desktop playback; this is not remote control or synchronized handoff. Keep the computer on, Luma open and sharing enabled. Active streams request prevention of idle system sleep; lid closure, forced sleep or shutting down the host still interrupts playback.
+The files stay on your computer. The phone buffers the stream in memory instead of saving a downloaded movie. Playback on the phone is independent of desktop playback. The review versions exchange saved progress and offer explicit resume actions; they do not keep two running players in lockstep. Keep the computer on, Luma open and sharing enabled. Active streams request prevention of idle system sleep; lid closure, forced sleep or shutting down the host still interrupts playback.
 
 The list refreshes every five seconds while Android is foregrounded. Backgrounding the companion stops streaming. Removing a shared item cuts off its stream. To disconnect everyone, use **Stop sharing and disconnect** on Mac or **Stop and revoke** on Windows. Sharing is off at desktop launch. Pairing codes expire after ten minutes; generate a new code on Mac or stop/restart sharing on Windows. Existing paired access lasts until sharing stops; pair again after restarting sharing.
 
