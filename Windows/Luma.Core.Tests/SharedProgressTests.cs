@@ -91,7 +91,7 @@ internal static class SharedProgressTests
             "{\"itemId\":\"progress_item\",\"positionSeconds\":1,\"durationSeconds\":12,\"completed\":\"false\"}",
             "{\"itemId\":\"progress_item\",\"positionSeconds\":1,\"durationSeconds\":12,\"completed\":false,\"filePath\":\"/arbitrary\"}" })
             Check(await Post(bad) == HttpStatusCode.BadRequest && reports == 2, "Malformed/duplicate/typed/out-of-bound progress is rejected before notification");
-        Check(await Post(new string('x', 4097)) == HttpStatusCode.RequestEntityTooLarge && reports == 2, "Progress body stays bounded");
+        Check(await OversizedProgressHeader(server.Port, token) == 413 && reports == 2, "Oversized progress is rejected from its headers before reading a body or notifying persistence");
         Check(await Post(Body(1), "/v1/progress?token=" + token) == HttpStatusCode.MethodNotAllowed, "Progress does not accept query credentials");
         Check(await Post(Body(1, id: "removed")) == HttpStatusCode.NotFound && reports == 2, "Only live item IDs accept progress");
         await PartialReport(server, token, Body(8), () => server.SetPlaylist([]), expectedStatus: 404);
@@ -112,6 +112,21 @@ internal static class SharedProgressTests
         await PartialReport(server, token, Body(9), server.Stop, expectedStatus: null);
         Check(!server.IsRunning && server.PairedDevices == 0 && reports == 33, "Stop while a body is in flight revokes the session before progress notification");
         Console.WriteLine("PASS: authenticated bounded live progress API, strict types/duplicates, canonical duration clamp, zero/completion, pending-update retention, revocation/removal and per-token rate limiting");
+    }
+    static async Task<int> OversizedProgressHeader(int port, string token)
+    {
+        // Exercise the early Content-Length gate without queuing an invalid
+        // body. Closing unread bytes may send a TCP reset on Windows and mask
+        // an otherwise valid 413 response from a buffering HttpClient.
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5)); using var client = new TcpClient();
+        await client.ConnectAsync(IPAddress.Loopback, port, timeout.Token); var stream = client.GetStream();
+        string header = $"POST /v1/progress HTTP/1.1\r\nHost: localhost\r\nAuthorization: Bearer {token}\r\nContent-Length: 4097\r\n\r\n";
+        await stream.WriteAsync(Encoding.ASCII.GetBytes(header), timeout.Token);
+        using var response = new MemoryStream(); byte[] bytes = new byte[4096]; int read;
+        while ((read = await stream.ReadAsync(bytes, timeout.Token)) > 0) { Check(response.Length + read <= 8192, "Oversize rejection response bound"); response.Write(bytes, 0, read); }
+        string status = Encoding.ASCII.GetString(response.ToArray()).Split("\r\n", 2)[0];
+        string[] fields = status.Split(' '); Check(fields.Length >= 3 && fields[0] == "HTTP/1.1" && int.TryParse(fields[1], out _), "Oversize rejection has an HTTP status");
+        return int.Parse(fields[1]);
     }
     static async Task PartialReport(PlaylistSharingServer server, string token, string body, Action duringBody, int? expectedStatus)
     {
