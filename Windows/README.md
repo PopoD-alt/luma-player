@@ -1,12 +1,12 @@
-# Luma Player for Windows — 0.7.0 preview
+# Luma Player for Windows
 
 Luma keeps its native WPF interface, queue, bookmarks, resume positions, themes and fullscreen controls. Playback now goes directly to **libVLC 3** for local media. The app no longer makes a whole-file Matroska remux or an HEVC compatibility copy before playing a file, and that former 512 MiB gate does not apply to playback.
 
-This is **0.7.0 Windows preview build 4**, targeting Windows 11 x64 and .NET 10. The owner tested the supplied copies and reported that they work as expected. Windows on ARM, other Windows versions, every codec/profile and every physical output device are outside that general confirmation. No installer or production-signed Windows build is included.
+The public download is **0.7.0 Windows preview build 4**, targeting Windows 11 x64 and .NET 10. The owner tested the supplied copies and reported that they work as expected. Windows on ARM, other Windows versions, every codec/profile and every physical output device are outside that general confirmation. No installer or production-signed Windows build is included.
 
 ## Device progress review
 
-The current feature branch builds **0.8.0 review build 5**. [Native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43781716148) passes the current application source with its approved app-local runtime, including progress persistence, unchanged playback on incoming reports and explicit native resume. Local review EXEs remain cross-built on Mac; that result is source/runtime validation rather than a claim that those exact EXE bytes were run in CI. Public downloads below remain 0.7.0. The new queue and Details panel show independent Computer/Phone progress bars, times, percentages, completion state and the phone's last update. **Resume from phone** explicitly resumes at its saved position. An arriving phone checkpoint never seeks or replaces the running desktop player.
+The latest source on `main` builds **0.8.0 review build 5**. [Native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43781716148) passes the current application source with its approved app-local runtime, including progress persistence, unchanged playback on incoming reports and explicit native resume. Local review EXEs remain cross-built on Mac; that result is source/runtime validation rather than a claim that those exact EXE bytes were run in CI. Public downloads below remain 0.7.0. The new queue and Details panel show independent Computer/Phone progress bars, times, percentages, completion state and the phone's last update. **Resume from phone** explicitly resumes at its saved position. An arriving phone checkpoint never seeks or replaces the running desktop player.
 
 Use Android 0.2.0-preview and enable playlist sharing to receive phone checkpoints, normally every five seconds while the phone plays. Checkpoints are stored in this computer's local library; multiple paired phones share one Phone position per item. No cloud service or simultaneous playback synchronization is involved. Older phone clients can keep streaming without reporting progress.
 

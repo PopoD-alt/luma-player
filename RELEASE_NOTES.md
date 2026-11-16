@@ -1,6 +1,6 @@
-# Luma Player 0.8.0 — in review, unreleased
+# Luma Player 0.8.0 — latest source, unreleased
 
-Android companion **0.2.0-preview / version code 2**; Mac **build 10**; Windows **review build 5**. These changes are prepared on `feature/modern-mobile-player`. The public 0.7.0 downloads and stable update feeds are unchanged. Owner review of these changes is pending.
+Android companion **0.2.0-preview / version code 2**; Mac **build 10**; Windows **review build 5**. These changes are included on `main` after the owner approved the updated interface. The public 0.7.0 downloads and stable update feeds are unchanged.
 
 - Android fullscreen now uses vector play/pause, previous/next, ten-second jump, playlist and fullscreen buttons, with fading glass/gradient controls.
 - Horizontal swipes preview and commit a seek. Vertical gestures control player volume on the right and window brightness on the left, with temporary indicators and restored brightness on exit.
@@ -8,7 +8,7 @@ Android companion **0.2.0-preview / version code 2**; Mac **build 10**; Windows 
 - Mac, Windows and Android distinguish Computer and Phone positions, percentages, completion and saved phone updates. Explicit Resume from phone/computer actions transfer the saved position; arriving reports never seek another running player.
 - Authenticated, bounded progress reporting adds optional fields to protocol version 1. Older hosts retain read-only streaming compatibility. Desktop libraries persist the phone checkpoint without overwriting the desktop position or media duration.
 
-Approved-runtime Android builds pass **40 JVM tests and lint**, plus native ARM64 playback/UI/progress tests against both actual desktop server implementations. Mac's native sharing, persistence and explicit-resume UI checks pass. [Native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43781716148) passes the approved app-local runtime, new progress UI and explicit native resume. The final Android APK also passes an in-place upgrade from the public preview and the native UI/progress test. Real-phone gestures, speaker output and Wi-Fi continuity still need owner review.
+Approved-runtime Android builds pass **40 JVM tests and lint**, plus native ARM64 playback/UI/progress tests against both actual desktop server implementations. Mac's native sharing, persistence and explicit-resume UI checks pass. [Native Windows CI](https://github.com/PopoD-alt/luma-player/actions/runs/43781716148) passes the approved app-local runtime, new progress UI and explicit native resume. The final Android APK also passes an in-place upgrade from the public preview and the native UI/progress test. Broader physical-device testing of gestures, speaker output and Wi-Fi continuity remains separate.
 
 AI-assisted opening/credit detection remains proposed. No AI model or automatic skip behavior is included in this build.
 

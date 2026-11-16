@@ -1,10 +1,10 @@
 # Luma Player roadmap
 
-The 0.7.0 preview uses libVLC 3 for native Mac/Windows playback and adds an Android Wi-Fi streaming companion. The owner tested the delivered copies and reported them working as expected. Current source and usage documentation are on `main`; the earlier Mac 0.6.1 and Windows build 3 remain older engines.
+The public 0.7.0 preview uses libVLC 3 for native Mac/Windows playback and adds an Android Wi-Fi streaming companion. The owner tested the delivered copies and reported them working as expected. Current source and usage documentation are on `main`; the earlier Mac 0.6.1 and Windows build 3 remain older engines.
 
-## Modern player review
+## Modern player source update
 
-The next **desktop 0.8.0 / Android 0.2.0** preview adds icon-based Android fullscreen controls, previous/next, horizontal swipe seeking, hidden vertical volume/brightness gestures, and a left playlist drawer that keeps video playing. Separate computer/phone progress and explicit resume actions are implemented across Mac, Windows and Android. Progress is persisted on the shared desktop without remotely seeking another running player. These changes await owner review; they are not in the public 0.7.0 assets or update feeds.
+The next **desktop 0.8.0 / Android 0.2.0** preview adds icon-based Android fullscreen controls, previous/next, horizontal swipe seeking, hidden vertical volume/brightness gestures, and a left playlist drawer that keeps video playing. Separate computer/phone progress and explicit resume actions are implemented across Mac, Windows and Android. Progress is persisted on the shared desktop without remotely seeking another running player. The owner approved the updated interface, and the source is on `main`. These changes are not in the public 0.7.0 assets or update feeds.
 
 A proposed next feature is local opening/credit analysis, using chapter hints and repeated audio/video patterns. Start with a user-triggered “Skip intro” suggestion and measure real-episode accuracy before offering optional auto skip. No model, detection or automatic skip is present yet; user preference for that behavior remains open.
 

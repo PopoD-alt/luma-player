@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-11-16T00:42:53+00:00",
-  "branch": "feature/modern-mobile-player \u00b7 desktop0.8 / Android0.2 in local review \u00b7 public0.7 unchanged",
+  "as_of": "2026-11-16T00:58:53+00:00",
+  "branch": "main \u00b7 desktop0.8 / Android0.2 source \u00b7 owner-approved interface \u00b7 public0.7 downloads unchanged",
   "platforms": [
     {
       "name": "Mac \u00b7 Apple Silicon",
@@ -25,8 +25,8 @@
     }
   ],
   "next": [
-    "Review the local0.8 desktop /0.2 Android copies before preparing another public release. All new native automated checks pass; public0.7 downloads and stable update feeds remain unchanged.",
-    "Owner review: new fullscreen gestures, playlist drawer and cross-device progress on physical devices. Public0.7 assets and update feeds remain unchanged.",
+    "Latest source and usage guides uploaded to main after owner visual approval. Public0.7 downloads and stable update feeds remain unchanged; new binary packaging is a separate step.",
+    "Expand physical-device checks of fullscreen gestures, playlist drawer and cross-device progress; appearance approval does not establish a hardware/network/audio test matrix.",
     "AI opening/credit skipping is proposed only: start with optional local Skip intro suggestions, then evaluate confidence on real episodes before optional auto skip.",
     "Expand physical Wi-Fi discovery/continuity, speaker/surround output and A/V synchronization coverage; retain the documented x64 emulator Wi-Fi limitation."
   ],

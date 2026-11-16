@@ -8,7 +8,7 @@ The default Maven AAR remains **development-only**: its native/Java payload incl
 
 ## Modern player review
 
-Current branch: **0.2.0-preview**, Android version code **2**. The public 0.1.0-preview link above remains the earlier app. New review builds preserve its application ID and debug signing certificate so a normal update can retain app data. This is a local owner-review build, not a Play Store or production-signed release.
+Current source on `main`: **0.2.0-preview**, Android version code **2**. The public 0.1.0-preview link above remains the earlier app. New review builds preserve its application ID and debug signing certificate so a normal update can retain app data. This is a local owner-review build, not a Play Store or production-signed release.
 
 - **Tap video:** show/hide controls; they fade while playing and remain available while paused.
 - **Center icon:** play/pause. Adjacent icons jump ten seconds or open the previous/next playlist item. Previous/next is disabled at the queue ends.
