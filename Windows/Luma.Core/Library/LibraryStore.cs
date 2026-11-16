@@ -76,10 +76,11 @@ public sealed class LibraryStore
                 if (item is null || item.Id == Guid.Empty || string.IsNullOrWhiteSpace(item.FilePath) || !Path.IsPathFullyQualified(item.FilePath) || !seen.Add(item.Id)) throw new InvalidDataException("Invalid media entry.");
                 item.FilePath = Path.GetFullPath(item.FilePath);
                 item.Duration = ValidTime(item.Duration); item.ResumeTime = Math.Min(ValidTime(item.ResumeTime), item.Duration > 0 ? item.Duration : double.MaxValue);
-                item.ComputerProgressSeconds = item.ComputerProgressSeconds is { } computer ? Math.Min(ValidTime(computer), item.Duration > 0 ? item.Duration : double.MaxValue) : null;
-                item.ComputerUpdatedAtUnixSeconds = ValidTimestamp(item.ComputerUpdatedAtUnixSeconds);
+                bool invalidComputer = item.ComputerProgressSeconds is { } rawComputer && !WireTime(rawComputer);
+                item.ComputerProgressSeconds = item.ComputerProgressSeconds is { } computer && !invalidComputer ? Math.Min(computer, item.Duration > 0 ? item.Duration : double.MaxValue) : null;
+                item.ComputerUpdatedAtUnixSeconds = invalidComputer ? 0 : ValidTimestamp(item.ComputerUpdatedAtUnixSeconds);
                 item.MobileDurationSeconds = item.Duration > 0 ? item.Duration : ValidTime(item.MobileDurationSeconds);
-                item.MobileProgressSeconds = item.MobileProgressSeconds is { } mobile ? Math.Min(ValidTime(mobile), item.MobileDurationSeconds > 0 ? item.MobileDurationSeconds : double.MaxValue) : null;
+                item.MobileProgressSeconds = item.MobileProgressSeconds is { } mobile && WireTime(mobile) ? Math.Min(mobile, item.MobileDurationSeconds > 0 ? item.MobileDurationSeconds : double.MaxValue) : null;
                 item.MobileUpdatedAtUnixSeconds = item.MobileProgressSeconds is null ? 0 : ValidTimestamp(item.MobileUpdatedAtUnixSeconds);
                 if (item.MobileProgressSeconds is null) item.MobileCompleted = false;
                 item.SkipRanges = PlaybackSkipPolicy.ValidatedRanges(item.SkipRanges, item.Duration).Where(r => r.Source == "manual").ToList();
@@ -164,5 +165,5 @@ public sealed class LibraryStore
     }
     static double ValidTime(double value) => double.IsFinite(value) ? Math.Clamp(value, 0, 86_400_000) : 0;
     static bool WireTime(double value) => double.IsFinite(value) && value is >= 0 and <= 31_536_000;
-    static double ValidTimestamp(double value) => double.IsFinite(value) ? Math.Clamp(value, 0, 4_102_444_800) : 0;
+    static double ValidTimestamp(double value) => double.IsFinite(value) && value is >= 0 and <= 4_102_444_800 ? value : 0;
 }

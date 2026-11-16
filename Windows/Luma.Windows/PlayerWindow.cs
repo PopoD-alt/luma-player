@@ -27,10 +27,13 @@ internal sealed class PlayerWindow : Window
     readonly Grid layout = new(), viewport = new();
     readonly StackPanel empty = new() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock nowTitle = new() { Text = "Make room for a good story", FontSize = 20, FontWeight = FontWeights.SemiBold, TextAlignment = TextAlignment.Center };
+    readonly TextBlock continueHeading = new() { FontSize = 11, TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 10) };
+    readonly TextBlock continueDetail = new() { FontSize = 13, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24, 12, 24, 16) };
+    readonly Button continuePlay = new() { HorizontalAlignment = HorizontalAlignment.Center, MinWidth = 140, Visibility = Visibility.Collapsed };
     readonly TextBlock status = new() { FontSize = 11, Text = "Windows review · ready", Margin = new Thickness(20, 0, 20, 0), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
     readonly TextBlock timing = new() { Text = "0:00 / 0:00", FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
     readonly TextBlock deviceProgress = new() { FontSize = 11, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
-    readonly Button resumePhone = new() { Content = "Resume from phone", ToolTip = "Use the phone's saved position on this computer. Playback is never moved automatically.", VerticalAlignment = VerticalAlignment.Center };
+    readonly Button resumePhone = new() { Content = "Resume from phone", ToolTip = "Explicitly use the phone's saved position on this computer. Incoming progress leaves current playback undisturbed.", VerticalAlignment = VerticalAlignment.Center };
     readonly CheckBox autoSkip = new() { Content = "Auto-skip intros / credits", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(3, 0, 12, 0), ToolTip = "Opt in to skipping labelled chapters and saved ranges. Unmarked scenes are left playing." };
     readonly Button skipSegment = new() { Visibility = Visibility.Collapsed, Content = "Skip intro" };
     readonly TextBlock skipInfo = new() { FontSize = 10, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
@@ -85,7 +88,7 @@ internal sealed class PlayerWindow : Window
     string? lastError;
     int currentBuild = 1, generation, repeatMode;
     double duration, rate = 1, pendingResume, subtitleDelay;
-    bool playing, opening, dragging, refreshingQueue, updatingSlider, fullscreen, dark = true, checkingUpdate, closing, dummyAudioForSmoke, smokeDiagnostics, computerEnded;
+    bool playing, opening, dragging, refreshingQueue, updatingSlider, fullscreen, dark = true, checkingUpdate, closing, dummyAudioForSmoke, smokeDiagnostics, computerEnded, idleSelectionPinned, explicitResumeIntent;
     Rect normalBounds; WindowState previousState; bool previousTopmost;
     DateTime lastSave = DateTime.UtcNow;
     readonly Dictionary<string, long> receivedProgressRevisions = new(StringComparer.Ordinal);
@@ -93,6 +96,7 @@ internal sealed class PlayerWindow : Window
     public PlayerWindow(string? libraryFile = null)
     {
         library = new LibraryStore(libraryFile ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sdas", "Luma Player", "library.json"));
+        library.Data.SelectedId = PlaybackResumePolicy.MostRecent(library.Data.Items, library.Data.SelectedId)?.Id;
         Title = "Luma Player"; Width = Math.Min(1220, SystemParameters.WorkArea.Width - 30); Height = Math.Min(800, SystemParameters.WorkArea.Height - 30); MinWidth = 940; MinHeight = 610; WindowStartupLocation = WindowStartupLocation.CenterScreen;
         FontFamily = new FontFamily("Segoe UI Variable, Segoe UI"); FontSize = 13; AllowDrop = true;
         SetResourceReference(BackgroundProperty, "WindowBrush"); SetResourceReference(ForegroundProperty, "TextBrush");
@@ -105,10 +109,16 @@ internal sealed class PlayerWindow : Window
         viewport.MouseLeftButtonDown += (_, e) => { if (e.ClickCount == 2) { ToggleFullscreen(); e.Handled = true; } };
         seek.PreviewMouseLeftButtonDown += (_, _) => dragging = true; seek.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler((_, _) => { dragging = false; Seek(seek.Value); }));
         seek.PreviewMouseLeftButtonUp += (_, _) => { dragging = false; Seek(seek.Value); }; seek.ValueChanged += (_, _) => { if (!updatingSlider && !dragging && seek.IsKeyboardFocusWithin) Seek(seek.Value); };
-        queue.SelectionChanged += async (_, _) => { if (!refreshingQueue && queue.SelectedItem is MediaEntry entry && entry.Id != current?.Id) await LoadEntryAsync(entry); };
+        queue.SelectionChanged += async (_, _) =>
+        {
+            if (refreshingQueue || queue.SelectedItem is not MediaEntry entry || entry.Id == current?.Id) return;
+            if (current is null && vlc is null) { idleSelectionPinned = true; library.Data.SelectedId = entry.Id; SaveLibrary(); RefreshIdlePresentation(); UpdateDeviceProgress(); }
+            else await LoadEntryAsync(entry);
+        };
         queue.MouseDoubleClick += async (_, _) => { if (queue.SelectedItem is MediaEntry entry) await LoadEntryAsync(entry); };
         search.TextChanged += (_, _) => { searchHint.Visibility = search.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed; RefreshQueue(); };
         play.Click += (_, _) => TogglePlayback(); shareButton.Click += (_, _) => ShowSharing();
+        continuePlay.Click += (_, _) => TogglePlayback();
         resumePhone.Click += (_, _) => ResumeFromPhone();
         autoSkip.IsChecked = library.Data.AutoSkipEnabled;
         autoSkip.Click += (_, _) => { bool enabled = autoSkip.IsChecked == true; if (enabled && !library.Data.AutoSkipEnabled) skipSession.Reset(); library.Data.AutoSkipEnabled = enabled; SaveLibrary(); UpdateSkipping(); };
@@ -123,6 +133,7 @@ internal sealed class PlayerWindow : Window
         catch (Exception error) when (error is IOException or JsonException or InvalidOperationException) { updateConfig = null; }
         automatic.IsChecked = library.Data.AutomaticallyCheckUpdates; automatic.IsEnabled = updateConfig is not null;
         automatic.Click += (_, _) => { library.Data.AutomaticallyCheckUpdates = automatic.IsChecked; if (!automatic.IsChecked) pendingUpdate = null; SaveLibrary(); };
+        RefreshIdlePresentation(); UpdateTransport();
         if (library.RecoveryNotice is not null) Notice(library.RecoveryNotice);
     }
     void SetupStyles()
@@ -201,7 +212,10 @@ internal sealed class PlayerWindow : Window
         var sideBottom = new WrapPanel { Margin = new Thickness(10, 10, 10, 10) }; sideBottom.Children.Add(Button("↑", () => MoveSelected(-1))); sideBottom.Children.Add(Button("↓", () => MoveSelected(1))); sideBottom.Children.Add(Button("Remove", RemoveSelected)); sideBottom.Children.Add(Button("Clear", ClearQueue)); DockPanel.SetDock(sideBottom, Dock.Bottom); side.Children.Add(sideBottom); side.Children.Add(queue);
         sidebar = Panel(side); sidebar.Margin = new Thickness(12, 14, 0, 0); Grid.SetRow(sidebar, 1); Grid.SetRowSpan(sidebar, 2); layout.Children.Add(sidebar);
 
-        var symbol = Text("▶", 58); symbol.HorizontalAlignment = HorizontalAlignment.Center; symbol.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush"); empty.Children.Add(symbol); empty.Children.Add(nowTitle); var welcome = Text("Drop a local video or audio file here", 13); welcome.Foreground = new SolidColorBrush(Color.FromRgb(160, 169, 186)); welcome.HorizontalAlignment = HorizontalAlignment.Center; welcome.Margin = new Thickness(0, 12, 0, 0); empty.Children.Add(welcome);
+        empty.MaxWidth = 620; nowTitle.TextWrapping = TextWrapping.Wrap; nowTitle.Margin = new Thickness(24, 0, 24, 0);
+        var symbol = Text("▶", 58); symbol.HorizontalAlignment = HorizontalAlignment.Center; symbol.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush"); empty.Children.Add(symbol);
+        continueHeading.SetResourceReference(TextBlock.ForegroundProperty, "AccentBrush"); empty.Children.Add(continueHeading); empty.Children.Add(nowTitle);
+        continueDetail.SetResourceReference(TextBlock.ForegroundProperty, "MutedBrush"); empty.Children.Add(continueDetail); empty.Children.Add(continuePlay);
         viewport.Children.Add(empty); stage.Child = viewport; Grid.SetRow(stage, 1); Grid.SetColumn(stage, 1); layout.Children.Add(stage);
 
         var bottom = new Grid { Margin = new Thickness(18, 8, 18, 10) }; bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new() { Height = GridLength.Auto }); bottom.RowDefinitions.Add(new());
@@ -258,11 +272,18 @@ internal sealed class PlayerWindow : Window
         }
         catch (Exception error) { Notice(error.Message); }
     }
-    Task LoadEntryAsync(MediaEntry entry, double? resume = null)
+    Task LoadEntryAsync(MediaEntry entry, double? resumeOverride = null)
     {
         if (closing) return Task.CompletedTask;
-        skipAnalysis?.Cancel(); ClearDetectedMatches(); SaveProgress(); ++generation; DisposePlayer(); lastError = null; duration = 0; subtitleDelay = 0; playing = false; opening = true;
-        current = entry; computerEnded = false; skipSession.Reset(); chapterSkips = activeSkipRanges = []; activeSkip = null; skipDraft = null; lastChapterScan = DateTime.MinValue; library.Data.SelectedId = entry.Id; pendingResume = resume ?? (entry.ResumeTime > 3 ? entry.ResumeTime : 0); RefreshQueue();
+        skipAnalysis?.Cancel(); ClearDetectedMatches(); SaveProgress();
+        var freshEntry = library.Data.Items.Find(item => item.Id == entry.Id);
+        if (freshEntry is null) { Notice("This item is no longer in the queue"); return Task.CompletedTask; }
+        entry = freshEntry;
+        var checkpoint = PlaybackResumePolicy.Resolve(entry);
+        pendingResume = resumeOverride is { } explicitPosition && double.IsFinite(explicitPosition) && explicitPosition >= 0 ? explicitPosition : checkpoint.PositionSeconds;
+        ++generation; DisposePlayer(); lastError = null; duration = 0; subtitleDelay = 0; playing = false; opening = true;
+        current = entry; idleSelectionPinned = explicitResumeIntent = false; computerEnded = false; skipSession.Reset(); chapterSkips = activeSkipRanges = []; activeSkip = null; skipDraft = null; lastChapterScan = DateTime.MinValue; library.Data.SelectedId = entry.Id; RefreshQueue();
+        continueHeading.Text = ""; continueDetail.Text = ""; continuePlay.Visibility = Visibility.Collapsed;
         nowTitle.Text = entry.Title; empty.Visibility = Visibility.Visible; backend.Text = "Opening with libVLC…"; Notice("Opening " + entry.Title);
         int version = generation;
         try
@@ -275,7 +296,7 @@ internal sealed class PlayerWindow : Window
                 if (!Active()) return; opening = false; openingClock.Reset(); duration = player.Duration;
                 if (pendingResume > 0) { player.Seek(Math.Min(pendingResume, Math.Max(0, duration - .2))); pendingResume = 0; }
                 player.Rate = rate; player.Volume = volume.Value; playing = !player.IsPaused; backend.Text = "libVLC " + VlcPlayer.RuntimeVersion.Split(' ')[0];
-                RefreshTracks(); UpdateSkipping(); Notice("Playing " + entry.Title); UpdateTransport();
+                RefreshTracks(); UpdateSkipping(); Notice("Playing " + entry.Title + (resumeOverride is null && checkpoint.UpdatedAtUnixSeconds > 0 ? " · " + (checkpoint.Completed ? "restarted after " : "resumed from ") + checkpoint.DeviceName : "")); UpdateTransport();
             };
             player.TracksChanged += (_, _) => { if (Active()) RefreshTracks(); };
             player.Ended += (_, _) => { if (Active()) Ended(); };
@@ -318,7 +339,26 @@ internal sealed class PlayerWindow : Window
         if (opening) return; if (playing) Pause(); else Play();
     }
     void Pause() { skipPreviewStopAt = null; vlc?.Pause(); playing = false; UpdateTransport(); SaveProgress(); }
-    void Play() { if (duration > 0 && (computerEnded || CurrentTime >= duration - .05)) { skipSession.Reset(); vlc?.Seek(0); } computerEnded = false; vlc?.Play(); playing = vlc is not null; UpdateTransport(); }
+    void Play()
+    {
+        if (vlc is null || opening) return;
+        bool explicitPosition = explicitResumeIntent; explicitResumeIntent = false;
+        var item = current is null ? null : library.Data.Items.Find(i => i.Id == current.Id);
+        var checkpoint = item is null ? null : PlaybackResumePolicy.Resolve(item);
+        if (!playing && !explicitPosition && checkpoint is { Device: PlaybackResumeDevice.Phone, UpdatedAtUnixSeconds: > 0 })
+        {
+            // Only the user's Play action accepts a newer remote checkpoint.
+            // Receiving it by itself leaves the retained native graph alone.
+            skipSession.Reset();
+            // Protect both sides of the asynchronous native seek, including
+            // chapter metadata that arrives after the handoff.
+            skipSession.UserSeek(CurrentTime); skipSession.UserSeek(checkpoint.PositionSeconds);
+            vlc.Seek(Math.Min(checkpoint.PositionSeconds, Math.Max(0, duration - .2)));
+            Notice(checkpoint.Completed ? "Playing again after the phone finished" : "Resumed from Phone at " + MediaEntry.Clock(checkpoint.PositionSeconds));
+        }
+        else if (!explicitPosition && duration > 0 && (computerEnded || CurrentTime >= duration - .05)) { skipSession.Reset(); vlc.Seek(0); }
+        computerEnded = false; vlc.Play(); playing = true; UpdateTransport();
+    }
     void Seek(double value)
     {
         if (current is null || !double.IsFinite(value) || duration <= 0) return;
@@ -328,7 +368,7 @@ internal sealed class PlayerWindow : Window
         skipSession.UserSeek(origin); skipSession.UserSeek(target);
         if (PlaybackSkipPolicy.Active(activeSkipRanges, origin) is { } originSegment) skipSession.Consume(originSegment);
         if (PlaybackSkipPolicy.Active(activeSkipRanges, target) is { } segment) skipSession.Consume(segment);
-        computerEnded = false; vlc?.Seek(target); UpdateTransport();
+        computerEnded = false; if (!playing) explicitResumeIntent = true; vlc?.Seek(target); UpdateTransport();
     }
     void Tick()
     {
@@ -366,6 +406,7 @@ internal sealed class PlayerWindow : Window
     void SeekSkipRange(PlaybackSkipRange range, bool automatic)
     {
         if (vlc is null || !vlc.IsSeekable || duration <= 0) return;
+        if (!automatic && !playing) explicitResumeIntent = true;
         skipSession.Consume(range); computerEnded = false;
         vlc.Seek(Math.Min(range.EndSeconds, Math.Max(0, duration - .05)));
         Notice((automatic ? "Auto-skipped " : "Skipped ") + (range.Kind == "intro" ? "intro" : "credits") + " · " + MediaEntry.Clock(range.StartSeconds) + "–" + MediaEntry.Clock(range.EndSeconds));
@@ -516,18 +557,41 @@ internal sealed class PlayerWindow : Window
     {
         play.Content = playing ? "Ⅱ" : "▶"; updatingSlider = true; seek.Maximum = Math.Max(1, duration); if (!dragging) seek.Value = Math.Min(seek.Maximum, CurrentTime); updatingSlider = false;
         timing.Text = MediaEntry.Clock(CurrentTime) + " / " + MediaEntry.Clock(duration); seek.IsEnabled = current is not null && !opening && duration > 0;
-        UpdateDeviceProgress();
+        UpdateDeviceProgress(); RefreshIdlePresentation();
+    }
+    void RefreshIdlePresentation(bool followLatest = false)
+    {
+        if (current is not null || vlc is not null || opening) return;
+        if (followLatest && !idleSelectionPinned)
+        {
+            Guid? latest = PlaybackResumePolicy.MostRecent(library.Data.Items, library.Data.SelectedId)?.Id;
+            if (latest != library.Data.SelectedId) { library.Data.SelectedId = latest; RefreshQueue(); }
+        }
+        var item = library.Data.Items.Find(i => i.Id == library.Data.SelectedId) ?? PlaybackResumePolicy.MostRecent(library.Data.Items);
+        library.Data.SelectedId = item?.Id;
+        empty.Visibility = Visibility.Visible; continuePlay.Visibility = item is null ? Visibility.Collapsed : Visibility.Visible;
+        if (item is null)
+        {
+            continueHeading.Text = ""; nowTitle.Text = "Make room for a good story"; continueDetail.Text = "Drop a local video or audio file here"; return;
+        }
+        var checkpoint = PlaybackResumePolicy.Resolve(item);
+        continueHeading.Text = checkpoint.UpdatedAtUnixSeconds > 0 || checkpoint.PositionSeconds > 0 ? "CONTINUE WATCHING" : "READY TO PLAY";
+        nowTitle.Text = item.Title;
+        continueDetail.Text = checkpoint.UpdatedAtUnixSeconds > 0
+            ? "Last played on " + checkpoint.DeviceName + " · " + (checkpoint.Completed ? "Finished" : MediaEntry.Clock(checkpoint.PositionSeconds)) + "\n" + DateTimeOffset.FromUnixTimeMilliseconds((long)(checkpoint.UpdatedAtUnixSeconds * 1000)).ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
+            : checkpoint.PositionSeconds > 0 ? "Saved on this computer · " + MediaEntry.Clock(checkpoint.PositionSeconds) : "Your file stays on this computer";
+        continuePlay.Content = checkpoint.Completed ? "▶  Play again" : checkpoint.PositionSeconds > 0 ? "▶  Resume at " + MediaEntry.Clock(checkpoint.PositionSeconds) : "▶  Play";
     }
     void UpdateDeviceProgress()
     {
-        var item = current ?? queue.SelectedItem as MediaEntry;
+        var item = current ?? library.Data.Items.Find(i => i.Id == library.Data.SelectedId);
         deviceProgress.Text = item is null ? "Computer and phone positions appear here after playback." : item.ComputerProgressDetail + SavedAt(item.ComputerUpdatedAtUnixSeconds) + "\n" + item.PhoneProgressDetail + SavedAt(item.MobileUpdatedAtUnixSeconds);
         resumePhone.IsEnabled = item?.MobileProgressSeconds is >= 0 && !item.MobileCompleted && !opening;
     }
     static string SavedAt(double stamp) => double.IsFinite(stamp) && stamp is > 0 and <= 4_102_444_800 ? " · saved " + DateTimeOffset.FromUnixTimeMilliseconds((long)(stamp * 1000)).ToLocalTime().ToString("t", CultureInfo.CurrentCulture) : "";
     void ResumeFromPhone()
     {
-        var item = current ?? queue.SelectedItem as MediaEntry;
+        var item = current ?? library.Data.Items.Find(i => i.Id == library.Data.SelectedId);
         if (item?.MobileProgressSeconds is not { } position || position < 0 || item.MobileCompleted || opening) return;
         if (current?.Id == item.Id && vlc is not null) { Seek(position); Play(); SaveProgress(); }
         else _ = LoadEntryAsync(item, position);
@@ -539,11 +603,11 @@ internal sealed class PlayerWindow : Window
         if (library.Data.Items.Count == 0) return; if (delta < 0 && CurrentTime > 3) { Seek(0); return; }
         int index = library.Data.Items.FindIndex(i => i.Id == current?.Id), next = index + delta;
         if (next >= library.Data.Items.Count) { if (repeatMode == 1) next = 0; else { if (atEnd) Notice("Queue finished"); return; } }
-        await LoadEntryAsync(library.Data.Items[Math.Max(0, next)]);
+        await LoadEntryAsync(library.Data.Items[Math.Max(0, next)], delta < 0 ? 0 : null);
     }
     void RefreshQueue()
     {
-        refreshingQueue = true; queue.ItemsSource = library.Data.Items.Where(i => i.Title.Contains(search.Text, StringComparison.OrdinalIgnoreCase)).ToList(); queue.SelectedItem = library.Data.Items.Find(i => i.Id == (current?.Id ?? library.Data.SelectedId)); queueCount.Text = library.Data.Items.Count.ToString(CultureInfo.InvariantCulture); refreshingQueue = false; PushSharedPlaylist();
+        refreshingQueue = true; queue.ItemsSource = library.Data.Items.Where(i => i.Title.Contains(search.Text, StringComparison.OrdinalIgnoreCase)).ToList(); queue.SelectedItem = library.Data.Items.Find(i => i.Id == (current?.Id ?? library.Data.SelectedId)); queueCount.Text = library.Data.Items.Count.ToString(CultureInfo.InvariantCulture); refreshingQueue = false; PushSharedPlaylist(); RefreshIdlePresentation();
     }
     void MoveSelected(int direction) { if (queue.SelectedItem is MediaEntry entry) { library.Move(entry.Id, direction); RefreshQueue(); } }
     void RemoveSelected() { if (queue.SelectedItem is not MediaEntry entry) return; if (entry.Id == current?.Id) Unload(); library.Remove(entry.Id); RefreshQueue(); }
@@ -573,8 +637,8 @@ internal sealed class PlayerWindow : Window
     }
     void SaveProgress() { if (current is not null && !opening && lastError is null) library.UpdateProgress(current.Id, computerEnded ? duration : CurrentTime, duration, computerEnded); SaveLibrary(); PushSharedPlaylist(); }
     void SaveLibrary() { try { library.Flush(); } catch (IOException error) { Notice("The saved library could not be written: " + error.Message); } }
-    void Unload() { skipAnalysis?.Cancel(); ClearDetectedMatches(); SaveProgress(); ++generation; DisposePlayer(); current = null; playing = opening = false; duration = 0; openingClock.Reset(); empty.Visibility = Visibility.Visible; nowTitle.Text = "Make room for a good story"; backend.Text = ""; UpdateTransport(); }
-    void Fail(string error) { lastError = error; opening = playing = false; ++generation; DisposePlayer(); openingClock.Reset(); if (fullscreen) ToggleFullscreen(); Notice(error); nowTitle.Text = "This file could not be played"; empty.Visibility = Visibility.Visible; }
+    void Unload() { skipAnalysis?.Cancel(); ClearDetectedMatches(); SaveProgress(); ++generation; DisposePlayer(); current = null; idleSelectionPinned = false; playing = opening = false; duration = 0; openingClock.Reset(); empty.Visibility = Visibility.Visible; backend.Text = ""; RefreshIdlePresentation(true); RefreshQueue(); UpdateTransport(); }
+    void Fail(string error) { lastError = error; opening = playing = false; ++generation; DisposePlayer(); openingClock.Reset(); if (fullscreen) ToggleFullscreen(); Notice(error); nowTitle.Text = "This file could not be played"; continueHeading.Text = continueDetail.Text = ""; continuePlay.Visibility = Visibility.Collapsed; empty.Visibility = Visibility.Visible; }
     void Notice(string message) => status.Text = message;
     void ShowDiagnostics()
     {
@@ -595,7 +659,7 @@ internal sealed class PlayerWindow : Window
             || receivedProgressRevisions.TryGetValue(report.ItemId, out long revision) && report.Revision <= revision) return;
         if (!library.UpdateMobileProgress(id, report.PositionSeconds, report.DurationSeconds, report.Completed, report.UpdatedAtUnixSeconds)) return;
         receivedProgressRevisions[report.ItemId] = report.Revision;
-        SaveLibrary(); PushSharedPlaylist(); UpdateDeviceProgress();
+        RefreshIdlePresentation(true); SaveLibrary(); PushSharedPlaylist(); UpdateDeviceProgress();
     }
     void StartSharing()
     {
@@ -856,6 +920,48 @@ internal sealed class PlayerWindow : Window
             ResumeFromPhone(); await Until(() => CurrentTime >= 6.7 && playing && ReferenceEquals(vlc, playerBeforePhone), "Explicit Resume from phone seeks the existing native player"); Pause();
             Check(pending.MobileProgressSeconds == 7 && pending.ComputerProgressSeconds >= 6.7 && pending.PhoneProgressFraction > 0 && pending.ComputerProgressFraction > 0, "Distinct phone/computer progress remains visible after handoff");
             Console.WriteLine("PASS: paired phone progress persists through the UI without automatic seek, distinct device labels/bars, and explicit Resume from phone uses the retained native player");
+            Unload();
+            var deliberatelySelected = library.Data.Items.First(i => i.Id != pending.Id);
+            queue.SelectedItem = deliberatelySelected;
+            Check(idleSelectionPinned && current is null && vlc is null && library.Data.SelectedId == deliberatelySelected.Id, "An idle queue selection shows a card without autoplay");
+            using (var update = await http.PostAsync(address + "/v1/progress", new StringContent(JsonSerializer.Serialize(new { itemId = pending.Id.ToString("N"), positionSeconds = 8.5d, durationSeconds = pending.Duration, completed = false }), System.Text.Encoding.UTF8, "application/json"))) update.EnsureSuccessStatusCode();
+            await Until(() => pending.MobileProgressSeconds == 8.5, "New phone checkpoint reaches idle Windows library");
+            Check(library.Data.SelectedId == deliberatelySelected.Id && nowTitle.Text == deliberatelySelected.Title && vlc is null && !playing, "Phone metadata respects an explicitly selected idle item");
+            idleSelectionPinned = false; RefreshIdlePresentation(true); RefreshQueue();
+            Check(library.Data.SelectedId == pending.Id && nowTitle.Text == pending.Title && continueDetail.Text.Contains("Phone", StringComparison.Ordinal) && continuePlay.Content.ToString()!.Contains("0:08", StringComparison.Ordinal) && vlc is null && !playing,
+                "Idle Continue Watching follows latest phone activity without opening a player");
+            string startupLibrary = Path.Combine(output, "startup-handoff-library.json"); File.WriteAllText(startupLibrary, JsonSerializer.Serialize(library.Data));
+            var reopened = new PlayerWindow(startupLibrary);
+            Check(reopened.library.Data.SelectedId == pending.Id && reopened.nowTitle.Text == pending.Title && reopened.continueDetail.Text.Contains("Phone", StringComparison.Ordinal)
+                && reopened.continuePlay.Visibility == Visibility.Visible && reopened.vlc is null && !reopened.playing && !reopened.opening,
+                "A fresh Windows window shows the last phone item and Resume action without autoplay");
+            reopened.Close();
+            UpdateLayout(); var continueImage = new RenderTargetBitmap((int)Math.Ceiling(ActualWidth), (int)Math.Ceiling(ActualHeight), 96, 96, PixelFormats.Pbgra32); continueImage.Render(this);
+            var continuePng = new PngBitmapEncoder(); continuePng.Frames.Add(BitmapFrame.Create(continueImage)); using (var continueFile = File.Create(Path.Combine(output, "Luma-Windows-continue-watching.png"))) continuePng.Save(continueFile);
+            TogglePlayback();
+            await Until(() => !opening && current?.Id == pending.Id && vlc?.DisplayedPictures is > 0 && CurrentTime is >= 8.2 and < 10.5, "Normal Play resumes the latest authenticated phone checkpoint on the actual native clock");
+            var automaticHandoff = vlc; double resumedClock = CurrentTime;
+            await Until(() => CurrentTime >= resumedClock + .25, "Automatically resumed native video continues advancing"); Pause();
+            double activeClock = CurrentTime;
+            using (var update = await http.PostAsync(address + "/v1/progress", new StringContent(JsonSerializer.Serialize(new { itemId = pending.Id.ToString("N"), positionSeconds = 3d, durationSeconds = pending.Duration, completed = false }), System.Text.Encoding.UTF8, "application/json"))) update.EnsureSuccessStatusCode();
+            await Until(() => pending.MobileProgressSeconds == 3, "Phone checkpoint arrives while a native player remains loaded");
+            Check(ReferenceEquals(vlc, automaticHandoff) && !playing && Math.Abs(CurrentTime - activeClock) < .3, "A newer phone checkpoint never seeks or replaces an already loaded native player");
+            TogglePlayback();
+            await Until(() => playing && CurrentTime is >= 2.8 and < 4.5 && ReferenceEquals(vlc, automaticHandoff), "Normal Play accepts the newer phone checkpoint in the same paused native player"); Pause();
+            Seek(1); await Until(() => CurrentTime is >= .8 and < 1.4, "Explicit paused seek has reached its native destination");
+            using (var update = await http.PostAsync(address + "/v1/progress", new StringContent(JsonSerializer.Serialize(new { itemId = pending.Id.ToString("N"), positionSeconds = 4d, durationSeconds = pending.Duration, completed = false }), System.Text.Encoding.UTF8, "application/json"))) update.EnsureSuccessStatusCode();
+            await Until(() => pending.MobileProgressSeconds == 4, "New phone checkpoint arrives after an explicit paused seek");
+            TogglePlayback(); await Until(() => playing && CurrentTime is >= 1 and < 2.5 && ReferenceEquals(vlc, automaticHandoff), "An explicit paused seek pins the next Play instead of being undone by phone metadata"); Pause();
+            using (var update = await http.PostAsync(address + "/v1/progress", new StringContent(JsonSerializer.Serialize(new { itemId = pending.Id.ToString("N"), positionSeconds = 5d, durationSeconds = pending.Duration, completed = false }), System.Text.Encoding.UTF8, "application/json"))) update.EnsureSuccessStatusCode();
+            await Until(() => pending.MobileProgressSeconds == 5, "Fresh phone checkpoint follows consumed explicit seek intent");
+            TogglePlayback(); await Until(() => playing && CurrentTime is >= 4.8 and < 6.5 && ReferenceEquals(vlc, automaticHandoff), "Paused seek intent is one-shot and subsequent Play can hand off again"); Pause();
+            Unload();
+            var staleEntry = new MediaEntry { Id = pending.Id, FilePath = pending.FilePath, Duration = pending.Duration, ResumeTime = 1 };
+            await LoadEntryAsync(staleEntry, resumeOverride: 0);
+            await Until(() => !opening && vlc?.DisplayedPictures is > 0 && CurrentTime < 1.5, "Explicit restart overrides a newer phone checkpoint including explicit zero"); Pause();
+            Check(ReferenceEquals(current, pending), "Native loads resolve the current library entry instead of stale UI metadata");
+            Console.WriteLine("PASS: startup/idle Continue Watching, explicit idle selection, authenticated phone-to-normal-Play native clock/frame handoff, same-graph paused Play handoff, one-shot manual seek priority, no incoming auto-seek, fresh library resolution and explicit zero restart");
+            double phoneBeforeStoppedSession = pending.MobileProgressSeconds!.Value;
             string powerFile = Path.Combine(output, "original-power-backpressure.bin");
             using (var file = File.Create(powerFile)) file.SetLength(64L * 1024 * 1024);
             var powerEntry = library.Add([powerFile]).Single(); PushSharedPlaylist();
@@ -870,7 +976,7 @@ internal sealed class PlayerWindow : Window
                 retiredByPowerProbe = discovery; registrationAtPowerProbe = discovery?.Status;
                 StopSharing();
                 ReceiveMobileProgress(progressSession, new(pending.Id.ToString("N"), pending.FilePath, 9, duration, false, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000d, long.MaxValue));
-                Check(pending.MobileProgressSeconds == 7, "A stopped sharing session cannot persist its queued callback");
+                Check(pending.MobileProgressSeconds == phoneBeforeStoppedSession, "A stopped sharing session cannot persist its queued callback");
                 Check(!sharingPower.IsActive, "Stopping sharing releases the idle-system-sleep request");
                 idleSleepPrevention = requested && sharingPower.LastReleaseSucceeded == true ? "system-required-handle-created-and-released" : "unavailable-keep-computer-awake";
                 Console.WriteLine("INFO: idle sleep prevention: " + idleSleepPrevention + "; forced sleep/display policy is unchanged and physical sleep behavior is not asserted");

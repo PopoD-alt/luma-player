@@ -15,7 +15,8 @@ internal static class Program
             if (args.Length == 1 && args[0] == "--runtime-bundle-tests")
             { RuntimeManifestTests.Run(); OwnerReviewBundleTests.Run(); return 0; }
             if (args.Length == 1 && args[0] == "--sharing-progress-tests")
-            { SharedProgressTests.Run(); return 0; }
+            { SharedProgressTests.Run(); PlaybackResumeTests.Run(); return 0; }
+            if (args.Length == 1 && args[0] == "--resume-tests") { PlaybackResumeTests.Run(); return 0; }
             if (args.Length == 1 && args[0] == "--skip-tests") { PlaybackSkipTests.Run(); RepeatedAudioAnalysisTests.Run(); return 0; }
             if (args.Length == 3 && args[0] == "--sharing-test-host") return SharingTestHost.RunAsync(args[1], args[2]).GetAwaiter().GetResult();
             var root = args.Length > 0 ? Path.GetFullPath(args[0]) : Path.GetFullPath("../Tests/Fixtures");
@@ -26,6 +27,7 @@ internal static class Program
             DnsSdLifecycleTests.Run();
             SharingTests.Run(root);
             SharedProgressTests.Run();
+            PlaybackResumeTests.Run();
             FoundationTests.Run(root);
             PlaybackSkipTests.Run(root);
             RepeatedAudioAnalysisTests.Run();
