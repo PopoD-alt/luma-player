@@ -22,7 +22,7 @@ public static class PlaybackSkipTests
     }
     public static void Run(string? fixtures = null)
     {
-        foreach (string label in new[] { "Intro", "Opening", "Opening Credits", "OP", "OP 2", "opening-theme", "オープニング" })
+        foreach (string label in new[] { "Intro", "Opening", "  Opening  ", "Opening Credits", "OP", "OP 2", "opening-theme", "オープニング" })
             Check(PlaybackSkipPolicy.KindForChapter(label) == "intro", "Explicit opening label: " + label);
         foreach (string label in new[] { "Credits", "Ending", "End Credits", "Closing credits", "ED", "OutRo", "エンディング" })
             Check(PlaybackSkipPolicy.KindForChapter(label) == "credits", "Explicit credit label: " + label);

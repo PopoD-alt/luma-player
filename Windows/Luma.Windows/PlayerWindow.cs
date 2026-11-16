@@ -739,7 +739,7 @@ internal sealed class PlayerWindow : Window
             var chapters = chaptered.Chapters;
             if (chaptered.DisplayedPictures is > 0 && !loggedActiveChapters)
             { loggedActiveChapters = true; Console.WriteLine("INFO: active skip chapter read: " + JsonSerializer.Serialize(new { chaptered.ChapterDiagnostics, duration = chaptered.Duration, time = chaptered.CurrentTime, names = chapters.Select(c => c.Name).ToArray() })); }
-            return chaptered.DisplayedPictures is > 0 && chapters.Any(c => c.Name == "Opening") && chapters.Any(c => c.Name == "Credits");
+            return chaptered.DisplayedPictures is > 0 && chapters.Any(c => c.Name.Trim() == "Opening") && chapters.Any(c => c.Name.Trim() == "Credits");
         }, "Native labelled chapter metadata and decoded frames"); }
         catch (TimeoutException)
         {
