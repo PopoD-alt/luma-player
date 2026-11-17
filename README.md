@@ -1,6 +1,6 @@
 # Luma Player
 
-**A free native media player by sdas for Mac and Windows, with an Android Wi-Fi streaming companion.** Desktop playback uses bundled libVLC 3. The owner tested the public 0.7.0 preview and reported that it works as expected.
+**A free native media player for Mac and Windows, with an Android Wi-Fi streaming companion.** Desktop playback uses bundled libVLC 3. The owner tested the public 0.7.0 preview and reported that it works as expected.
 
 **Latest source on `main`: desktop 0.10.0 / Android 0.4.0-preview** · macOS 14+ Apple Silicon · Windows 11 x64 · Android 8+ ARM64
 
